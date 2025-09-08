@@ -32,10 +32,6 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // 공간 연산을 위한 의존성 추가
-    implementation 'org.hibernate.orm:hibernate-spatial:7.1.0.Final'
-    implementation 'org.locationtech.jts:jts-core:1.20.0'
 }
 
 tasks.named('test') {
