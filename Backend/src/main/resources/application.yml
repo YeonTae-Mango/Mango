@@ -53,7 +53,9 @@ springdoc:
     enabled: true
     path: /api/v1/swagger-ui
 
-
+jwt:
+  secret: "bXlfcMV3LS7m58dnF7Asl4sfgigkdosPamAS91sap0JBA59mb3Jfand0" # Base64 인코딩된 최소 64바이트 이상
+  expiration: 86400000 # 1일 (밀리초)
 
 ---
 
