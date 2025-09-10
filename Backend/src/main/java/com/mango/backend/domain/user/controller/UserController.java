@@ -20,7 +20,7 @@ public class UserController extends BaseController {
 
   // 회원탈퇴
   @DeleteMapping("/{id}")
-  public ResponseEntity<BaseResponse<?>> deleteUser(@PathVariable Long id) {
+  public ResponseEntity<BaseResponse> deleteUser(@PathVariable Long id) {
     return wrapResponse(userService.deleteUser(id));
   }
 }

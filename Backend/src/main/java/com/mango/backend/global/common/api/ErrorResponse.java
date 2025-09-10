@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class ErrorResponse implements BaseResponse<Void> {
+public class ErrorResponse implements BaseResponse {
 
   private final ErrorCode errorCode;
   private final String message;

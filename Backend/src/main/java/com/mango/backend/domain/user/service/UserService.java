@@ -19,7 +19,7 @@ public class UserService {
   private final UserRepository userRepository;
 
   @Transactional
-  public BaseResponse<?> deleteUser(Long userId) {
+  public BaseResponse deleteUser(Long userId) {
     Optional<User> userOpt = userRepository.findById(userId);
     if (userOpt.isEmpty()) {
       return ErrorResponse.of(ErrorCode.USER_INVALID_INPUT);

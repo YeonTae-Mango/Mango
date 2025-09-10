@@ -4,7 +4,7 @@ package com.mango.backend.global.common.api;
 import lombok.Getter;
 
 @Getter
-public class SuccessResponse<T> implements BaseResponse<T> {
+public class SuccessResponse<T> implements BaseResponse {
 
   private final String message;
   private final T data;
