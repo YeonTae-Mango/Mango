@@ -1,10 +1,14 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Layout from '../components/common/Layout';
+import Layout from '../../components/common/Layout';
 
-export default function HomeScreen() {
+interface HomeScreenProps {
+  onLogout?: () => void;
+}
+
+export default function HomeScreen({ onLogout }: HomeScreenProps) {
   return (
-    <Layout headerTitle="mango">
+    <Layout headerTitle="mango" onLogout={onLogout}>
       <View style={styles.container}>
         <Text style={styles.title}>홈</Text>
       </View>

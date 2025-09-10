@@ -9,11 +9,12 @@ import {
   View,
 } from 'react-native';
 
-export default function NotificationScreen() {
+export default function MyPatternScreen() {
   const navigation = useNavigation();
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* 커스텀 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -21,14 +22,16 @@ export default function NotificationScreen() {
         >
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>알림</Text>
+
+        <Text style={styles.headerTitle}>소비 패턴 분석</Text>
+
         <View style={styles.placeholder} />
       </View>
 
       <View style={styles.container}>
-        <Text style={styles.title}>알림이 없습니다</Text>
+        <Text style={styles.title}>소비 패턴 분석</Text>
         <Text style={styles.subtitle}>
-          새로운 알림이 오면 여기에 표시됩니다
+          여기에 소비 패턴 분석 데이터가 표시됩니다
         </Text>
       </View>
     </SafeAreaView>
@@ -58,7 +61,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   placeholder: {
-    width: 34, // 뒤로가기 버튼과 같은 크기
+    width: 34,
   },
   container: {
     flex: 1,
@@ -70,7 +73,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#333',
   },
   subtitle: {
     fontSize: 16,

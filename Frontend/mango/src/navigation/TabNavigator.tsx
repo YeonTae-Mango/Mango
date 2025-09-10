@@ -3,15 +3,19 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 
 // 화면 컴포넌트들
-import ChatStack from '../../navigation/ChatStack';
-import CategoryScreen from '../../screens/category/CategoryScreen';
-import HomeScreen from '../../screens/home/HomeScreen';
-import MangoScreen from '../../screens/mango/MangoScreen';
-import ProfileScreen from '../../screens/profile/ProfileScreen';
+import HomeScreen from '../screens/home/HomeScreen';
+import CategoryStack from './CategoryStack';
+import ChatStack from './ChatStack';
+import MangoStack from './MangoStack';
+import ProfileStack from './ProfileStack';
 
 const Tab = createBottomTabNavigator();
 
-export default function TabNavigator() {
+interface TabNavigatorProps {
+  onLogout: () => void;
+}
+
+export default function TabNavigator({ onLogout }: TabNavigatorProps) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -39,31 +43,21 @@ export default function TabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ tabBarLabel: '홈' }}
-      />
-      <Tab.Screen
-        name="Category"
-        component={CategoryScreen}
-        options={{ tabBarLabel: '카테고리' }}
-      />
-      <Tab.Screen
-        name="Mango"
-        component={MangoScreen}
-        options={{ tabBarLabel: '망고' }}
-      />
-      <Tab.Screen
-        name="Chat"
-        component={ChatStack}
-        options={{ tabBarLabel: '채팅' }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ tabBarLabel: '프로필' }}
-      />
+      <Tab.Screen name="Home" options={{ tabBarLabel: '홈' }}>
+        {() => <HomeScreen onLogout={onLogout} />}
+      </Tab.Screen>
+      <Tab.Screen name="Category" options={{ tabBarLabel: '카테고리' }}>
+        {() => <CategoryStack onLogout={onLogout} />}
+      </Tab.Screen>
+      <Tab.Screen name="Mango" options={{ tabBarLabel: '망고' }}>
+        {() => <MangoStack onLogout={onLogout} />}
+      </Tab.Screen>
+      <Tab.Screen name="Chat" options={{ tabBarLabel: '채팅' }}>
+        {() => <ChatStack onLogout={onLogout} />}
+      </Tab.Screen>
+      <Tab.Screen name="Profile" options={{ tabBarLabel: '프로필' }}>
+        {() => <ProfileStack onLogout={onLogout} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

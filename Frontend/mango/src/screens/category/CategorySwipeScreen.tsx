@@ -1,24 +1,25 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import ChatHeader from '../../components/chat/ChatHeader';
 
-export default function MatchingpatternScreen() {
+interface CategorySwipeScreenProps {
+  onLogout?: () => void;
+}
+
+export default function CategorySwipeScreen({
+  onLogout,
+}: CategorySwipeScreenProps) {
   const navigation = useNavigation();
   const route = useRoute();
-  const { userName } = route.params as { userName: string };
+  const { categoryTitle } = route.params as { categoryTitle: string };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ChatHeader
-        title="소비패턴 궁합"
-        showUserInfo={false}
-        showMenu={false}
-        onBackPress={() => navigation.goBack()}
-      />
-
       <View style={styles.container}>
-        <Text style={styles.title}>{userName}님과의 소비패턴 궁합</Text>
+        <Text style={styles.title}>{categoryTitle} 스와이프</Text>
+        <Text style={styles.subtitle}>
+          {categoryTitle} 카테고리의 스와이프 화면입니다
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -37,9 +38,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 40,
+    marginBottom: 20,
     textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });

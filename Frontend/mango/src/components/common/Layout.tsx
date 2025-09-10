@@ -6,12 +6,17 @@ import Header from './Header';
 interface LayoutProps {
   children: React.ReactNode;
   headerTitle?: string;
+  onLogout?: () => void;
 }
 
-export default function Layout({ children, headerTitle }: LayoutProps) {
+export default function Layout({
+  children,
+  headerTitle,
+  onLogout,
+}: LayoutProps) {
   return (
     <SafeAreaView style={styles.container}>
-      <Header title={headerTitle} />
+      <Header title={headerTitle} onLogout={onLogout} />
       <View style={styles.content}>{children}</View>
     </SafeAreaView>
   );

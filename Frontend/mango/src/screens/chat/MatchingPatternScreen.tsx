@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React from 'react';
 import {
   SafeAreaView,
@@ -9,11 +9,14 @@ import {
   View,
 } from 'react-native';
 
-export default function NotificationScreen() {
+export default function MatchingPatternScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { userName } = route.params as { userName: string };
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* 커스텀 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -21,14 +24,21 @@ export default function NotificationScreen() {
         >
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>알림</Text>
+
+        <Text style={styles.headerTitle}>소비패턴 궁합</Text>
+
         <View style={styles.placeholder} />
       </View>
 
       <View style={styles.container}>
-        <Text style={styles.title}>알림이 없습니다</Text>
-        <Text style={styles.subtitle}>
-          새로운 알림이 오면 여기에 표시됩니다
+        <Text style={styles.title}>{userName}님과의 소비패턴 궁합</Text>
+        <View style={styles.compatibilityScore}>
+          <Text style={styles.scoreText}>85%</Text>
+          <Text style={styles.scoreLabel}>궁합 점수</Text>
+        </View>
+        <Text style={styles.description}>
+          비슷한 소비 패턴을 가지고 계시네요! 특히 문화/여가 활동에서 높은
+          유사성을 보입니다.
         </Text>
       </View>
     </SafeAreaView>
@@ -58,7 +68,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   placeholder: {
-    width: 34, // 뒤로가기 버튼과 같은 크기
+    width: 34,
   },
   container: {
     flex: 1,
@@ -69,12 +79,27 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
+    marginBottom: 40,
+    textAlign: 'center',
   },
-  subtitle: {
+  compatibilityScore: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  scoreText: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#9C27B0',
+    marginBottom: 8,
+  },
+  scoreLabel: {
+    fontSize: 16,
+    color: '#666',
+  },
+  description: {
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+    lineHeight: 24,
   },
 });
