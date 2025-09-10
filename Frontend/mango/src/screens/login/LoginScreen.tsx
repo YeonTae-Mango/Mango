@@ -1,14 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Layout from '../components/common/Layout';
 
-export default function ProfileScreen() {
+export default function LoginScreen() {
   return (
-    <Layout headerTitle="mango">
-      <View style={styles.container}>
-        <Text style={styles.title}>프로필</Text>
-      </View>
-    </Layout>
+    <View style={styles.container}>
+      <Text style={styles.title}>로그인</Text>
+    </View>
   );
 }
 

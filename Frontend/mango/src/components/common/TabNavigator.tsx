@@ -4,10 +4,10 @@ import React from 'react';
 
 // 화면 컴포넌트들
 import ChatStack from '../../navigation/ChatStack';
-import CategoryScreen from '../../screens/CategoryScreen';
-import HomeScreen from '../../screens/HomeScreen';
-import MangoScreen from '../../screens/MangoScreen';
-import ProfileScreen from '../../screens/ProfileScreen';
+import CategoryScreen from '../../screens/category/CategoryScreen';
+import HomeScreen from '../../screens/home/HomeScreen';
+import MangoScreen from '../../screens/mango/MangoScreen';
+import ProfileScreen from '../../screens/profile/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 

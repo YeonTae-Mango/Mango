@@ -1,29 +1,27 @@
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Layout from '../../components/common/Layout';
 
 export default function MangoScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>망고</Text>
-      <Text style={styles.subtitle}>망고 화면입니다</Text>
-    </View>
+    <Layout headerTitle="mango">
+      <View style={styles.container}>
+        <Text style={styles.title}>망고</Text>
+      </View>
+    </Layout>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 8,
     color: '#FF6D60',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
   },
 });
