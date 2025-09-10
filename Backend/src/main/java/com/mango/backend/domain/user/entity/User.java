@@ -7,8 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,7 +58,7 @@ public class User {
   private String introduction;
 
   @Column(name = "last_sync_at")
-  private Instant lastSyncAt;
+  private LocalDateTime lastSyncAt;
 
   @Column(name = "location", columnDefinition = "POINT SRID 4326")
   private Point location;

@@ -1,6 +1,6 @@
 package com.mango.backend.global.common.api;
 
-public interface ApiResponse<T> {
+public interface BaseResponse {
 
   boolean isSuccess();
 

@@ -46,6 +46,14 @@ custom:
   service:
     url: "http://localhost:8080/"
 
+springdoc:
+  api-docs:
+
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /api/v1/swagger-ui
+
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
