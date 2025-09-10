@@ -65,7 +65,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:mysql//${MYSQL_CONTAINER_NAME}:${MYSQL_HOST_PORT}/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://${MYSQL_CONTAINER_NAME}:${MYSQL_HOST_PORT}/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
