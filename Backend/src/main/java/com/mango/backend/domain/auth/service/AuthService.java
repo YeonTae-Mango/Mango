@@ -13,10 +13,12 @@ import com.mango.backend.global.common.api.ErrorResponse;
 import com.mango.backend.global.common.api.SuccessResponse;
 import com.mango.backend.global.error.ErrorCode;
 import com.mango.backend.global.util.JwtProvider;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
   private final AuthRepository authRepository;
@@ -89,15 +92,18 @@ public class AuthService {
     }
 
     String token = jwtProvider.generateToken(user.getId());
-    redisTemplate.opsForValue().set("JWT:" + user.getId(), token,
+    Duration expire = Duration.ofMillis(
         jwtProvider.getExpiration(token).getTime() - System.currentTimeMillis());
-
+    redisTemplate.opsForValue().set("JWT:" + user.getId(), token, expire);
+    log.info("JWT token stored in Redis for userId {}: {}", user.getId(), token);
     return SuccessResponse.of("로그인 성공했습니다.", LoginResponse.of(user.getId(), token));
   }
 
   public BaseResponse logout(String token) {
     Long userId = jwtProvider.getUserId(token);
+    log.info("로그아웃 시도, userId: {}", userId);
     redisTemplate.delete("JWT:" + userId);
+    log.info("로그아웃 성공, userId: {}", userId);
     return SuccessResponse.of("로그아웃이 완료되었습니다.", null);
   }
 

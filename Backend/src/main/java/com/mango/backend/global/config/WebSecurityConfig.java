@@ -24,20 +24,22 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @Slf4j
 public class WebSecurityConfig {
 
-  private static final String[] AUTH_WHITE_LIST = {
-      "/api/**",
-      "/v3/api-docs/**",
-      "/swagger-ui/**"
-//      "/api/v1/auth/sign-up",
-//      "/api/v1/auth/login",
-//      "/api/v1/members/password",
-//      "/api/v1/members",
-//      "/actuator/health"
-  };
-
   private final CorsConfigurationSource corsConfigurationSource;
   private final JwtProvider jwtProvider;
   private final RedisTemplate<String, String> redisTemplate;
+
+  // Local & Dev 화이트리스트
+  private static final String[] AUTH_WHITE_LIST_LOCAL_DEV = {
+      "/api/**",
+      "/v3/api-docs/**",
+      "/swagger-ui/**",
+      "/docs/**"
+  };
+
+  // Prod 화이트리스트
+  private static final String[] AUTH_WHITE_LIST_PROD = {
+      "/api/**"
+  };
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -49,42 +51,30 @@ public class WebSecurityConfig {
     return new JwtAuthenticationFilter(jwtProvider, redisTemplate);
   }
 
-  // ---------------- Local & Dev Profile ----------------
   @Bean
   @Profile({"local", "dev"})
   public SecurityFilterChain securityFilterChainLocalDev(HttpSecurity http,
       JwtAuthenticationFilter jwtFilter) throws Exception {
-    configureHttp(http, jwtFilter, true);
+    configureHttp(http, jwtFilter, AUTH_WHITE_LIST_LOCAL_DEV);
     return http.build();
   }
 
-  // ---------------- Prod Profile ----------------
   @Bean
   @Profile("prod")
   public SecurityFilterChain securityFilterChainProd(HttpSecurity http,
       JwtAuthenticationFilter jwtFilter) throws Exception {
-    configureHttp(http, jwtFilter, true);
+    configureHttp(http, jwtFilter, AUTH_WHITE_LIST_PROD);
     return http.build();
   }
 
   private void configureHttp(HttpSecurity http, JwtAuthenticationFilter jwtFilter,
-      boolean permitSwagger) throws Exception {
+      String[] authWhiteList) throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(authorize -> {
-          // Swagger 허용
-          if (permitSwagger) {
-            authorize.requestMatchers(
-                "/v3/api-docs/**",
-                "/swagger-ui/**",
-                "/docs/**"
-            ).permitAll();
-          }
-
-          // API 화이트리스트
-          authorize.requestMatchers(AUTH_WHITE_LIST).permitAll()
+          authorize.requestMatchers(authWhiteList).permitAll()
               .anyRequest().authenticated();
         })
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
