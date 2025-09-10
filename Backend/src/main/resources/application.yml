@@ -48,7 +48,6 @@ custom:
 
 springdoc:
   api-docs:
-
     enabled: true
   swagger-ui:
     enabled: true
@@ -100,3 +99,10 @@ custom:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
+  
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /api/v1/swagger-ui
