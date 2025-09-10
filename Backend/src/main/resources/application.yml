@@ -46,16 +46,9 @@ custom:
   service:
     url: "http://localhost:8080/"
 
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-    path: /api/v1/swagger-ui
-
 jwt:
-  secret: "bXlfcMV3LS7m58dnF7Asl4sfgigkdosPamAS91sap0JBA59mb3Jfand0" # Base64 인코딩된 최소 64바이트 이상
-  expiration: 86400000 # 1일 (밀리초)
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
 
 ---
 
@@ -96,8 +89,6 @@ custom:
   service:
     url: ${BACKEND_URL}
 
-springdoc:
-  api-docs:
-    enabled: false
-  swagger-ui:
-    enabled: false
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
