@@ -63,7 +63,7 @@ public class WebSecurityConfig {
   @Profile("prod")
   public SecurityFilterChain securityFilterChainProd(HttpSecurity http,
       JwtAuthenticationFilter jwtFilter) throws Exception {
-    configureHttp(http, jwtFilter, false);
+    configureHttp(http, jwtFilter, true);
     return http.build();
   }
 
