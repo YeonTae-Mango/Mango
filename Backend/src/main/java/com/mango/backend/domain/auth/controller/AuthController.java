@@ -5,6 +5,7 @@ import com.mango.backend.domain.auth.dto.request.SignUpRequest;
 import com.mango.backend.domain.auth.service.AuthService;
 import com.mango.backend.global.common.BaseController;
 import com.mango.backend.global.common.api.BaseResponse;
+import com.mango.backend.global.common.api.ErrorResponse;
 import com.mango.backend.global.common.api.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -51,12 +52,12 @@ public class AuthController extends BaseController {
       @ApiResponse(
           responseCode = "200",
           description = "로그인 성공 (JWT 토큰 반환)",
-          content = @Content(schema = @Schema(implementation = BaseResponse.class))
+          content = @Content(schema = @Schema(implementation = SuccessResponse.class))
       ),
       @ApiResponse(
           responseCode = "401",
           description = "이메일/비밀번호 불일치",
-          content = @Content(schema = @Schema(implementation = BaseResponse.class))
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class))
       )
   })
   @PostMapping("/login")
@@ -80,9 +81,9 @@ public class AuthController extends BaseController {
   @Operation(summary = "이메일 중복 확인", description = "입력한 이메일이 이미 사용 중인지 확인합니다.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "사용 가능한 이메일",
-          content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+          content = @Content(schema = @Schema(implementation = SuccessResponse.class))),
       @ApiResponse(responseCode = "409", description = "이미 존재하는 이메일",
-          content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
   })
   @GetMapping("/check-email")
   public ResponseEntity<BaseResponse> checkEmail(@RequestParam String email) {
@@ -92,9 +93,9 @@ public class AuthController extends BaseController {
   @Operation(summary = "닉네임 중복 확인", description = "입력한 닉네임이 이미 사용 중인지 확인합니다.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "사용 가능한 닉네임",
-          content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+          content = @Content(schema = @Schema(implementation = SuccessResponse.class))),
       @ApiResponse(responseCode = "409", description = "이미 존재하는 닉네임",
-          content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
   })
   @GetMapping("/check-nickname")
   public ResponseEntity<BaseResponse> checkNickname(@RequestParam String nickname) {

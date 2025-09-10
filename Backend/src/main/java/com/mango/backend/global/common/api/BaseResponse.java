@@ -1,8 +1,21 @@
 package com.mango.backend.global.common.api;
 
-public interface BaseResponse {
 
-  boolean isSuccess();
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-  String getMessage();
+@Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class BaseResponse {
+
+  private ResponseStatus status;
+  private String message;
+
+  public BaseResponse(ResponseStatus status, String message) {
+    this.status = status;
+    this.message = message;
+  }
 }
