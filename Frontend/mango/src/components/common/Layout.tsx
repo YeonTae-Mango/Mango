@@ -1,0 +1,28 @@
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Header from './Header';
+
+interface LayoutProps {
+  children: React.ReactNode;
+  headerTitle?: string;
+}
+
+export default function Layout({ children, headerTitle }: LayoutProps) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header title={headerTitle} />
+      <View style={styles.content}>{children}</View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  content: {
+    flex: 1,
+  },
+});
