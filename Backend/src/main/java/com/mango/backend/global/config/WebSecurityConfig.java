@@ -25,7 +25,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class WebSecurityConfig {
 
   private static final String[] AUTH_WHITE_LIST = {
-      "/api/**"
+      "/api/**",
       "/v3/api-docs/**",
       "/swagger-ui/**"
 //      "/api/v1/auth/sign-up",
