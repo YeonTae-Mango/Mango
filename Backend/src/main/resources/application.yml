@@ -21,7 +21,7 @@ spring:
     password: ${MYSQL_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -48,12 +48,15 @@ custom:
 
 springdoc:
   api-docs:
+
     enabled: true
   swagger-ui:
     enabled: true
     path: /api/v1/swagger-ui
 
-
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
 
 ---
 
@@ -94,8 +97,6 @@ custom:
   service:
     url: ${BACKEND_URL}
 
-springdoc:
-  api-docs:
-    enabled: false
-  swagger-ui:
-    enabled: false
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
