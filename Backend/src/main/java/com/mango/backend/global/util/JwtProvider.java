@@ -7,10 +7,12 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.util.Date;
 import javax.crypto.SecretKey;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class JwtProvider {
 
   private final SecretKey key;
@@ -34,10 +36,16 @@ public class JwtProvider {
   }
 
   public Long getUserId(String token) {
+    log.info("token : {}", token);
+    String parsed = token;
+    if (parsed.startsWith("Bearer ")) {
+      token = parsed.substring(7).trim();
+    }
     String subject = Jwts.parser()
         .verifyWith(key)
         .build().parseSignedClaims(token).getPayload()
         .getSubject();
+    log.info("getUserId: {}", subject);
     return Long.parseLong(subject);
   }
 
@@ -54,6 +62,10 @@ public class JwtProvider {
   }
 
   public Date getExpiration(String token) {
+    String parsed = token;
+    if (parsed.startsWith("Bearer ")) {
+      token = parsed.substring(7).trim();
+    }
     Jws<Claims> claims = Jwts.parser()
         .verifyWith(key)
         .build()
