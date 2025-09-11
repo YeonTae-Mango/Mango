@@ -44,7 +44,7 @@ public class AuthController extends BaseController {
   })
   @PostMapping("/signup")
   public ResponseEntity<BaseResponse> signUp(@RequestBody SignUpRequest request) {
-    return wrapResponse(authService.signUp(request));
+    return toResponseEntity(authService.signUp(request), "회원가입에 성공했습니다.");
   }
 
   @Operation(summary = "로그인", description = "유저 인증 후 JWT 토큰을 발급합니다.")
@@ -62,7 +62,7 @@ public class AuthController extends BaseController {
   })
   @PostMapping("/login")
   public ResponseEntity<BaseResponse> login(@RequestBody LoginRequest request) {
-    return wrapResponse(authService.login(request));
+    return toResponseEntity(authService.login(request), "로그인에 성공했습니다.");
   }
 
   @Operation(summary = "로그아웃", description = "Redis에서 JWT 토큰 제거")
@@ -75,7 +75,7 @@ public class AuthController extends BaseController {
   })
   @PostMapping("/logout")
   public ResponseEntity<BaseResponse> logout(@RequestHeader("Authorization") String token) {
-    return wrapResponse(authService.logout(token));
+    return toResponseEntity(authService.logout(token), "로그아웃에 성공했습니다.");
   }
 
   @Operation(summary = "이메일 중복 확인", description = "입력한 이메일이 이미 사용 중인지 확인합니다.")
@@ -87,7 +87,7 @@ public class AuthController extends BaseController {
   })
   @GetMapping("/check-email")
   public ResponseEntity<BaseResponse> checkEmail(@RequestParam String email) {
-    return wrapResponse(authService.checkEmail(email));
+    return toResponseEntity(authService.checkEmail(email), "사용 가능한 이메일입니다.");
   }
 
   @Operation(summary = "닉네임 중복 확인", description = "입력한 닉네임이 이미 사용 중인지 확인합니다.")
@@ -99,6 +99,6 @@ public class AuthController extends BaseController {
   })
   @GetMapping("/check-nickname")
   public ResponseEntity<BaseResponse> checkNickname(@RequestParam String nickname) {
-    return wrapResponse(authService.checkNickname(nickname));
+    return toResponseEntity(authService.checkNickname(nickname), "사용 가능한 닉네임입니다.");
   }
 }

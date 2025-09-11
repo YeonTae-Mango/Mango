@@ -12,15 +12,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController extends BaseController {
 
   private final UserService userService;
 
   // 회원탈퇴
-  @DeleteMapping("/{id}")
-  public ResponseEntity<BaseResponse> deleteUser(@PathVariable Long id) {
-    return wrapResponse(userService.deleteUser(id));
+  @DeleteMapping("/{userId}")
+  public ResponseEntity<BaseResponse> deleteUser(@PathVariable Long userId) {
+    return toResponseEntity(userService.deleteUser(userId), "회원 탈퇴에 성공했습니다.");
   }
 }
