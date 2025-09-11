@@ -103,6 +103,7 @@ jwt:
 springdoc:
   api-docs:
     enabled: true
+    path: /api/v1/api-docs
   swagger-ui:
     enabled: true
     path: /api/v1/swagger-ui
