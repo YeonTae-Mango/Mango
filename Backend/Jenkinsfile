@@ -1,0 +1,87 @@
+pipeline {
+    agent any
+
+    environment {
+        PROJECT_DIR = '.'
+        BACKEND_DIR = "${PROJECT_DIR}/Backend"
+        
+        DOCKER_BACKEND_IMAGE = 'blueconecell/mango-backend'
+        DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-jenkins'
+        IMAGE_TAG = 'latest'
+        
+        EC2_HOST = 'j13a408.p.ssafy.io'
+        EC2_USER = 'ubuntu'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '1. Git 리포지토리에서 코드를 체크아웃합니다.'
+                cleanWs()
+                git url: 'https://lab.ssafy.com/s13-fintech-finance-sub1/S13P21A408.git',
+                    branch: 'BE',
+                    credentialsId: 'gitlab_token_username_with_password'
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                echo '2. Backend 애플리케이션을 Gradle로 빌드합니다.'
+                dir(BACKEND_DIR) {
+                    sh 'chmod +x ./gradlew'
+                    sh './gradlew clean build -x test'
+                }
+            }
+        }
+        
+        stage('Build & Push Docker Image') {
+            steps {
+                echo '3. Backend 도커 이미지를 빌드하고 푸시합니다.'
+                script {
+                    withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDENTIAL_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    }
+                    
+                    dir(BACKEND_DIR) {
+                        sh 'cp `find ./build/libs -name "*.jar" | grep -v "plain.jar"` ./app.jar'
+                        sh "docker build -t ${DOCKER_BACKEND_IMAGE}:${IMAGE_TAG} ."
+                        sh "docker push ${DOCKER_BACKEND_IMAGE}:${IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy on EC2') {
+            steps {
+                echo '4. SSH Agent를 사용하여 EC2에 배포합니다.'
+                sshagent(credentials: ['ssh-credentials']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
+                            echo "Backend Docker Compose를 이용해 배포를 시작합니다."
+                            cd /home/ubuntu/app
+                            docker pull ${DOCKER_BACKEND_IMAGE}:${IMAGE_TAG}
+                            docker compose -f docker-compose.blue.yml down || true
+                            docker compose -f docker-compose.blue.yml up -d
+                            echo "배포가 완료되었습니다."
+                        '
+                    """
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo '✅ 파이프라인이 성공적으로 완료되었습니다!'
+            updateGitlabCommitStatus name: 'build', state: 'success'
+        }
+        failure {
+            echo '❌ 파이프라인이 실패했습니다!'
+            updateGitlabCommitStatus name: 'build', state: 'failed'
+        }
+        always {
+            echo '=== 파이프라인 정리 작업을 수행합니다. ==='
+            cleanWs()
+        }
+    }
+}
