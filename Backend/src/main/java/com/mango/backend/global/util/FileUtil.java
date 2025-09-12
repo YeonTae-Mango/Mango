@@ -23,7 +23,7 @@ public class FileUtil {
   @Value("${upload.dir}")
   private String uploadDir;
 
-  @Value("${file.base-url}")
+  @Value("${upload.base-url}")
   private String baseUrl;
 
   private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(".jpg", ".jpeg", ".png",

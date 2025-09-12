@@ -10,10 +10,12 @@ import com.mango.backend.global.error.ErrorCode;
 import com.mango.backend.global.util.JwtProvider;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -48,6 +50,7 @@ public class UserService {
 
     if (userId.equals(requestId)) {
       // 내 정보 조회
+      log.info("내 정보 조회 : {}", userId);
       Optional<User> userOpt = userRepository.findById(userId);
       if (userOpt.isEmpty()) {
         return ServiceResult.failure(ErrorCode.USER_INVALID_INPUT);
@@ -57,7 +60,8 @@ public class UserService {
       return ServiceResult.success(response);
 
     } else {
-      // 다른 사용자 조회 (1번 쿼리로 Projection 사용)
+      // 다른 사용자 조회
+      log.info("타인 정보 조회 : {}", requestId);
       Optional<UserWithMango> userWithMangoOpt = userRepository.findUserWithMangoStatus(requestId,
           userId);
 
@@ -66,9 +70,9 @@ public class UserService {
       }
 
       UserWithMango userWithMango = userWithMangoOpt.get();
-      User me = userWithMango.getUser();
-      User target = userWithMango.getUser();
-
+      User me = userWithMango.getMe();
+      User target = userWithMango.getTarget();
+      log.info("show user ID : {} / request ID : {}", me.getId(), target.getId());
       int distance = calculateDistance(me, target);
       String mangoStatus = userWithMango.getMangoStatus();
       UserInfoResponse response = UserInfoResponse.fromEntity(target, distance, mangoStatus);
@@ -82,11 +86,11 @@ public class UserService {
       return -1; // 위치 정보 없음
     }
 
-    double lat1 = me.getLocation().getY();
-    double lon1 = me.getLocation().getX();
-    double lat2 = other.getLocation().getY();
-    double lon2 = other.getLocation().getX();
-
+    double lat1 = me.getLocation().getX();
+    double lon1 = me.getLocation().getY();
+    double lat2 = other.getLocation().getX();
+    double lon2 = other.getLocation().getY();
+    log.info("Calculating distance between ({}, {}) and ({}, {})", lat1, lon1, lat2, lon2);
     // 하버사인 공식 (단위: km)
     double R = 6371; // 지구 반경 (km)
     double dLat = Math.toRadians(lat2 - lat1);

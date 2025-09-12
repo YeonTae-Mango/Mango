@@ -16,15 +16,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByEmail(String email);
 
   @Query("""
-          SELECT u AS user,
+          SELECT u AS target,
+                 requester AS me,
                  mFrom AS iLiked,
                  mTo AS theyLiked
           FROM User u
+          JOIN User requester ON requester.id = :requestId
           LEFT JOIN Mango mFrom ON mFrom.from.id = :requestId AND mFrom.to.id = u.id
           LEFT JOIN Mango mTo   ON mTo.from.id = u.id AND mTo.to.id = :requestId
           WHERE u.id = :targetId
       """)
   Optional<UserWithMango> findUserWithMangoStatus(@Param("requestId") Long requestId,
       @Param("targetId") Long targetId);
+
 
 }

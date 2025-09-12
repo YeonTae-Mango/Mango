@@ -4,12 +4,17 @@ import com.mango.backend.domain.mango.entity.Mango;
 import com.mango.backend.domain.user.entity.User;
 
 /**
- * User + Like 상태를 함께 조회하기 위한 Projection DTO
+ * User + Like 상태 + 요청자 정보를 함께 조회하기 위한 Projection DTO
  */
 public interface UserWithMango {
 
-  User getUser();
+  // 조회 대상
+  User getTarget();
 
+  // 요청자
+  User getMe();
+
+  // Like 정보
   Mango getILiked();
 
   Mango getTheyLiked();
