@@ -4,18 +4,18 @@ import React from 'react';
 import { Alert, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 
 interface HeaderProps {
-  title?: string;
   onLogout?: () => void; // 로그아웃 콜백 함수
 }
 
-export default function Header({ title = 'mango', onLogout }: HeaderProps) {
+export default function Header({ onLogout }: HeaderProps) {
   const navigation = useNavigation<any>();
 
+  // 알림 아이콘 클릭 핸들러
   const handleNotificationPress = () => {
     navigation.navigate('Notification');
   };
-
-  const handleSettingsPress = () => {
+  // 로그아웃 아이콘 클릭 핸들러
+  const handleLogoutPress = () => {
     Alert.alert(
       '로그아웃',
       '정말 로그아웃 하시겠습니까?',
@@ -41,19 +41,19 @@ export default function Header({ title = 'mango', onLogout }: HeaderProps) {
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View className="flex-row items-center justify-between px-5 py-4 bg-white border-b border-gray-100 pt-12">
-        <Text className="text-heading-bold text-mango-red">{title}</Text>
+      <View className="flex-row items-center justify-between p-4 bg-white">
+        <Text className="text-heading-bold text-mango-red">Mango</Text>
         <View className="flex-row items-center">
           <TouchableOpacity onPress={handleNotificationPress}>
             <Ionicons
               name="notifications-outline"
               size={24}
-              color="#333"
+              color="#8899A8"
               style={{ marginRight: 15 }}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleSettingsPress}>
-            <Ionicons name="settings-outline" size={24} color="#333" />
+          <TouchableOpacity onPress={handleLogoutPress}>
+            <Ionicons name="log-out-outline" size={24} color="#8899A8" />
           </TouchableOpacity>
         </View>
       </View>

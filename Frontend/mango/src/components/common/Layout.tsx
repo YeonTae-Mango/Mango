@@ -16,7 +16,7 @@ export default function Layout({
 }: LayoutProps) {
   return (
     <SafeAreaView style={styles.container}>
-      <Header title={headerTitle} onLogout={onLogout} />
+      <Header onLogout={onLogout} />
       <View style={styles.content}>{children}</View>
     </SafeAreaView>
   );
