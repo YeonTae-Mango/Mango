@@ -205,7 +205,7 @@ const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
       // PAN 제스처 핸들러로 전체 카드를 감싸서 드래그 제스처를 감지
       <PanGestureHandler onGestureEvent={gestureHandler}>
         {/* 애니메이션이 적용되는 카드 컨테이너 */}
-        <Animated.View style={animatedStyle} className="flex-1 bg-white mb-8">
+        <Animated.View style={animatedStyle} className="flex-1 bg-white mb-16">
           {/* 프로필 영역 */}
           <View className="flex-1 flex-row items-center justify-center relative">
             {/* 그라디언트 오버레이 영역 */}
