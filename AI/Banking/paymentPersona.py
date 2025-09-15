@@ -752,7 +752,7 @@ class GenderBasedPaymentGenerator:
         
         return selected_date.replace(hour=selected_hour, minute=selected_minute, second=selected_second)
 
-    def generate_100_users_dataset(self, end_date: datetime = None) -> List[PaymentData]:
+    def generate_100_users_dataset(self, end_date: datetime = None, months: int = 3) -> List[PaymentData]:
         """100명의 사용자(남자 50명, 여자 50명)에 대해 각각 90건의 결제 데이터 생성"""
         if end_date is None:
             end_date = datetime.now()
@@ -765,7 +765,7 @@ class GenderBasedPaymentGenerator:
             user_profile = UserProfile(age=age, gender="남자")
             
             # 3개월치 데이터 생성 (월별 30개씩 = 총 90개)
-            user_payments = self.generate_user_payments(user_profile, user_id, months=3, end_date=end_date)
+            user_payments = self.generate_user_payments(user_profile, user_id, months=months, end_date=end_date)
             all_payments.extend(user_payments)
             
             print(f"남자 사용자 {user_id}번 생성 완료: {len(user_payments)}건")
@@ -776,7 +776,7 @@ class GenderBasedPaymentGenerator:
             user_profile = UserProfile(age=age, gender="여자")
             
             # 3개월치 데이터 생성 (월별 30개씩 = 총 90개)
-            user_payments = self.generate_user_payments(user_profile, user_id, months=3, end_date=end_date)
+            user_payments = self.generate_user_payments(user_profile, user_id, months=months, end_date=end_date)
             all_payments.extend(user_payments)
             
             print(f"여자 사용자 {user_id}번 생성 완료: {len(user_payments)}건")
@@ -996,11 +996,11 @@ if __name__ == "__main__":
     print("=" * 60)
     
     # 2024년 10월 15일 기준으로 3개월치 데이터 생성
-    end_date = datetime(2024, 10, 15)
+    end_date = datetime(2025, 9, 26)
     
     # 100명의 사용자 데이터 생성 (각각 90건씩)
     print("데이터 생성 시작...")
-    all_payments = generator.generate_100_users_dataset(end_date)
+    all_payments = generator.generate_100_users_dataset(end_date=end_date, months=6)
     
     # 통계 출력
     print(f"\n{'='*60}")
