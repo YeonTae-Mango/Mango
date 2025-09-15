@@ -1,6 +1,6 @@
 package com.mango.backend.domain.user.service;
 
-import com.mango.backend.domain.user.dto.projection.UserWithMango;
+import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
 import com.mango.backend.domain.user.dto.response.MyInfoResponse;
 import com.mango.backend.domain.user.dto.response.UserInfoResponse;
 import com.mango.backend.domain.user.entity.User;
@@ -8,7 +8,6 @@ import com.mango.backend.domain.user.repository.UserRepository;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
 import com.mango.backend.global.util.JwtProvider;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -28,57 +27,67 @@ public class UserService {
   @Transactional
   public ServiceResult<Void> deleteUser(Long userId, String token) {
 
-    Long requestId = jwtProvider.getUserId(token);
+    Long requestId = jwtProvider.getUserIdFromToken(token);
     if (!userId.equals(requestId)) {
       return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
     }
 
-    Optional<User> userOpt = userRepository.findById(userId);
-    if (userOpt.isEmpty()) {
-      return ServiceResult.failure(ErrorCode.USER_INVALID_INPUT);
-    }
-
-    userRepository.delete(userOpt.get());
-    String redisKey = "JWT:" + userId;
-    redisTemplate.delete(redisKey);
-
-    return ServiceResult.success(null);
+    return userRepository.findById(userId)
+        .map(user -> {
+          userRepository.delete(user);
+          redisTemplate.delete("JWT:" + userId);
+          return ServiceResult.<Void>success(null);
+        })
+        .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
   }
 
   public ServiceResult<?> getUserById(Long userId, String token) {
-    Long requestId = jwtProvider.getUserId(token);
+    Long requestId = jwtProvider.getUserIdFromToken(token);
 
     if (userId.equals(requestId)) {
       // 내 정보 조회
       log.info("내 정보 조회 : {}", userId);
-      Optional<User> userOpt = userRepository.findById(userId);
-      if (userOpt.isEmpty()) {
-        return ServiceResult.failure(ErrorCode.USER_INVALID_INPUT);
-      }
 
-      MyInfoResponse response = MyInfoResponse.fromEntity(userOpt.get());
-      return ServiceResult.success(response);
+      return userRepository.findById(userId)
+          .map(user -> ServiceResult.success(MyInfoResponse.fromEntity(user)))
+          .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
+
 
     } else {
-      // 다른 사용자 조회
       log.info("타인 정보 조회 : {}", requestId);
-      Optional<UserWithMango> userWithMangoOpt = userRepository.findUserWithMangoStatus(requestId,
-          userId);
 
-      if (userWithMangoOpt.isEmpty()) {
-        return ServiceResult.failure(ErrorCode.USER_INVALID_INPUT);
-      }
+      return userRepository.findUserWithMangoStatus(requestId, userId)
+          .map(userWithMango -> {
+            User me = userWithMango.getMe();
+            User target = userWithMango.getTarget();
+            int distance = calculateDistance(me, target);
+            String mangoStatus = userWithMango.getMangoStatus();
 
-      UserWithMango userWithMango = userWithMangoOpt.get();
-      User me = userWithMango.getMe();
-      User target = userWithMango.getTarget();
-      log.info("show user ID : {} / request ID : {}", me.getId(), target.getId());
-      int distance = calculateDistance(me, target);
-      String mangoStatus = userWithMango.getMangoStatus();
-      UserInfoResponse response = UserInfoResponse.fromEntity(target, distance, mangoStatus);
-
-      return ServiceResult.success(response);
+            UserInfoResponse response = UserInfoResponse.fromEntity(target, distance, mangoStatus);
+            return ServiceResult.success(response);
+          })
+          .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
     }
+  }
+
+  /**
+   * 사용자 정보 수정
+   */
+  @Transactional
+  public ServiceResult<MyInfoResponse> updateUser(Long userId, String token,
+      UserUpdateRequest request) {
+    Long requestId = jwtProvider.getUserIdFromToken(token);
+
+    if (!userId.equals(requestId)) {
+      return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
+    }
+
+    return userRepository.findById(userId)
+        .map(user -> {
+          user.updateProfile(request); // 엔티티에서 DTO 받아서 업데이트
+          return ServiceResult.success(MyInfoResponse.fromEntity(user));
+        })
+        .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
   }
 
   private int calculateDistance(User me, User other) {

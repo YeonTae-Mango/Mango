@@ -26,6 +26,7 @@ public enum ErrorCode {
       HttpStatus.BAD_REQUEST),
   USER_EMAIL_ALREADY_EXISTS("USER_007", "이미 사용중인 이메일입니다.", HttpStatus.CONFLICT),
   USER_NICKNAME_ALREADY_EXISTS("USER_008", "이미 사용중인 닉네임입니다.", HttpStatus.CONFLICT),
+  USER_NOT_FOUND("USER_009", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
   /* ============================
      SERVER ERROR (서버 내부 오류)

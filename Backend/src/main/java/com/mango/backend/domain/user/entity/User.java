@@ -1,5 +1,6 @@
 package com.mango.backend.domain.user.entity;
 
+import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,7 +15,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 
 @Entity
 @Getter
@@ -62,4 +66,37 @@ public class User {
 
   @Column(name = "location", columnDefinition = "POINT SRID 4326")
   private Point location;
+
+  public void updateProfile(UserUpdateRequest request) {
+    if (nickname != null) {
+      this.nickname = request.nickname();
+    }
+    if (sigungu != null) {
+      this.sigungu = request.sigungu();
+    }
+    if (distance != null) {
+      this.distance = request.distance();
+    }
+    if (introduction != null) {
+      this.introduction = request.introduction();
+    }
+
+    // 위도/경도 값이 모두 있을 때만 location 갱신
+    if (request.latitude() != null && request.longitude() != null) {
+      GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+      this.location = geometryFactory.createPoint(
+          new Coordinate(request.longitude(), request.latitude()));
+    }
+
+    this.lastSyncAt = LocalDateTime.now();
+  }
+
+  public void updateLocation(Double latitude, Double longitude) {
+    if (latitude != null && longitude != null) {
+      GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+      this.location = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+      this.lastSyncAt = LocalDateTime.now();
+    }
+  }
+
 }

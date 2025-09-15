@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       if (jwtProvider.validateToken(token)) {
         log.info("JWT Token is valid");
-        Long userId = jwtProvider.getUserId(token);
+        Long userId = jwtProvider.getUserIdFromToken(token);
         log.info("Extracted userId from JWT: {}", userId);
 
         // Redis 체크: 로그아웃 된 토큰이면 인증 실패

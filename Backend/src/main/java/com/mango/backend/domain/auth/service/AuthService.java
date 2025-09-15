@@ -101,7 +101,7 @@ public class AuthService {
 
   @Transactional
   public ServiceResult<Void> logout(String token) {
-    Long userId = jwtProvider.getUserId(token);
+    Long userId = jwtProvider.getUserIdFromToken(token);
     log.info("로그아웃 시도, userId: {}", userId);
     redisTemplate.delete("JWT:" + userId);
     log.info("로그아웃 성공, userId: {}", userId);
