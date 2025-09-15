@@ -3,6 +3,7 @@ package com.mango.backend.domain.user.service;
 import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
 import com.mango.backend.domain.user.dto.response.MyInfoResponse;
 import com.mango.backend.domain.user.dto.response.UserInfoResponse;
+import com.mango.backend.domain.user.dto.response.UserUpdateResponse;
 import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.domain.user.repository.UserRepository;
 import com.mango.backend.global.common.ServiceResult;
@@ -74,7 +75,7 @@ public class UserService {
    * 사용자 정보 수정
    */
   @Transactional
-  public ServiceResult<MyInfoResponse> updateUser(Long userId, String token,
+  public ServiceResult<UserUpdateResponse> updateUser(Long userId, String token,
       UserUpdateRequest request) {
     Long requestId = jwtProvider.getUserIdFromToken(token);
 
@@ -82,10 +83,15 @@ public class UserService {
       return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
     }
 
+    String nickname = request.nickname();
+    if (nickname == null || nickname.isBlank() || nickname.length() > 10) {
+      return ServiceResult.failure(ErrorCode.USER_NICKNAME_LENGTH);
+    }
+    
     return userRepository.findById(userId)
         .map(user -> {
           user.updateProfile(request); // 엔티티에서 DTO 받아서 업데이트
-          return ServiceResult.success(MyInfoResponse.fromEntity(user));
+          return ServiceResult.success(UserUpdateResponse.fromEntity(user));
         })
         .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
   }

@@ -4,6 +4,7 @@ package com.mango.backend.domain.user.controller;
 import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
 import com.mango.backend.domain.user.dto.response.MyInfoResponse;
 import com.mango.backend.domain.user.dto.response.UserInfoResponse;
+import com.mango.backend.domain.user.dto.response.UserUpdateResponse;
 import com.mango.backend.domain.user.service.UserService;
 import com.mango.backend.global.common.BaseController;
 import com.mango.backend.global.common.api.BaseResponse;
@@ -87,11 +88,11 @@ public class UserController extends BaseController {
           @ApiResponse(
               responseCode = "200",
               description = "수정 성공",
-              content = @Content(schema = @Schema(implementation = MyInfoResponse.class))
+              content = @Content(schema = @Schema(implementation = UserUpdateResponse.class))
           ),
           @ApiResponse(
               responseCode = "400",
-              description = "잘못된 입력값",
+              description = "잘못된 입력값(닉네임 등)",
               content = @Content(schema = @Schema(implementation = ErrorResponse.class))
           ),
           @ApiResponse(
@@ -107,6 +108,6 @@ public class UserController extends BaseController {
       @PathVariable Long userId,
       @RequestHeader("Authorization") String token,
       @org.springframework.web.bind.annotation.RequestBody UserUpdateRequest request) {
-    return toResponseEntity(userService.updateUser(userId, token, request), "사용자 정보 수정에 성공했습니다.");
+    return toResponseEntity(userService.updateUser(userId, token, request), "사용자 정보가 수정 되었습니다.");
   }
 }
