@@ -1,28 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import {
-  Alert,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 
 interface HeaderProps {
-  title?: string;
   onLogout?: () => void; // 로그아웃 콜백 함수
 }
 
-export default function Header({ title = 'mango', onLogout }: HeaderProps) {
+export default function Header({ onLogout }: HeaderProps) {
   const navigation = useNavigation<any>();
 
+  // 알림 아이콘 클릭 핸들러
   const handleNotificationPress = () => {
     navigation.navigate('Notification');
   };
-
-  const handleSettingsPress = () => {
+  // 로그아웃 아이콘 클릭 핸들러
+  const handleLogoutPress = () => {
     Alert.alert(
       '로그아웃',
       '정말 로그아웃 하시겠습니까?',
@@ -48,48 +41,22 @@ export default function Header({ title = 'mango', onLogout }: HeaderProps) {
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View style={styles.container}>
-        <Text style={styles.title}>{title}</Text>
-        <View style={styles.rightSection}>
+      <View className="flex-row items-center justify-between p-4 bg-white">
+        <Text className="text-heading-bold text-mango-red">Mango</Text>
+        <View className="flex-row items-center">
           <TouchableOpacity onPress={handleNotificationPress}>
             <Ionicons
               name="notifications-outline"
               size={24}
-              color="#333"
-              style={styles.icon}
+              color="#8899A8"
+              style={{ marginRight: 15 }}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleSettingsPress}>
-            <Ionicons name="settings-outline" size={24} color="#333" />
+          <TouchableOpacity onPress={handleLogoutPress}>
+            <Ionicons name="log-out-outline" size={24} color="#8899A8" />
           </TouchableOpacity>
         </View>
       </View>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    paddingTop: 50, // 상태바 공간 확보
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF6D60',
-  },
-  rightSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  icon: {
-    marginRight: 15,
-  },
-});
