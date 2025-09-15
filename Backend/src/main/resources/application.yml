@@ -41,6 +41,7 @@ logging:
 
 upload:
   dir: C:/ssafy/dev/uploads
+  base-url: http://localhost:8080/api/v1/image/
 
 custom:
   service:
@@ -99,7 +100,7 @@ custom:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
-  
+
 springdoc:
   api-docs:
     enabled: true
