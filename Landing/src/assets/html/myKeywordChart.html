@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart.js Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <style>
+        .chart-container {
+            margin: auto;
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <canvas id="myKeywordChart" width="400" height="400" role="img" aria-label="My Keyword Chart"></canvas>
+    </div>
+
+    <script>
+        // 내 키워드 차트 (가로 막대 차트)
+        const salesCtx = document.getElementById('myKeywordChart').getContext('2d');
+        new Chart(salesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['#서포터즈', '#메케닉', '#편의점러버', '#아티스트', '#탑건', '#트렌드세터'],
+                datasets: [{
+                    data: [80, 70, 55, 44, 43, 22],
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    fill: true,
+                    borderRadius: 8,
+                },
+                // {
+                //     data: [11, 12, 32, 66, 57, 50],
+                //     borderColor: 'rgb(255, 99, 132)',
+                //     backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                //     fill: true,
+                // }
+            ]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 20,
+                        left: 20,
+                        right: 20
+                    }
+                },
+                scales: {
+                    x: {
+                        max: 100,
+                        grid: {
+                            display: true
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.x.toLocaleString() + '점';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
