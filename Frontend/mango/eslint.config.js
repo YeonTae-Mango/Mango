@@ -24,7 +24,12 @@ module.exports = defineConfig([
       prettier: require('eslint-plugin-prettier'),
     },
     rules: {
-      'prettier/prettier': 'error',
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'auto',
+        },
+      ],
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       'react/react-in-jsx-scope': 'off',

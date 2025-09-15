@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import CategoryCard from '../../components/category/CategoryCard';
 import Layout from '../../components/common/Layout';
 
 interface CategoryScreenProps {
@@ -9,7 +10,6 @@ interface CategoryScreenProps {
 
 export default function CategoryScreen({ onLogout }: CategoryScreenProps) {
   const navigation = useNavigation<any>();
-
   const handleCardPress = (categoryTitle: string) => {
     navigation.navigate('CategorySwipe', { categoryTitle });
   };
@@ -17,86 +17,80 @@ export default function CategoryScreen({ onLogout }: CategoryScreenProps) {
   const categories = [
     {
       id: 1,
-      title: '맛집',
-      description: '인기 맛집을 찾아보세요',
-      color: '#FF6B6B',
+      title: '핫플형',
+      icon: require('../../../assets/images/categoryicon/hotplace.png'),
+      description: '핫플형에 대한 설명을 작성해주세요',
+      color: '#FCBAD3',
     },
-    { id: 2, title: '카페', description: '분위기 좋은 카페', color: '#4ECDC4' },
-    { id: 3, title: '쇼핑', description: '쇼핑 핫플레이스', color: '#45B7D1' },
-    { id: 4, title: '문화', description: '문화생활 공간', color: '#96CEB4' },
+    {
+      id: 2,
+      title: '쇼핑형',
+      icon: require('../../../assets/images/categoryicon/shopping.png'),
+      description: '쇼핑형에 대한 설명을 작성해주세요',
+      color: '#A3DC9A',
+    },
+    {
+      id: 3,
+      title: '여행가형',
+      icon: require('../../../assets/images/categoryicon/traveler.png'),
+      description: '여행가형에 대한 설명을 작성해주세요',
+      color: '#A8D8EA',
+    },
+    {
+      id: 4,
+      title: '뷰티형',
+      icon: require('../../../assets/images/categoryicon/beauty.png'),
+      description: '뷰티형에 대한 설명을 작성해주세요',
+      color: '#AA96DA',
+    },
+    {
+      id: 5,
+      title: '자기계발형',
+      icon: require('../../../assets/images/categoryicon/improvement.png'),
+      description: '자기계발형에 대한 설명을 작성해주세요',
+      color: '#FCBAD3',
+    },
+    {
+      id: 6,
+      title: '스포츠형',
+      icon: require('../../../assets/images/categoryicon/sport.png'),
+      description: '스포츠형에 대한 설명을 작성해주세요',
+      color: '#A3DC9A',
+    },
+    {
+      id: 7,
+      title: '예술가형',
+      icon: require('../../../assets/images/categoryicon/artist.png'),
+      description: '예술가형에 대한 설명을 작성해주세요',
+      color: '#A8D8EA',
+    },
+    {
+      id: 8,
+      title: '집돌이형',
+      icon: require('../../../assets/images/categoryicon/homebody.png'),
+      description: '집돌이형에 대한 설명을 작성해주세요',
+      color: '#AA96DA',
+    },
   ];
 
   return (
-    <Layout headerTitle="mango" onLogout={onLogout}>
-      <View style={styles.container}>
-        <View style={styles.cardContainer}>
-          {categories.map(category => (
-            <TouchableOpacity
-              key={category.id}
-              style={[styles.card, { backgroundColor: category.color }]}
-              onPress={() => handleCardPress(category.title)}
-            >
-              <Text style={styles.cardTitle}>{category.title}</Text>
-              <Text style={styles.cardDescription}>{category.description}</Text>
-            </TouchableOpacity>
-          ))}
+    <Layout onLogout={onLogout}>
+      <ScrollView
+        className="flex-1 bg-white"
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+      >
+        <View className="p-4">
+          <View className="flex-row flex-wrap justify-between">
+            {categories.map(category => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                onPress={handleCardPress}
+              />
+            ))}
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </Layout>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingTop: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  cardContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  card: {
-    width: '47%',
-    aspectRatio: 1,
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: '#fff',
-    textAlign: 'center',
-    opacity: 0.9,
-  },
-});
