@@ -33,12 +33,14 @@ public class WebSecurityConfig {
       "/api/**",
       "/v3/api-docs/**",
       "/swagger-ui/**",
-      "/docs/**"
+      "/docs/**",
+      "/actuator/**"
   };
 
   // Prod 화이트리스트
   private static final String[] AUTH_WHITE_LIST_PROD = {
-      "/api/**"
+      "/api/**",
+      "/actuator/**"
   };
 
   @Bean
