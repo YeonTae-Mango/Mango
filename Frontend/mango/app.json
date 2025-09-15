@@ -9,14 +9,19 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.blueconecell.mango",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.blueconecell.mango"
     },
     "web": {
       "bundler": "metro",
@@ -32,6 +37,11 @@
           "backgroundColor": "#ffffff"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "6e109fda-6bf6-4d50-a62c-3c12e49b7f95"
+      }
+    }
   }
 }
