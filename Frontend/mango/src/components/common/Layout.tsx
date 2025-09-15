@@ -1,33 +1,18 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from './Header';
 
 interface LayoutProps {
   children: React.ReactNode;
-  headerTitle?: string;
   onLogout?: () => void;
 }
 
-export default function Layout({
-  children,
-  headerTitle,
-  onLogout,
-}: LayoutProps) {
+export default function Layout({ children, onLogout }: LayoutProps) {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-white">
       <Header onLogout={onLogout} />
-      <View style={styles.content}>{children}</View>
+      <View className="flex-1">{children}</View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  content: {
-    flex: 1,
-  },
-});
