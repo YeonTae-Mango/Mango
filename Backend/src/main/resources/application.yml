@@ -1,0 +1,164 @@
+spring:
+  application:
+    name: Backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE}
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+---
+
+# ## local 프로필 설정
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:${MYSQL_HOST_PORT}/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        show_sql: true
+  #    defer-datasource-initialization: true
+
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@localhost:${MONGO_HOST_PORT}/${MONGO_DB_NAME}?authSource=admin
+    redis:
+      host: localhost
+      port: ${REDIS_HOST_PORT}
+logging:
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+
+upload:
+  dir: C:/ssafy/dev/uploads
+  base-url: http://localhost:8080/api/v1/photos/
+
+custom:
+  service:
+    url: "http://localhost:8080/"
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /api/v1/swagger-ui
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:mysql://${MYSQL_CONTAINER_NAME}:${MYSQL_HOST_PORT}/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+        show_sql: false
+
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@mongodb:${MONGO_HOST_PORT}/${MONGO_DB_NAME}?authSource=admin
+    redis:
+      host: redis
+      port: ${REDIS_HOST_PORT}
+      password: ${REDIS_PASSWORD}
+logging:
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: INFO
+    org.hibernate.sql: warn
+
+upload:
+  dir: /app/uploads/dev/
+  base-url: https://j13a408.p.ssafy.io/api/v1/photos/
+custom:
+  service:
+    url: ${BACKEND_URL}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/v1/api-docs
+  swagger-ui:
+    enabled: true
+    path: /api/v1/swagger-ui
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://${MYSQL_CONTAINER_NAME}:${MYSQL_HOST_PORT}/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+        show_sql: false
+
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@mongodb:${MONGO_HOST_PORT}/${MONGO_DB_NAME}?authSource=admin
+    redis:
+      host: redis
+      port: ${REDIS_HOST_PORT}
+      password: ${REDIS_PASSWORD}
+logging:
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: INFO
+    org.hibernate.sql: warn
+
+upload:
+  dir: /app/uploads/prod/
+  base-url: https://j13a408.p.ssafy.io/api/v1/photos/
+custom:
+  service:
+    url: ${BACKEND_URL}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/v1/api-docs
+  swagger-ui:
+    enabled: true
+    path: /api/v1/swagger-ui
