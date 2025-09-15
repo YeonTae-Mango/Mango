@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CategoryCard from '../../components/category/CategoryCard';
 import Layout from '../../components/common/Layout';
 
@@ -10,6 +11,8 @@ interface CategoryScreenProps {
 
 export default function CategoryScreen({ onLogout }: CategoryScreenProps) {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+
   const handleCardPress = (categoryTitle: string) => {
     navigation.navigate('CategorySwipe', { categoryTitle });
   };
@@ -77,7 +80,10 @@ export default function CategoryScreen({ onLogout }: CategoryScreenProps) {
     <Layout onLogout={onLogout}>
       <ScrollView
         className="flex-1 bg-white"
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: Math.max(insets.bottom, 80) + 60, // 탭바 높이를 더 크게 계산
+        }}
       >
         <View className="p-4">
           <View className="flex-row flex-wrap justify-between">
