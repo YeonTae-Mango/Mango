@@ -1,5 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import React, { useState } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import './global.css';
 
 import AuthStack from './src/navigation/AuthStack';
@@ -13,8 +14,10 @@ export default function App() {
   };
 
   return (
-    <NavigationContainer>
-      {isLoggedIn ? <MainStack onLogout={handleLogout} /> : <AuthStack />}
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        {isLoggedIn ? <MainStack onLogout={handleLogout} /> : <AuthStack />}
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }

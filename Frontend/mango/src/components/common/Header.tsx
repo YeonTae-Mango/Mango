@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Alert, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface HeaderProps {
   onLogout?: () => void; // 로그아웃 콜백 함수
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export default function Header({ onLogout }: HeaderProps) {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
   // 알림 아이콘 클릭 핸들러
   const handleNotificationPress = () => {
@@ -41,7 +43,10 @@ export default function Header({ onLogout }: HeaderProps) {
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View className="flex-row items-center justify-between p-4 bg-white">
+      <View
+        className="flex-row items-center justify-between p-4 bg-white"
+        style={{ paddingTop: Math.max(insets.top, 16) + 16 }} // 상단 안전 영역 + 추가 패딩
+      >
         <Text className="text-heading-bold text-mango-red">Mango</Text>
         <View className="flex-row items-center">
           <TouchableOpacity onPress={handleNotificationPress}>

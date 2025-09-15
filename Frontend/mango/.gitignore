@@ -18,6 +18,12 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# Android (Expo generates these)
+android/
+ios/
+*.apk
+*.aab
+
 # Metro
 .metro-health-check*
 

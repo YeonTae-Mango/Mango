@@ -89,7 +89,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     buttonPressed === 'right';
 
   return (
-    <View className="flex-row justify-center items-end">
+    <View className="flex-row justify-center items-end mb-8 space-x-20">
       {/* X 버튼 (거절) - 왼쪽 스와이프 시 반응 */}
       <Animated.View style={xButtonAnimatedStyle}>
         <TouchableOpacity
