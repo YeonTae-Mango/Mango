@@ -19,7 +19,7 @@ pipeline {
                 echo '1. Git 리포지토리에서 코드를 체크아웃합니다.'
                 cleanWs()
                 git url: 'https://lab.ssafy.com/s13-fintech-finance-sub1/S13P21A408.git',
-                    branch: 'BE',
+                    branch: 'BE-PROD',
                     credentialsId: 'gitlab_token_username_with_password'
             }
         }
