@@ -1,18 +1,83 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Text, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Alert, FlatList, KeyboardAvoidingView, View } from 'react-native';
+import ChatDateSeparator from '../../components/chat/ChatDateSeparator';
 import ChatHeader from '../../components/chat/ChatHeader';
 import ChatInputPanel from '../../components/chat/ChatInputPanel';
 import ChatMenuModal from '../../components/chat/ChatMenuModal';
+import ChatMessage from '../../components/chat/ChatMessage';
+
+// 메시지 타입 정의
+interface Message {
+  id: string;
+  text: string;
+  isMyMessage: boolean;
+  time: string;
+  isRead: boolean;
+  date?: string; // 날짜 구분자용
+  isDateSeparator?: boolean;
+}
 
 export default function ChatRoomScreen() {
+  // 네비게이션 및 라우트 훅
   const navigation = useNavigation<any>();
   const route = useRoute();
   const { userName } = route.params as {
     userName: string;
     chatRoomId: string;
   };
+  // 메뉴 모달 상태
   const [showMenuModal, setShowMenuModal] = useState(false);
+  // FlatList 참조
+  const flatListRef = useRef<FlatList>(null);
+
+  // 메시지 목록 상태
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 'date-1',
+      text: '',
+      isMyMessage: false,
+      time: '',
+      isRead: false,
+      date: '2024년 1월 15일 월요일',
+      isDateSeparator: true,
+    },
+    {
+      id: '1',
+      text: '안녕하세요! 반갑습니다 😊',
+      isMyMessage: false,
+      time: '오후 2:30',
+      isRead: true,
+    },
+    {
+      id: '2',
+      text: '네, 안녕하세요! 저도 반갑습니다',
+      isMyMessage: true,
+      time: '오후 2:31',
+      isRead: true,
+    },
+    {
+      id: '3',
+      text: '오늘 날씨가 정말 좋네요~',
+      isMyMessage: false,
+      time: '오후 2:32',
+      isRead: true,
+    },
+    {
+      id: '4',
+      text: '맞아요! 산책하기 딱 좋은 날씨예요',
+      isMyMessage: true,
+      time: '오후 2:33',
+      isRead: true,
+    },
+    {
+      id: '5',
+      text: '혹시 시간 되실 때 커피 한 잔 어떠세요?',
+      isMyMessage: false,
+      time: '오후 2:35',
+      isRead: false,
+    },
+  ]);
 
   const handleProfilePress = () => {
     navigation.navigate('ProfileDetail', { userName });
@@ -51,9 +116,42 @@ export default function ChatRoomScreen() {
   };
 
   const handleSendMessage = (message: string) => {
-    // 메시지 전송 로직
-    console.log('메시지 전송:', message);
-    // 실제로는 API 호출이나 상태 업데이트 등이 필요
+    // 새 메시지 추가
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text: message,
+      isMyMessage: true,
+      time: new Date().toLocaleTimeString('ko-KR', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      }),
+      isRead: false,
+    };
+
+    setMessages(prevMessages => {
+      const newMessages = [...prevMessages, newMessage];
+      // 새 메시지 추가 후 자동 스크롤
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+      return newMessages;
+    });
+  };
+
+  const renderMessage = ({ item }: { item: Message }) => {
+    if (item.isDateSeparator) {
+      return <ChatDateSeparator date={item.date!} />;
+    }
+
+    return (
+      <ChatMessage
+        message={item.text}
+        isMyMessage={item.isMyMessage}
+        time={item.time}
+        isRead={item.isRead}
+      />
+    );
   };
 
   const handleReportUser = () => {
@@ -85,11 +183,15 @@ export default function ChatRoomScreen() {
         behavior="padding"
         keyboardVerticalOffset={0}
       >
-        <View className="flex-1 justify-center items-center px-5">
-          <Text className="text-2xl font-bold mb-2.5">
-            {userName}과의 채팅방
-          </Text>
-        </View>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={item => item.id}
+          // contentContainerStyle={{ paddingVertical: 16 }}
+          showsVerticalScrollIndicator={false}
+          inverted={false}
+        />
 
         <ChatInputPanel
           onSendMessage={handleSendMessage}
