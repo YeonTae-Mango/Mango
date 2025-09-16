@@ -141,7 +141,7 @@ spring:
       password: ${REDIS_PASSWORD}
 logging:
   level:
-    org.springframework.data.mongodb.core.MongoTemplate: INFO
+    org.springframework.data.mongodb.core.MongoTemplate: WARN
     org.hibernate.sql: warn
 
 upload:
