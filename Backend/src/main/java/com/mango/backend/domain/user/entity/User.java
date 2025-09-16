@@ -87,22 +87,27 @@ public class User {
       this.introduction = request.introduction();
     }
 
-    // 위도/경도 값이 모두 있을 때만 location 갱신
     if (request.latitude() != null && request.longitude() != null) {
       GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-      this.location = geometryFactory.createPoint(
-          new Coordinate(request.longitude(), request.latitude()));
+
+      // 기존 위치가 없으면 바로 갱신
+      if (this.location == null) {
+        this.location = geometryFactory.createPoint(
+            new Coordinate(request.longitude(), request.latitude()));
+      } else {
+        double distanceKm = distanceInKm(
+            this.location.getY(), this.location.getX(),
+            request.latitude(), request.longitude());
+
+        // 1km 이상일 때만 갱신
+        if (distanceKm >= 1.0) {
+          this.location = geometryFactory.createPoint(
+              new Coordinate(request.longitude(), request.latitude()));
+        }
+      }
     }
 
     this.lastSyncAt = LocalDateTime.now();
-  }
-
-  public void updateLocation(Double latitude, Double longitude) {
-    if (latitude != null && longitude != null) {
-      GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-      this.location = geometryFactory.createPoint(new Coordinate(longitude, latitude));
-      this.lastSyncAt = LocalDateTime.now();
-    }
   }
 
   public int getAge() {
@@ -111,5 +116,16 @@ public class User {
 
   public void updateProfilePhoto(UserPhoto userPhoto) {
     this.profilePhoto = userPhoto;
+  }
+
+  public double distanceInKm(double lat1, double lon1, double lat2, double lon2) {
+    final int R = 6371; // 지구 반경 (km)
+    double dLat = Math.toRadians(lat2 - lat1);
+    double dLon = Math.toRadians(lon2 - lon1);
+    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   }
 }

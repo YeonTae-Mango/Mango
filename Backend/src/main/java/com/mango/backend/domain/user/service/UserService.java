@@ -156,19 +156,16 @@ public class UserService {
       return -1; // 위치 정보 없음
     }
 
-    double lat1 = me.getLocation().getX();
-    double lon1 = me.getLocation().getY();
-    double lat2 = other.getLocation().getX();
-    double lon2 = other.getLocation().getY();
+    double lat1 = me.getLocation().getY(); // latitude
+    double lon1 = me.getLocation().getX(); // longitude
+    double lat2 = other.getLocation().getY();
+    double lon2 = other.getLocation().getX();
+
     log.info("Calculating distance between ({}, {}) and ({}, {})", lat1, lon1, lat2, lon2);
-    // 하버사인 공식 (단위: km)
-    double R = 6371; // 지구 반경 (km)
-    double dLat = Math.toRadians(lat2 - lat1);
-    double dLon = Math.toRadians(lon2 - lon1);
-    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return (int) Math.round(R * c);
+
+    // User 엔티티에 있는 distanceInKm 메서드 사용
+    double distanceKm = me.distanceInKm(lat1, lon1, lat2, lon2);
+
+    return (int) Math.round(distanceKm);
   }
 }
