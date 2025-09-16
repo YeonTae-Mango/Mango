@@ -1,13 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import ChatHeader from '../../components/chat/ChatHeader';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import CustomHeader from '../../components/common/CustomHeader';
+import Layout from '../../components/common/Layout';
+import ProfileCard from '../../components/profile/ProfileCard';
 
 export default function ProfileDetailScreen() {
   const navigation = useNavigation<any>();
@@ -17,95 +14,77 @@ export default function ProfileDetailScreen() {
     fromScreen?: string;
   };
 
+  // 망고 화면에서 온 경우 소비패턴 궁합 보기 버튼 숨김
+  const showMatchingButton = fromScreen !== 'Mango';
+
+  // 소비패턴 궁합 보기 버튼 핸들러
   const handleMatchingPattern = () => {
     navigation.navigate('MatchingPattern', { userName });
   };
 
-  const showMatchingButton = fromScreen !== 'Mango';
+  // 더미 프로필 데이터 (실제로는 API에서 가져올 데이터)
+  const profileData = {
+    name: userName,
+    age: 28,
+    distance: '21km',
+    category: '핫플헌터',
+    tags: ['카페인중독', '빵순이', '단발병'],
+    introduction: '아 씨탈하고 싶다',
+    images: [
+      'https://postfiles.pstatic.net/MjAyNDA4MDVfMTcx/MDAxNzIyODMzNDI0MzY5.wuG29NRvdZ6kQc0I6xhLTi-AeKIehY4AMD_rvRo6bBog.Aw-JsI21ibU34Wj-YJj-wXoirkPwbTBIT_KyNyzc4hgg.JPEG/IMG_2048.JPG?type=w966',
+    ],
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ChatHeader
-        title={`${userName}님의 프로필`}
-        showUserInfo={false}
-        showMenu={false}
+    <Layout showHeader={false}>
+      <CustomHeader
+        title={`${profileData.name}님의 프로필`}
         onBackPress={() => navigation.goBack()}
       />
 
-      <View style={styles.container}>
-        <View style={styles.profileSection}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{userName[0]}</Text>
-          </View>
-          <Text style={styles.userName}>{userName}</Text>
-          <Text style={styles.userStatus}>핫플헌터</Text>
-        </View>
+      <ScrollView className="flex-1 bg-white">
+        {/* 프로필 카드 */}
+        <ProfileCard
+          name={profileData.name}
+          age={profileData.age}
+          distance={profileData.distance}
+          category={profileData.category}
+          tags={profileData.tags}
+          introduction={profileData.introduction}
+          images={profileData.images}
+        />
 
-        {showMatchingButton && (
-          <TouchableOpacity
-            style={styles.matchingButton}
-            onPress={handleMatchingPattern}
-          >
-            <Text style={styles.matchingButtonText}>소비패턴 궁합 보기</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </SafeAreaView>
+        {/* 하단 정보 및 버튼 영역 */}
+        <View className="px-4 pb-6">
+          {/* 정보 박스 */}
+          <View className="bg-blue-100 rounded-2xl p-4 mb-4">
+            <View className="flex-row items-center mb-2">
+              <Ionicons name="location" size={20} color="#3B82F6" />
+              <Text className="text-blue-700 font-semibold ml-2">
+                {userName}님은 핫플헌터 유형입니다
+              </Text>
+            </View>
+            <Text className="text-blue-600 text-sm leading-5">
+              이것은 핫플헌터에 대한 설명으로 사용자에게 핫플헌터 무엇인지 알려
+              정확하고 명확하게 설명해줄 수 있는 텍스트로 구성되어있음. 나타나
+              현재 시각이 2시간 관찰로 것이 들었기때문에 거을 좋기는 것으 의
+              압문을 마무리하여고 합니다.
+            </Text>
+          </View>
+
+          {/* 소비패턴 궁합 보기 버튼 */}
+          {true && (
+            <TouchableOpacity
+              className="bg-mango-red rounded-2xl py-6 items-center"
+              onPress={handleMatchingPattern}
+            >
+              <Text className="text-white text-subheading-regular">
+                나와의 소비 궁합 보러 가기
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </ScrollView>
+    </Layout>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  profileSection: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#FF6B35',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  avatarText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  userStatus: {
-    fontSize: 16,
-    color: '#666',
-    backgroundColor: '#F0F0F0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-  matchingButton: {
-    backgroundColor: '#9C27B0',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 25,
-    marginTop: 30,
-    alignSelf: 'center',
-  },
-  matchingButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
