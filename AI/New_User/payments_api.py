@@ -1,5 +1,6 @@
 # file: payments_api.py
 import random
+from unicodedata import category
 import uuid
 import json
 from dataclasses import dataclass
@@ -261,12 +262,12 @@ class OneUserPaymentGenerator:
                 ts = self.even_datetime(month_start, month_end, cat)
                 amt = self.amount(cat, sub, persona["budget"])
                 records.append(PaymentRecord(
-                    유저아이디=user_id,
-                    결제시점=ts.strftime("%Y-%m-%d %H:%M:%S"),
-                    대분류=cat,
-                    소분류=sub,
-                    결제번호=self.unique_id(),
-                    결제금액=amt
+                    user_id=user_id,
+                    payment_time=ts.strftime("%Y-%m-%d %H:%M:%S"),
+                    category=cat,
+                    subcategory=sub,
+                    payment_id=self.unique_id(),
+                    payment_amount=amt
                 ))
         return records
 
