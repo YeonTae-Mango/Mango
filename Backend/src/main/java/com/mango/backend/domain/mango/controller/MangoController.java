@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -31,8 +32,9 @@ public class MangoController extends BaseController {
   @GetMapping("/mango/{userId}/followers")
   public ResponseEntity<BaseResponse> getFollowers(
       @PathVariable Long userId,
+      @RequestParam Integer page,
       @RequestHeader("Authorization") String token) {
-    return toResponseEntity(mangoService.getUsersWhoLikedMe(userId), "나를 망고한 사람 조회에 성공했습니다.");
+    return toResponseEntity(mangoService.getUsersWhoLikedMe(userId, page), "나를 망고한 사람 조회에 성공했습니다.");
   }
 
   @Operation(summary = "내가 망고한 사람 조회", description = "특정 유저가 좋아요(망고)한 사람들의 리스트를 조회합니다.")
@@ -44,7 +46,8 @@ public class MangoController extends BaseController {
   @GetMapping("/mango/{userId}/following")
   public ResponseEntity<BaseResponse> getFollowing(
       @PathVariable Long userId,
+      @RequestParam Integer page,
       @RequestHeader("Authorization") String token) {
-    return toResponseEntity(mangoService.getUsersILiked(userId), "내가 망고한 사람 조회에 성공했습니다.");
+    return toResponseEntity(mangoService.getUsersILiked(userId, page), "내가 망고한 사람 조회에 성공했습니다.");
   }
 }
