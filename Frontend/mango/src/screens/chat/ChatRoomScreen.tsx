@@ -1,8 +1,8 @@
-import Layout from '@/src/components/common/Layout';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Text, View } from 'react-native';
 import ChatHeader from '../../components/chat/ChatHeader';
+import ChatInputPanel from '../../components/chat/ChatInputPanel';
 import ChatMenuModal from '../../components/chat/ChatMenuModal';
 
 export default function ChatRoomScreen() {
@@ -50,6 +50,12 @@ export default function ChatRoomScreen() {
     ]);
   };
 
+  const handleSendMessage = (message: string) => {
+    // 메시지 전송 로직
+    console.log('메시지 전송:', message);
+    // 실제로는 API 호출이나 상태 업데이트 등이 필요
+  };
+
   const handleReportUser = () => {
     Alert.alert('사용자 신고', '이 사용자를 신고하시겠습니까?', [
       { text: '취소', style: 'cancel' },
@@ -64,7 +70,7 @@ export default function ChatRoomScreen() {
   };
 
   return (
-    <Layout showHeader={false}>
+    <View className="flex-1 bg-white">
       <ChatHeader
         userName={userName}
         showUserInfo={true}
@@ -74,9 +80,22 @@ export default function ChatRoomScreen() {
         onMenuPress={handleMenuPress}
       />
 
-      <View className="flex-1 justify-center items-center bg-white px-5">
-        <Text className="text-2xl font-bold mb-2.5">{userName}과의 채팅방</Text>
-      </View>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior="padding"
+        keyboardVerticalOffset={0}
+      >
+        <View className="flex-1 justify-center items-center px-5">
+          <Text className="text-2xl font-bold mb-2.5">
+            {userName}과의 채팅방
+          </Text>
+        </View>
+
+        <ChatInputPanel
+          onSendMessage={handleSendMessage}
+          placeholder="메시지 보내기..."
+        />
+      </KeyboardAvoidingView>
 
       <ChatMenuModal
         visible={showMenuModal}
@@ -85,6 +104,6 @@ export default function ChatRoomScreen() {
         onBlockUser={handleBlockUser}
         onReportUser={handleReportUser}
       />
-    </Layout>
+    </View>
   );
 }
