@@ -52,13 +52,13 @@ module.exports = {
         // Sub Heading
         'subheading-regular': {
           fontFamily: ['Pretendard', 'sans-serif'],
-          fontSize: '20px',
+          fontSize: '18px',
           lineHeight: '24px',
           fontWeight: '400',
         },
         'subheading-bold': {
           fontFamily: ['Pretendard', 'sans-serif'],
-          fontSize: '20px',
+          fontSize: '18px',
           lineHeight: '24px',
           fontWeight: '700',
         },
