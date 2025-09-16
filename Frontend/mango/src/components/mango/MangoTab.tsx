@@ -36,7 +36,7 @@ export default function MangoTab({ activeTab, onTabChange }: MangoTabProps) {
         >
           <Text
             className={`text-center text-subheading-bold ${
-              activeTab === 'sent' ? 'text-mango-red' : 'text-gray-600'
+              activeTab === 'sent' ? 'text-mango-red' : 'text-text-primary'
             }`}
           >
             내가 망고한 사람
