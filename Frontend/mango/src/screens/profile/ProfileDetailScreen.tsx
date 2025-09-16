@@ -55,27 +55,27 @@ export default function ProfileDetailScreen() {
         />
 
         {/* 하단 정보 및 버튼 영역 */}
-        <View className="px-4 pb-6">
+        <View className="p-4">
           {/* 정보 박스 */}
-          <View className="bg-blue-100 rounded-2xl p-4 mb-4">
+          <View className="bg-gray rounded-2xl p-4 mb-4">
             <View className="flex-row items-center mb-2">
-              <Ionicons name="location" size={20} color="#3B82F6" />
-              <Text className="text-blue-700 font-semibold ml-2">
+              <Ionicons name="location-outline" size={24} color="#000000" />
+              <Text className="text-body-large-semibold text-dark ml-2">
                 {userName}님은 핫플헌터 유형입니다
               </Text>
             </View>
-            <Text className="text-blue-600 text-sm leading-5">
+            <Text className="text-medium-regular text-text-primary leading-5 px-2">
               이것은 핫플헌터에 대한 설명으로 사용자에게 핫플헌터 무엇인지 알려
-              정확하고 명확하게 설명해줄 수 있는 텍스트로 구성되어있음. 나타나
-              현재 시각이 2시간 관찰로 것이 들었기때문에 거을 좋기는 것으 의
-              압문을 마무리하여고 합니다.
+              정확하고 명확하게 설명해줄 수 있는 텍스트로 구성되어있음. 이것은
+              핫플헌터에 대한 설명으로 사용자에게 핫플헌터 무엇인지 알려
+              정확하고 명확하게 설명해줄 수 있는 텍스트로 구성되어있음.
             </Text>
           </View>
 
           {/* 소비패턴 궁합 보기 버튼 */}
-          {true && (
+          {showMatchingButton && (
             <TouchableOpacity
-              className="bg-mango-red rounded-2xl py-6 items-center"
+              className="bg-mango-red rounded-2xl py-4 items-center"
               onPress={handleMatchingPattern}
             >
               <Text className="text-white text-subheading-regular">
