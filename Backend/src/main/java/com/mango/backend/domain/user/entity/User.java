@@ -1,20 +1,29 @@
 package com.mango.backend.domain.user.entity;
 
+import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
+import com.mango.backend.domain.userphoto.entity.UserPhoto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 
 @Entity
 @Getter
@@ -41,9 +50,6 @@ public class User {
   @Column(name = "birth_date", nullable = false)
   private LocalDate birthDate;
 
-  @Column(name = "age")
-  private Byte age;
-
   @Column(name = "gender", nullable = false, length = 10)
   private String gender;
 
@@ -62,4 +68,48 @@ public class User {
 
   @Column(name = "location", columnDefinition = "POINT SRID 4326")
   private Point location;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_photo_id")
+  private UserPhoto profilePhoto;
+
+  public void updateProfile(UserUpdateRequest request) {
+    if (request.nickname() != null) {
+      this.nickname = request.nickname();
+    }
+    if (request.sigungu() != null) {
+      this.sigungu = request.sigungu();
+    }
+    if (request.distance() != null) {
+      this.distance = request.distance();
+    }
+    if (request.introduction() != null) {
+      this.introduction = request.introduction();
+    }
+
+    // 위도/경도 값이 모두 있을 때만 location 갱신
+    if (request.latitude() != null && request.longitude() != null) {
+      GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+      this.location = geometryFactory.createPoint(
+          new Coordinate(request.longitude(), request.latitude()));
+    }
+
+    this.lastSyncAt = LocalDateTime.now();
+  }
+
+  public void updateLocation(Double latitude, Double longitude) {
+    if (latitude != null && longitude != null) {
+      GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+      this.location = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+      this.lastSyncAt = LocalDateTime.now();
+    }
+  }
+
+  public int getAge() {
+    return Period.between(this.birthDate, LocalDate.now()).getYears();
+  }
+
+  public void updateProfilePhoto(UserPhoto userPhoto) {
+    this.profilePhoto = userPhoto;
+  }
 }

@@ -26,7 +26,18 @@ public enum ErrorCode {
       HttpStatus.BAD_REQUEST),
   USER_EMAIL_ALREADY_EXISTS("USER_007", "이미 사용중인 이메일입니다.", HttpStatus.CONFLICT),
   USER_NICKNAME_ALREADY_EXISTS("USER_008", "이미 사용중인 닉네임입니다.", HttpStatus.CONFLICT),
+  USER_NOT_FOUND("USER_009", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  USER_NICKNAME_LENGTH("USER010", "닉네임은 1자 이상 10자 이하여야 합니다.", HttpStatus.BAD_REQUEST),
+  USER_INVALID_LOCATION("USER011", "위치 정보를 다시 확인해주세요", HttpStatus.BAD_REQUEST),
+  USER_INVALID_DISTANCE("USER012", "거리제한을 다시 확인해주세요", HttpStatus.BAD_REQUEST),
+  USER_INVALID_INTRODUCTION("USER013", "한줄소개를 다시 확인해주세요", HttpStatus.BAD_REQUEST),
 
+  /* ============================
+     FILE ERROR(파일 업로드 관련)
+     ============================ */
+  FILE_UPLOAD_FAILED("FILE000", "파일 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  FILE_TOO_MANY("FILE001", "업로드 가능한 파일 개수를 초과했습니다.", HttpStatus.BAD_REQUEST),
+  FILE_NOT_FOUND("FILE002", "파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   /* ============================
      SERVER ERROR (서버 내부 오류)
      ============================ */
