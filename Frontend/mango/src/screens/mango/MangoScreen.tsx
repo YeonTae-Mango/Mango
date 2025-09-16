@@ -1,108 +1,112 @@
 import { useNavigation } from '@react-navigation/native';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, View } from 'react-native';
 import Layout from '../../components/common/Layout';
+import MangoCard from '../../components/mango/MangoCard';
+import MangoTab from '../../components/mango/MangoTab';
 
 interface MangoScreenProps {
   onLogout: () => void;
 }
 
 export default function MangoScreen({ onLogout }: MangoScreenProps) {
+  // 망고 카드 클릭 핸들러
   const navigation = useNavigation<any>();
-
   const handleProfilePress = (userName: string) => {
     navigation.navigate('ProfileDetail', { userName, fromScreen: 'Mango' });
   };
 
+  // 탭 상태에 따른 API 호출
+  const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received');
+  const handleTabChange = (tab: 'received' | 'sent') => {
+    setActiveTab(tab);
+    // TODO: 탭에 따라 다른 API 호출
+  };
+
+  // 더미 데이터
   const users = [
-    { id: 1, name: '지수' },
-    { id: 2, name: '민호' },
-    { id: 3, name: '수진' },
-    { id: 4, name: '준혁' },
+    {
+      id: 1,
+      name: '지민',
+      age: 25,
+      distance: '21km',
+      category: '핫플헌터형',
+      image:
+        'https://postfiles.pstatic.net/MjAyNDAzMjdfODcg/MDAxNzExNTIwODY2MjYw.SeHD4lU8aCDdG9ELcZ0n-eNmFlT3Bt6Xe_FV1NSYaKEg.O8hZGdYhlsQEVQtz_PS7LvFuoddi4AnivEhP6hWLqCog.JPEG/KakaoTalk_20240327_121140260_03.jpg?type=w966',
+    },
+    {
+      id: 2,
+      name: '닝닝',
+      age: 28,
+      distance: '15km',
+      category: '쇼핑형',
+      image:
+        'https://postfiles.pstatic.net/MjAyNDEyMDhfMjQz/MDAxNzMzNTkxMjY4MDI1.iGA7cEtdSReYVauJlU_uBD-TmFS8iEiM5LcSWtfH4Fog.T-_SCnvXfo37az1FrwrdCAbIFme1YA-Q6HBU6kdFxGMg.JPEG/IMG_0767.JPG?type=w466',
+    },
+    {
+      id: 3,
+      name: '민정',
+      age: 24,
+      distance: '10km',
+      category: '예술가형',
+      image:
+        'https://postfiles.pstatic.net/MjAyNDA4MDVfMTcx/MDAxNzIyODMzNDI0MzY5.wuG29NRvdZ6kQc0I6xhLTi-AeKIehY4AMD_rvRo6bBog.Aw-JsI21ibU34Wj-YJj-wXoirkPwbTBIT_KyNyzc4hgg.JPEG/IMG_2048.JPG?type=w966',
+    },
+    {
+      id: 4,
+      name: '애리',
+      age: 26,
+      distance: '5km',
+      category: '스포츠형',
+      image:
+        'https://postfiles.pstatic.net/MjAyNTA4MjVfMTgg/MDAxNzU2MTA2NzU5OTYx.H9w2GTIAyitlhAFm5Qd8g2XEg9ZA--CkJ-q5odZpp7Ag.jHEOdWPtDycOvz-fVwqdUxy5FiLAhgbs1m0QwiwT72Ug.JPEG/IMG%EF%BC%BF5292.JPG?type=w966',
+    },
+    {
+      id: 5,
+      name: '안유진',
+      age: 25,
+      distance: '31km',
+      category: '여행가형',
+      image:
+        'https://postfiles.pstatic.net/MjAyNDA3MTBfMTgw/MDAxNzIwNTg1MDE4Mjgx.x7iPNaqn7G9hYBmU3Yaq_wK-MMAfUy4yETnPskXjqcsg.8tubCWkFAOMa8HGl7hMTMyZDhq3oL2o510YLrJCQG6Ag.JPEG/Snapinsta.app_424432795_330500819976302_4624198180240654599_n_1080.jpg?type=w966',
+    },
+    {
+      id: 6,
+      name: '원영공주',
+      age: 28,
+      distance: '15km',
+      category: '자기계발형',
+      image:
+        'https://postfiles.pstatic.net/MjAyNTAyMjZfMjMz/MDAxNzQwNTMyNDI0NTI2.RBOn_o29RT6gl0JUqMOnQQtZH-Ej_ZY_EMk6relxCjMg.KOvtEqAG9J6PzH1VtLqbRNKydvUODa9Ll-2bLdoiL2cg.PNG/image.png?type=w773',
+    },
   ];
 
   return (
-    <Layout headerTitle="mango" onLogout={onLogout}>
-      <View style={styles.container}>
-        <View style={styles.cardContainer}>
-          {users.map(user => (
-            <TouchableOpacity
-              key={user.id}
-              style={styles.userCard}
-              onPress={() => handleProfilePress(user.name)}
-            >
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{user.name[0]}</Text>
-              </View>
-              <Text style={styles.userName}>{user.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+    <Layout onLogout={onLogout}>
+      <View className="flex-1 bg-white">
+        {/* 탭 컴포넌트 */}
+        <MangoTab activeTab={activeTab} onTabChange={handleTabChange} />
+
+        {/* 스크롤 가능한 카드 목록 */}
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: 20,
+          }}
+        >
+          <View className="flex-row flex-wrap justify-between">
+            {users.map(user => (
+              <MangoCard
+                key={user.id}
+                user={user}
+                onPress={handleProfilePress}
+              />
+            ))}
+          </View>
+        </ScrollView>
       </View>
     </Layout>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingTop: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FF6D60',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  cardContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  userCard: {
-    width: '47%',
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 15,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
-  },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#FF6D60',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  avatarText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-});
