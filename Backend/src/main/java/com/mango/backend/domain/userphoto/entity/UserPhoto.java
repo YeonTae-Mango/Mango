@@ -33,10 +33,13 @@ public class UserPhoto {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Column(name = "photo_name", length = 100)
-  private String photoName;
+  @Column(name = "photo_url")
+  private String photoUrl;
 
   @Column(name = "photo_order")
   private Byte photoOrder;
 
+  public void updatePhotoUrl(String photoUrl) {
+    this.photoUrl = photoUrl;
+  }
 }
