@@ -1,0 +1,119 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    font-family:
+      'Pretendard Variable',
+      'Pretendard',
+      -apple-system,
+      BlinkMacSystemFont,
+      system-ui,
+      Roboto,
+      'Helvetica Neue',
+      'Segoe UI',
+      'Apple SD Gothic Neo',
+      'Noto Sans KR',
+      'Malgun Gothic',
+      'Apple Color Emoji',
+      'Segoe UI Emoji',
+      'Segoe UI Symbol',
+      sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Heading Styles */
+  .text-heading-regular {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 24px;
+    line-height: 28px;
+    font-weight: 400;
+  }
+
+  .text-heading-bold {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 24px;
+    line-height: 28px;
+    font-weight: 700;
+  }
+
+  /* Sub Heading Styles */
+  .text-subheading-regular {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+
+  .text-subheading-bold {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: 700;
+  }
+
+  /* Body Large Styles */
+  .text-body-large-regular {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+
+  .text-body-large-semibold {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+
+  /* Body Medium Styles */
+  .text-body-medium-regular {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+
+  .text-body-medium-semibold {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+  }
+
+  /* Body Small Styles */
+  .text-body-small-regular {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 400;
+  }
+
+  .text-body-small-semibold {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+  }
+
+  /* Caption Styles */
+  .text-caption-regular {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 10px;
+    line-height: 12px;
+    font-weight: 400;
+  }
+
+  .text-caption-semibold {
+    font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+    font-size: 10px;
+    line-height: 12px;
+    font-weight: 600;
+  }
+}
