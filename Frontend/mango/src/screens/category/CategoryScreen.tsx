@@ -80,6 +80,7 @@ export default function CategoryScreen({ onLogout }: CategoryScreenProps) {
     <Layout onLogout={onLogout}>
       <ScrollView
         className="flex-1 bg-white"
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flexGrow: 1,
           paddingBottom: Math.max(insets.bottom, 80) + 60, // 탭바 높이를 더 크게 계산
