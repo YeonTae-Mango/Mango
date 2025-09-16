@@ -1,10 +1,41 @@
-from fastapi import FastAPI, Query, HTTPException
+# AI/app.py
+from fastapi import FastAPI, Query, HTTPException, Body
 from fastapi.responses import JSONResponse
 from datetime import datetime
 from typing import Optional
-from New_User.payments_api import generate_payments_json
+from .New_User.payments_api import generate_payments_json
+from .Analyze.infer_cosine import infer_profile
 
 app = FastAPI(title="Payments API")
+
+def birthdate_from_age(age: int, ref: Optional[datetime] = None) -> str:
+    if ref is None:
+        ref = datetime.now()
+    year = ref.year - age
+    month = ref.month
+    day = min(ref.day, 28)
+    return f"{year:04d}-{month:02d}-{day:02d}"
+
+def to_preferred_shape(analysis: dict, focus_big: str = "음식") -> dict:
+    # 대표유형 확률 정규화(보기 좋게 소수 2자리)
+    types = [{"name": t["name"], "prob": float(t.get("prob", 0.0))}
+             for t in analysis.get("대표유형", [])]
+    s = sum(t["prob"] for t in types) or 1.0
+    for t in types:
+        t["prob"] = round(t["prob"]/s, 2)
+
+    # 키워드: 전부 반영(소수 2자리)
+    kws_raw = analysis.get("키워드", [])
+    keywords = [{"name": k["name"], "score": round(float(k.get("score", 0.0)), 2)}
+                for k in kws_raw]
+
+    # 특정 대분류 섹션(기본 '음식') 전부
+    by_big = analysis.get("대분류상세", {})
+    focus_list = by_big.get(focus_big, [])
+    focus = [{"name": x["name"], "score": round(float(x.get("score", 0.0)), 2)}
+             for x in focus_list]
+
+    return {"대표유형": types, "키워드": keywords, focus_big: focus}
 
 @app.get("/payments", summary="Payments")
 def payments(
@@ -14,17 +45,31 @@ def payments(
     age: Optional[int] = Query(None, description="나이 (birthdate 없을 때 사용)"),
     months: int = Query(6, description="생성 개월 수 (기본 6)")
 ):
-    # 간단한 유효성
     if not birthdate and age is None:
         raise HTTPException(status_code=400, detail="birthdate 또는 age 중 하나는 필수입니다.")
-
     now = datetime.now()
+    if birthdate is None and age is not None:
+        birthdate = birthdate_from_age(age, now)
+
     result = generate_payments_json(
         birthdate=birthdate,
         gender=gender,
         months=months,
         end_date=now,
-        age=age,
-        user_id=user_id,           # ← 추가
+        user_id=user_id,
     )
-    return JSONResponse(content=result)
+
+    cleaned = dict(result)
+    cleaned["payments"] = [
+        {k: v for k, v in p.items() if k != "user_id"}
+        for p in result.get("payments", [])
+    ]
+    return JSONResponse(content=cleaned)
+
+@app.post("/profile/cosine", summary="코사인 기반 대표유형/키워드 (파라미터 없음)")
+def profile_cosine(payload: dict = Body(...)):
+    # artifacts/small_embeddings.npy 사용
+    analysis = infer_profile(payload, emb_path="artifacts/small_embeddings.npy",
+                             tau=0.7, include_missing_zero=True)
+    # 키워드 전체 + '음식' 섹션 전체
+    return to_preferred_shape(analysis, focus_big="음식")

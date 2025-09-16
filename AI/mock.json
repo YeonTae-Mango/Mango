@@ -1,0 +1,1455 @@
+{
+    "user": {
+      "birthdate": null,
+      "gender": "여자",
+      "age": 23,
+      "user_id": 2
+    },
+    "period": {
+      "months": 6,
+      "end_date": "2025-09-16"
+    },
+    "count": 180,
+    "payments": [
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-01 20:51:38",
+        "category": "공연/전시",
+        "subcategory": "공연관람",
+        "payment_id": "965E992B",
+        "payment_amount": 96100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-02 13:41:39",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "138DC05D",
+        "payment_amount": 22000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-03 09:12:57",
+        "category": "소매/유통",
+        "subcategory": "화장품소매",
+        "payment_id": "A5C85E26",
+        "payment_amount": 42400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-05 19:16:32",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "3B2C51A1",
+        "payment_amount": 57300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-06 12:08:21",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "960D8637",
+        "payment_amount": 146300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-06 12:23:11",
+        "category": "소매/유통",
+        "subcategory": "화장품소매",
+        "payment_id": "9B9F1EB1",
+        "payment_amount": 36000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-06 20:31:01",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "444919C7",
+        "payment_amount": 49700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-07 16:48:32",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "F3356B4F",
+        "payment_amount": 55500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-08 12:48:55",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "1938B0EB",
+        "payment_amount": 4600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-08 12:58:10",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "78CD4643",
+        "payment_amount": 41400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-09 21:21:48",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "26E913E6",
+        "payment_amount": 7700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-10 09:32:21",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "819C3375",
+        "payment_amount": 68900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-12 11:29:11",
+        "category": "음식",
+        "subcategory": "일식",
+        "payment_id": "0CB5943E",
+        "payment_amount": 17200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-13 09:52:08",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "F3A4295A",
+        "payment_amount": 8200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-13 11:53:31",
+        "category": "학문/교육",
+        "subcategory": "외국어학원",
+        "payment_id": "BB7E1A28",
+        "payment_amount": 339600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-14 18:07:42",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "309C8B1D",
+        "payment_amount": 7500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-15 00:41:25",
+        "category": "생활서비스",
+        "subcategory": "여행",
+        "payment_id": "E37543CE",
+        "payment_amount": 318700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-17 12:57:59",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "E69F1E8F",
+        "payment_amount": 4400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-20 06:38:06",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "9B6EF112",
+        "payment_amount": 52000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-20 12:58:21",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "109CF455",
+        "payment_amount": 30700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-20 13:36:43",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "B1A8872E",
+        "payment_amount": 43400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-24 14:21:35",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "255643EC",
+        "payment_amount": 12200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-25 10:10:49",
+        "category": "미디어/통신",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "C7BB9034",
+        "payment_amount": 37400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-25 10:22:35",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "B14FD92C",
+        "payment_amount": 131000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-25 15:10:26",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "37602567",
+        "payment_amount": 92700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-27 00:07:19",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "DA1BE0E8",
+        "payment_amount": 88800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-28 06:23:40",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "9921FC96",
+        "payment_amount": 18300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-28 19:52:05",
+        "category": "음식",
+        "subcategory": "일식",
+        "payment_id": "4F82B37C",
+        "payment_amount": 25800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-28 21:06:39",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "1D3C9BA7",
+        "payment_amount": 128600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-04-29 08:01:36",
+        "category": "생활서비스",
+        "subcategory": "여행",
+        "payment_id": "E6608882",
+        "payment_amount": 50000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-02 13:10:19",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "9A12D3DE",
+        "payment_amount": 60900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-03 08:56:27",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "87053724",
+        "payment_amount": 137400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-03 12:02:33",
+        "category": "공연/전시",
+        "subcategory": "공연관람",
+        "payment_id": "4DD54D79",
+        "payment_amount": 120600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-04 10:39:18",
+        "category": "미디어/통신",
+        "subcategory": "기타결제",
+        "payment_id": "00B19B33",
+        "payment_amount": 13900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-04 11:39:09",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "4A0920E2",
+        "payment_amount": 67800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-06 01:15:18",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "6F85D683",
+        "payment_amount": 120000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-06 07:23:03",
+        "category": "학문/교육",
+        "subcategory": "서적/도서",
+        "payment_id": "E067A90D",
+        "payment_amount": 24900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-07 07:45:17",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "E0AF7E2D",
+        "payment_amount": 7500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-08 11:44:07",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "F97A3160",
+        "payment_amount": 30800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-08 20:39:42",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "0CB1815A",
+        "payment_amount": 30900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-10 07:43:26",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "55BC9132",
+        "payment_amount": 15000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-10 17:41:08",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "57C428B5",
+        "payment_amount": 21300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-12 22:02:52",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "5EDBC445",
+        "payment_amount": 17100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-13 04:05:12",
+        "category": "소매/유통",
+        "subcategory": "화장품소매",
+        "payment_id": "256A2DD9",
+        "payment_amount": 40600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-13 12:33:25",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "6729B8C1",
+        "payment_amount": 29300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-14 12:13:52",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "3798589A",
+        "payment_amount": 13400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-16 18:04:49",
+        "category": "음식",
+        "subcategory": "일식",
+        "payment_id": "5558BDC0",
+        "payment_amount": 15700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-17 14:12:08",
+        "category": "생활서비스",
+        "subcategory": "여행",
+        "payment_id": "8F21233A",
+        "payment_amount": 50000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-17 16:39:05",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "07FA2F57",
+        "payment_amount": 146300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-18 06:11:51",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "C59EDDE6",
+        "payment_amount": 46300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-18 08:55:01",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "726BC22B",
+        "payment_amount": 108100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-18 21:40:05",
+        "category": "소매/유통",
+        "subcategory": "의복/의류",
+        "payment_id": "70EB5588",
+        "payment_amount": 90400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-19 18:25:58",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "0091A93C",
+        "payment_amount": 17800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-21 05:06:02",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "6F46F99B",
+        "payment_amount": 28200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-21 22:11:37",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "7E3BDAED",
+        "payment_amount": 44000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-22 19:16:15",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "B38B1944",
+        "payment_amount": 60000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-23 07:04:24",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "D2D0BF40",
+        "payment_amount": 8600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-23 08:41:32",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "8D0435DF",
+        "payment_amount": 8700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-28 07:15:36",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "37C4F217",
+        "payment_amount": 28800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-05-30 12:52:11",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "936E030A",
+        "payment_amount": 44600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-01 11:08:17",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "36F9028B",
+        "payment_amount": 131400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-03 14:27:56",
+        "category": "학문/교육",
+        "subcategory": "서적/도서",
+        "payment_id": "FD295E83",
+        "payment_amount": 13800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-03 16:14:40",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "50B5F400",
+        "payment_amount": 21300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-04 16:54:48",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "7A8300C9",
+        "payment_amount": 7100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-04 18:33:30",
+        "category": "생활서비스",
+        "subcategory": "교통서비스",
+        "payment_id": "380C0AAD",
+        "payment_amount": 2700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-04 20:14:26",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "E0826B22",
+        "payment_amount": 8000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-04 22:10:32",
+        "category": "음식",
+        "subcategory": "일식",
+        "payment_id": "620EAEB2",
+        "payment_amount": 18200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-05 07:08:07",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "D4F3EA2E",
+        "payment_amount": 6000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-06 22:20:12",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "A2F65D97",
+        "payment_amount": 8900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-06 23:00:03",
+        "category": "공연/전시",
+        "subcategory": "공연관람",
+        "payment_id": "A750E650",
+        "payment_amount": 65700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-09 00:59:58",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "1AF979F2",
+        "payment_amount": 26500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-09 10:16:59",
+        "category": "생활서비스",
+        "subcategory": "교통서비스",
+        "payment_id": "4CD117A1",
+        "payment_amount": 12800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-12 12:45:17",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "99089348",
+        "payment_amount": 83600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-14 11:36:45",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "DA2240B9",
+        "payment_amount": 7700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-14 20:41:51",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "6910AF0D",
+        "payment_amount": 31300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-16 08:14:45",
+        "category": "소매/유통",
+        "subcategory": "화장품소매",
+        "payment_id": "E129C4D7",
+        "payment_amount": 28600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-17 11:58:56",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "6F805F96",
+        "payment_amount": 45100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-19 17:41:29",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "54D3129A",
+        "payment_amount": 77600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-20 13:04:24",
+        "category": "음식",
+        "subcategory": "일식",
+        "payment_id": "47137A22",
+        "payment_amount": 14100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-21 08:01:10",
+        "category": "소매/유통",
+        "subcategory": "화장품소매",
+        "payment_id": "F33F2EC7",
+        "payment_amount": 52800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-21 17:24:17",
+        "category": "소매/유통",
+        "subcategory": "화장품소매",
+        "payment_id": "2B3DB5E7",
+        "payment_amount": 19100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-23 11:59:35",
+        "category": "소매/유통",
+        "subcategory": "의복/의류",
+        "payment_id": "40D177AC",
+        "payment_amount": 77200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-24 06:53:39",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "D0A5B59C",
+        "payment_amount": 128900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-27 10:56:02",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "2D8EA0C1",
+        "payment_amount": 9600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-27 13:06:09",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "E100DCA4",
+        "payment_amount": 6700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-27 20:25:08",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "BF28F2C8",
+        "payment_amount": 108900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-28 12:43:57",
+        "category": "생활서비스",
+        "subcategory": "여행",
+        "payment_id": "CA4D494D",
+        "payment_amount": 204600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-28 13:22:37",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "924022CC",
+        "payment_amount": 42100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-29 11:36:26",
+        "category": "미디어/통신",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "AEBB0C5F",
+        "payment_amount": 26300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-06-29 16:04:32",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "CFC2552F",
+        "payment_amount": 121300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-01 03:59:51",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "88E69E52",
+        "payment_amount": 50900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-01 19:36:04",
+        "category": "미디어/통신",
+        "subcategory": "기타결제",
+        "payment_id": "ABCCC663",
+        "payment_amount": 23300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-02 14:12:28",
+        "category": "생활서비스",
+        "subcategory": "교통서비스",
+        "payment_id": "E8383F98",
+        "payment_amount": 8000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-03 18:54:39",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "32848C70",
+        "payment_amount": 139200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-03 18:56:33",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "EEF6B16A",
+        "payment_amount": 13600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-05 16:54:18",
+        "category": "소매/유통",
+        "subcategory": "의복/의류",
+        "payment_id": "A078C783",
+        "payment_amount": 142000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-06 12:34:57",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "639FEA78",
+        "payment_amount": 96400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-07 19:53:30",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "4526B0DF",
+        "payment_amount": 43200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-08 00:35:43",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "7881EE6F",
+        "payment_amount": 35200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-09 14:01:46",
+        "category": "공연/전시",
+        "subcategory": "전시장",
+        "payment_id": "3D81428F",
+        "payment_amount": 16100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-10 07:47:38",
+        "category": "음식",
+        "subcategory": "일식",
+        "payment_id": "7DEC398F",
+        "payment_amount": 30600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-12 10:37:18",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "9493257C",
+        "payment_amount": 133200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-14 00:05:20",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "B94F4D76",
+        "payment_amount": 8400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-14 14:18:07",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "4287DCEF",
+        "payment_amount": 10600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-14 19:52:56",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "BDE30A31",
+        "payment_amount": 16900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-15 10:09:18",
+        "category": "학문/교육",
+        "subcategory": "외국어학원",
+        "payment_id": "31FC9129",
+        "payment_amount": 369400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-15 14:49:40",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "1FC75FCC",
+        "payment_amount": 7400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-17 18:42:32",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "A305A1EC",
+        "payment_amount": 4700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-19 16:16:01",
+        "category": "소매/유통",
+        "subcategory": "의복/의류",
+        "payment_id": "744CE9C3",
+        "payment_amount": 60200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-20 06:21:50",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "E86C602C",
+        "payment_amount": 38600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-22 10:30:51",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "C943D605",
+        "payment_amount": 86600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-22 17:02:06",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "EB1D30FD",
+        "payment_amount": 26800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-23 07:11:25",
+        "category": "소매/유통",
+        "subcategory": "화장품소매",
+        "payment_id": "39063F8B",
+        "payment_amount": 64000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-26 08:21:54",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "A29CEC39",
+        "payment_amount": 38900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-26 10:49:13",
+        "category": "음식",
+        "subcategory": "일식",
+        "payment_id": "DC624176",
+        "payment_amount": 18100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-26 11:15:31",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "B2AE1F1A",
+        "payment_amount": 19000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-27 11:42:56",
+        "category": "생활서비스",
+        "subcategory": "여행",
+        "payment_id": "F3F5EA02",
+        "payment_amount": 196100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-28 22:49:44",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "2D69487C",
+        "payment_amount": 34400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-29 09:53:01",
+        "category": "소매/유통",
+        "subcategory": "화장품소매",
+        "payment_id": "5A07ACE6",
+        "payment_amount": 24900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-07-30 12:31:51",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "C12FB4DB",
+        "payment_amount": 16300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-01 20:06:03",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "C92013BF",
+        "payment_amount": 6800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-03 09:09:13",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "D8ACFFC3",
+        "payment_amount": 57600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-04 13:05:47",
+        "category": "학문/교육",
+        "subcategory": "서적/도서",
+        "payment_id": "AA9AE216",
+        "payment_amount": 16100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-05 11:20:17",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "923D5F9C",
+        "payment_amount": 16200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-05 14:44:49",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "A27BE998",
+        "payment_amount": 41600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-05 22:50:42",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "CD53CE47",
+        "payment_amount": 81900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-06 23:08:06",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "055CC09A",
+        "payment_amount": 17500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-08 20:22:26",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "1E6ACEFD",
+        "payment_amount": 26100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-09 18:12:48",
+        "category": "미디어/통신",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "17214ABF",
+        "payment_amount": 9000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-10 11:51:46",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "B59A3439",
+        "payment_amount": 87500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-11 12:18:05",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "6ED7C9EE",
+        "payment_amount": 27300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-12 07:57:56",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "746B76E4",
+        "payment_amount": 31900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-14 08:31:00",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "0E0B5C69",
+        "payment_amount": 7200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-15 10:00:50",
+        "category": "음식",
+        "subcategory": "일식",
+        "payment_id": "5C7914B5",
+        "payment_amount": 27200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-16 19:31:41",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "F3509DE9",
+        "payment_amount": 63600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-17 10:58:57",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "DEE3F483",
+        "payment_amount": 35100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-17 13:36:11",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "5DF2CD67",
+        "payment_amount": 31400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-20 12:17:25",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "DC72608F",
+        "payment_amount": 24600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-21 03:04:45",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "C7FB0AC9",
+        "payment_amount": 116700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-22 17:55:32",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "F8E0C0D6",
+        "payment_amount": 38000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-22 20:37:37",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "E4D1ED02",
+        "payment_amount": 106000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-24 13:25:55",
+        "category": "여가/오락",
+        "subcategory": "취미/오락",
+        "payment_id": "513DBA45",
+        "payment_amount": 32000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-26 08:14:35",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "1058D4AF",
+        "payment_amount": 14100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-26 09:33:18",
+        "category": "소매/유통",
+        "subcategory": "의복/의류",
+        "payment_id": "A9B09F2C",
+        "payment_amount": 123300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-27 16:23:16",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "1AC0E991",
+        "payment_amount": 7300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-28 19:23:51",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "8626C469",
+        "payment_amount": 135600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-29 00:54:17",
+        "category": "소매/유통",
+        "subcategory": "의복/의류",
+        "payment_id": "703401D9",
+        "payment_amount": 81000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-30 13:32:36",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "521CC8E6",
+        "payment_amount": 39700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-31 11:32:05",
+        "category": "공연/전시",
+        "subcategory": "경기관람",
+        "payment_id": "67CF1563",
+        "payment_amount": 47000
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-08-31 12:33:12",
+        "category": "생활서비스",
+        "subcategory": "교통서비스",
+        "payment_id": "1EAC46FC",
+        "payment_amount": 6600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-02 11:11:18",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "A68FCDB9",
+        "payment_amount": 119700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-04 05:47:59",
+        "category": "미디어/통신",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "D55C6EE3",
+        "payment_amount": 28500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-04 07:43:00",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "3FEF5108",
+        "payment_amount": 124900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-04 10:17:18",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "78DBCC68",
+        "payment_amount": 94400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-04 10:31:56",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "81658A98",
+        "payment_amount": 18500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-05 00:08:53",
+        "category": "생활서비스",
+        "subcategory": "여행",
+        "payment_id": "13C8594D",
+        "payment_amount": 184300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-05 18:41:14",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "65E8A5DD",
+        "payment_amount": 44400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-06 03:45:40",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "24191643",
+        "payment_amount": 6900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-06 12:44:43",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "C74FE374",
+        "payment_amount": 24700
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-07 05:21:31",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "9F787790",
+        "payment_amount": 15100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-07 06:07:16",
+        "category": "생활서비스",
+        "subcategory": "여행",
+        "payment_id": "AB008AAF",
+        "payment_amount": 262100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-07 17:28:01",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "743E8358",
+        "payment_amount": 5500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-08 18:47:24",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "060F804B",
+        "payment_amount": 125300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-09 07:23:48",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "DCEA8311",
+        "payment_amount": 7300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-10 06:07:26",
+        "category": "생활서비스",
+        "subcategory": "미용서비스",
+        "payment_id": "AC0F0849",
+        "payment_amount": 55300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-10 20:11:13",
+        "category": "학문/교육",
+        "subcategory": "외국어학원",
+        "payment_id": "73469CDB",
+        "payment_amount": 348400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-11 13:33:15",
+        "category": "음식",
+        "subcategory": "베이커리",
+        "payment_id": "FCCD4125",
+        "payment_amount": 11100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-11 18:14:09",
+        "category": "공연/전시",
+        "subcategory": "전시장",
+        "payment_id": "D9CAD9E8",
+        "payment_amount": 19900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-11 22:28:08",
+        "category": "음식",
+        "subcategory": "양식",
+        "payment_id": "60C10529",
+        "payment_amount": 26500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-13 08:11:53",
+        "category": "음식",
+        "subcategory": "일식",
+        "payment_id": "450639E2",
+        "payment_amount": 27600
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-13 09:16:28",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "22072300",
+        "payment_amount": 141300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-13 10:03:35",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "E7DF9563",
+        "payment_amount": 125200
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-13 17:44:14",
+        "category": "음식",
+        "subcategory": "카페/디저트",
+        "payment_id": "14F9A514",
+        "payment_amount": 7300
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-14 13:45:32",
+        "category": "소매/유통",
+        "subcategory": "의복/의류",
+        "payment_id": "9C7C6163",
+        "payment_amount": 67500
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-15 05:13:49",
+        "category": "소매/유통",
+        "subcategory": "의복/의류",
+        "payment_id": "D2B88A68",
+        "payment_amount": 80400
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-15 09:59:50",
+        "category": "여가/오락",
+        "subcategory": "일반스포츠",
+        "payment_id": "6DEEFB50",
+        "payment_amount": 136800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-15 10:58:37",
+        "category": "소매/유통",
+        "subcategory": "인터넷쇼핑",
+        "payment_id": "1B9DC0EA",
+        "payment_amount": 21900
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-16 05:24:05",
+        "category": "생활서비스",
+        "subcategory": "여행",
+        "payment_id": "F40E60F1",
+        "payment_amount": 213800
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-16 07:34:20",
+        "category": "소매/유통",
+        "subcategory": "의복/의류",
+        "payment_id": "2AC665BE",
+        "payment_amount": 116100
+      },
+      {
+        "user_id": 2,
+        "payment_time": "2025-09-16 19:56:01",
+        "category": "음식",
+        "subcategory": "한식",
+        "payment_id": "F0CBBE83",
+        "payment_amount": 16400
+      }
+    ]
+  }

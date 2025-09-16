@@ -1,0 +1,25 @@
+# venv & caches
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# data / artifacts (whitelist the one we need)
+AI/Banking/*.csv
+seq_dataset.npz
+artifacts/*
+!artifacts/small_embeddings.npy
+
+# logs
+logs/
+*.log
+
+# misc
+.env
