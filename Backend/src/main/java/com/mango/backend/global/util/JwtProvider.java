@@ -35,7 +35,7 @@ public class JwtProvider {
         .compact();
   }
 
-  public Long getUserId(String token) {
+  public Long getUserIdFromToken(String token) {
     log.info("token : {}", token);
     String parsed = token;
     if (parsed.startsWith("Bearer ")) {

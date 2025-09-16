@@ -8,7 +8,7 @@ public record UserInfoResponse(
     String email,
     String nickname,
     LocalDate birthDate,
-    Byte age,
+    Integer age,
     String gender,
     String latitude,
     String longitude,
