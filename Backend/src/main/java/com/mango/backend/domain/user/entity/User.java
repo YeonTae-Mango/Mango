@@ -66,7 +66,7 @@ public class User {
   @Column(name = "last_sync_at")
   private LocalDateTime lastSyncAt;
 
-  @Column(name = "location", columnDefinition = "POINT SRID 4326")
+  @Column(name = "location", columnDefinition = "POINT SRID 4326", nullable = false)
   private Point location;
 
   @ManyToOne(fetch = FetchType.LAZY)
