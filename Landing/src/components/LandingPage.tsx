@@ -3,10 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 
 function LandingPage() {
   const location = useLocation();
-  
-  const handleDownload = () => {
-    window.open("/downloads/app-latest.apk", "_blank");
-  };
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -113,13 +109,14 @@ function LandingPage() {
 
             {/* Download Button */}
             <div>
-              <button
-                onClick={handleDownload}
-                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-10 py-4 rounded-full text-lg font-bold transition-all transform hover:scale-105 shadow-lg flex items-center gap-3"
+              <a
+                href="/app.apk"
+                download="mango.apk"
+                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-10 py-4 rounded-full text-lg font-bold transition-all transform hover:scale-105 shadow-lg inline-flex items-center gap-3 no-underline"
               >
                 <Download size={24} />
                 mango 설치하기
-              </button>
+              </a>
             </div>
           </div>
 
