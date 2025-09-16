@@ -1,0 +1,186 @@
+pipeline {
+    agent any
+    
+    // GitLab 트리거 설정
+    triggers {
+        gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
+    }
+    
+    environment {
+        PROJECT_DIR = '.'
+        LANDING_DIR = "${PROJECT_DIR}/Landing"
+        
+        DOCKER_LANDING_IMAGE = 'blueconecell/mango-landing'
+        DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-jenkins'
+        IMAGE_TAG = 'latest'
+        
+        EC2_HOST = 'j13a408.p.ssafy.io' 
+        EC2_USER = 'ubuntu'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '=== Git 저장소에서 코드를 가져옵니다 ==='
+                cleanWs()
+                git url: 'https://lab.ssafy.com/s13-fintech-finance-sub1/S13P21A408.git', 
+                    branch: 'Landing', 
+                    credentialsId: 'gitlab_token_username_with_password'
+                    
+                // 브랜치 및 커밋 정보 확인
+                sh 'git branch -a'
+                sh 'git log --oneline -5'
+            }
+        }
+        
+        stage('Check Landing Directory') {
+            steps {
+                echo '=== Landing 디렉토리 구조 확인 ==='
+                sh 'ls -la'
+                sh 'ls -la Landing/ || echo "Landing 디렉토리가 없습니다"'
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                echo '=== npm 의존성을 설치합니다 ==='
+                dir('Landing') {
+                    sh 'node --version'
+                    sh 'npm --version'
+                    sh 'npm install'
+                }
+            }
+        }
+        
+        stage('Build Landing Page') {
+            steps {
+                echo '=== 랜딩페이지를 빌드합니다 ==='
+                dir('Landing') {
+                    sh 'npm run build'
+                    sh 'ls -la dist/'
+                    sh 'du -sh dist/'
+                }
+            }
+        }
+        
+        stage('Build & Push Docker Image') {
+            steps {
+                echo '=== Docker 이미지를 빌드하고 DockerHub에 푸시합니다 ==='
+                script {
+                    withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDENTIAL_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    }
+                    
+                    dir('Landing') {
+                        // Docker 이미지 빌드
+                        sh "docker build -t ${DOCKER_LANDING_IMAGE}:${IMAGE_TAG} ."
+                        
+                        // DockerHub에 푸시
+                        sh "docker push ${DOCKER_LANDING_IMAGE}:${IMAGE_TAG}"
+                        
+                        // 로컬 이미지 정리
+                        sh "docker rmi ${DOCKER_LANDING_IMAGE}:${IMAGE_TAG} || true"
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy on EC2') {
+            steps {
+                echo '=== EC2에 랜딩페이지를 배포합니다 ==='
+                sshagent(credentials: ['ssh-credentials']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
+                            echo "=== 랜딩페이지 Docker 컨테이너 배포 시작 ==="
+                            
+                            # 기존 컨테이너 정리
+                            echo "기존 컨테이너를 정리합니다..."
+                            docker stop mango-landing 2>/dev/null || echo "실행 중인 mango-landing 컨테이너가 없습니다"
+                            docker rm mango-landing 2>/dev/null || echo "삭제할 mango-landing 컨테이너가 없습니다"
+                            
+                            # 기존 이미지 정리
+                            docker rmi ${DOCKER_LANDING_IMAGE}:${IMAGE_TAG} 2>/dev/null || echo "기존 이미지가 없습니다"
+                            
+                            # 새 이미지 pull
+                            echo "새 이미지를 다운로드합니다..."
+                            docker pull ${DOCKER_LANDING_IMAGE}:${IMAGE_TAG}
+                            
+                            # 새 컨테이너 실행
+                            echo "새 컨테이너를 실행합니다..."
+                            docker run -d --name mango-landing -p 3000:80 \\
+                                --restart unless-stopped \\
+                                ${DOCKER_LANDING_IMAGE}:${IMAGE_TAG}
+                            
+                            # 컨테이너 상태 확인
+                            sleep 5
+                            docker ps | grep mango-landing || echo "컨테이너 실행 실패"
+                            
+                            # nginx 설정 테스트 및 재로드
+                            echo "nginx 설정을 테스트하고 재로드합니다..."
+                            sudo nginx -t && sudo systemctl reload nginx || echo "nginx 재로드 실패"
+                            
+                            echo "=== 랜딩페이지 배포 완료 ==="
+                        '
+                    """
+                }
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                echo '=== 배포된 랜딩페이지 상태를 확인합니다 ==='
+                sshagent(credentials: ['ssh-credentials']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
+                            echo "헬스체크를 수행합니다..."
+                            sleep 10
+                            
+                            # 컨테이너 상태 확인
+                            if docker ps | grep -q mango-landing; then
+                                echo "✅ mango-landing 컨테이너가 실행 중입니다"
+                            else
+                                echo "❌ mango-landing 컨테이너가 실행되지 않습니다"
+                                docker logs mango-landing || echo "로그를 가져올 수 없습니다"
+                                exit 1
+                            fi
+                            
+                            # 내부 포트 확인
+                            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+                                echo "✅ 포트 3000으로 접근 가능합니다"
+                            else
+                                echo "❌ 포트 3000 접근 실패"
+                                exit 1
+                            fi
+                            
+                            # 외부 접근 확인
+                            if curl -f http://localhost > /dev/null 2>&1; then
+                                echo "✅ nginx를 통한 외부 접근이 가능합니다"
+                            else
+                                echo "⚠️  nginx를 통한 접근에 문제가 있을 수 있습니다"
+                            fi
+                            
+                            echo "=== 헬스체크 완료 ==="
+                        '
+                    """
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo '✅ 랜딩페이지 파이프라인이 성공적으로 완료되었습니다!'
+            // GitLab에 성공 상태 전송
+            updateGitlabCommitStatus name: 'build', state: 'success'
+        }
+        failure {
+            echo '❌ 랜딩페이지 파이프라인이 실패했습니다!'
+            // GitLab에 실패 상태 전송
+            updateGitlabCommitStatus name: 'build', state: 'failed'
+        }
+        always {
+            echo '=== 파이프라인 정리 작업을 수행합니다 ==='
+            cleanWs()
+        }
+    }
+}
