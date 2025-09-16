@@ -76,13 +76,13 @@ function MyThisMonthChart() {
     interaction: { mode: "index" as const, intersect: false },
     plugins: {
       legend: {
-        display: true,
-        position: "top-right" as const,
+        display: false,
+        position: "top" as const,
         labels: { boxWidth: 18, boxHeight: 8 }
       },
       tooltip: {
         callbacks: {
-          label: (ctx: any) => (ctx.parsed.y != null ? `${ctx.dataset.label}: ${ctx.parsed.y}만원` : null)
+          label: (ctx: any) => (ctx.parsed.y != null ? `${ctx.dataset.label}: ${ctx.parsed.y}만원` : "")
         }
       }
     },
