@@ -1,6 +1,5 @@
 package com.mango.backend.domain.user.dto.request;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.Builder;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,13 +7,13 @@ import org.springframework.web.multipart.MultipartFile;
 @Builder
 public record UserUpdateRequest(
 
-    @NotNull String nickname,
-    @NotNull Double longitude,
-    @NotNull Double latitude,
-    @NotNull String sigungu,
-    @NotNull Integer distance,
-    @NotNull String introduction,
-    @NotNull Long profilePhotoId,
+    String nickname,
+    Double longitude,
+    Double latitude,
+    String sigungu,
+    Integer distance,
+    String introduction,
+    Long profilePhotoId,
     List<MultipartFile> photos,
     List<Byte> orders
 ) {
