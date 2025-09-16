@@ -26,8 +26,9 @@ public class FileUtil {
   @Value("${upload.base-url}")
   private String baseUrl;
 
-  private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(".jpg", ".jpeg", ".png",
-      ".gif");
+  private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(
+      ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg"
+  );
 
   /**
    * 디스크에 MultipartFile을 저장하고 파일명을 반환합니다.
@@ -92,7 +93,6 @@ public class FileUtil {
    *
    * @param url    파일 호출 URL
    * @param domain 파일이 저장된 하위 디렉토리(profile, thumbnail)
-   * @return 파일의 byte[]
    */
   public void deleteFile(String url, String domain) throws IOException {
     String filename = url.substring(url.lastIndexOf("/") + 1);

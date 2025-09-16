@@ -6,14 +6,20 @@ import com.mango.backend.domain.user.dto.response.UserInfoResponse;
 import com.mango.backend.domain.user.dto.response.UserUpdateResponse;
 import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.domain.user.repository.UserRepository;
+import com.mango.backend.domain.userphoto.entity.UserPhoto;
+import com.mango.backend.domain.userphoto.repository.UserPhotoRepository;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
+import com.mango.backend.global.util.FileUtil;
 import com.mango.backend.global.util.JwtProvider;
+import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -22,21 +28,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final UserPhotoRepository userPhotoRepository;
+  private final FileUtil fileUtil;
   private final RedisTemplate<String, String> redisTemplate;
   private final JwtProvider jwtProvider;
 
   @Transactional
-  public ServiceResult<Void> deleteUser(Long userId, String token) {
+  public ServiceResult<Void> deleteUser(Long requestId, String token) {
 
-    Long requestId = jwtProvider.getUserIdFromToken(token);
+    Long userId = jwtProvider.getUserIdFromToken(token);
     if (!userId.equals(requestId)) {
       return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
     }
 
-    return userRepository.findById(userId)
+    return userRepository.findById(requestId)
         .map(user -> {
           userRepository.delete(user);
-          redisTemplate.delete("JWT:" + userId);
+          redisTemplate.delete("JWT:" + requestId);
           return ServiceResult.<Void>success(null);
         })
         .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
@@ -52,8 +60,6 @@ public class UserService {
       return userRepository.findById(userId)
           .map(user -> ServiceResult.success(MyInfoResponse.fromEntity(user)))
           .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
-
-
     } else {
       log.info("타인 정보 조회 : {}", requestId);
 
@@ -71,26 +77,75 @@ public class UserService {
     }
   }
 
-  /**
-   * 사용자 정보 수정
-   */
   @Transactional
-  public ServiceResult<UserUpdateResponse> updateUser(Long userId, String token,
+  public ServiceResult<UserUpdateResponse> updateUser(Long requestId, String token,
       UserUpdateRequest request) {
-    Long requestId = jwtProvider.getUserIdFromToken(token);
 
-    if (!userId.equals(requestId)) {
+    Long userId = jwtProvider.getUserIdFromToken(token);
+
+    if (!requestId.equals(userId)) {
       return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
     }
 
+    // 닉네임 검증
     String nickname = request.nickname();
     if (nickname == null || nickname.isBlank() || nickname.length() > 10) {
       return ServiceResult.failure(ErrorCode.USER_NICKNAME_LENGTH);
     }
-    
-    return userRepository.findById(userId)
+
+    if (request.photos().size() > 4) {
+      return ServiceResult.failure(ErrorCode.FILE_TOO_MANY);
+    }
+    return userRepository.findById(requestId)
         .map(user -> {
-          user.updateProfile(request); // 엔티티에서 DTO 받아서 업데이트
+          user.updateProfile(request);
+
+          List<MultipartFile> newFiles = request.photos();
+          List<Byte> orders = request.orders();
+
+          if (orders != null && !newFiles.isEmpty()) {
+            List<UserPhoto> existingPhotos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(
+                user);
+
+            // order -> file 매핑
+            for (int i = 0; i < orders.size(); i++) {
+              byte order = orders.get(i);
+              MultipartFile file = newFiles.get(i);
+
+              String url;
+              try {
+                url = fileUtil.saveFile(file, "profile");
+              } catch (IOException e) {
+                throw new RuntimeException("사진 저장 실패", e);
+              }
+
+              UserPhoto targetPhoto;
+              if (existingPhotos.size() >= order) {
+                // 교체 케이스
+                UserPhoto existing = existingPhotos.get(order - 1);
+                try {
+                  fileUtil.deleteFile(existing.getPhotoUrl(), "profile");
+                } catch (IOException e) {
+                  log.warn("기존 파일 삭제 실패: {}", existing.getPhotoUrl(), e);
+                }
+                existing.updatePhotoUrl(url);
+                targetPhoto = existing;
+              } else {
+                UserPhoto newPhoto = UserPhoto.builder()
+                    .user(user)
+                    .photoUrl(url)
+                    .photoOrder(order)
+                    .build();
+                existingPhotos.add(newPhoto);
+                targetPhoto = newPhoto;
+              }
+              if (order == 1) {
+                user.updateProfilePhoto(targetPhoto);
+              }
+            }
+
+            userPhotoRepository.saveAll(existingPhotos);
+          }
           return ServiceResult.success(UserUpdateResponse.fromEntity(user));
         })
         .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));

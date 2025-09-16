@@ -1,15 +1,20 @@
 package com.mango.backend.domain.user.entity;
 
 import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
+import com.mango.backend.domain.userphoto.entity.UserPhoto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,9 +50,6 @@ public class User {
   @Column(name = "birth_date", nullable = false)
   private LocalDate birthDate;
 
-  @Column(name = "age")
-  private Byte age;
-
   @Column(name = "gender", nullable = false, length = 10)
   private String gender;
 
@@ -67,17 +69,21 @@ public class User {
   @Column(name = "location", columnDefinition = "POINT SRID 4326")
   private Point location;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_photo_id")
+  private UserPhoto profilePhoto;
+
   public void updateProfile(UserUpdateRequest request) {
-    if (nickname != null) {
+    if (request.nickname() != null) {
       this.nickname = request.nickname();
     }
-    if (sigungu != null) {
+    if (request.sigungu() != null) {
       this.sigungu = request.sigungu();
     }
-    if (distance != null) {
+    if (request.distance() != null) {
       this.distance = request.distance();
     }
-    if (introduction != null) {
+    if (request.introduction() != null) {
       this.introduction = request.introduction();
     }
 
@@ -99,4 +105,11 @@ public class User {
     }
   }
 
+  public int getAge() {
+    return Period.between(this.birthDate, LocalDate.now()).getYears();
+  }
+
+  public void updateProfilePhoto(UserPhoto userPhoto) {
+    this.profilePhoto = userPhoto;
+  }
 }

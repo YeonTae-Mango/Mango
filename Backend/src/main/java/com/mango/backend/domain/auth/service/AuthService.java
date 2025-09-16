@@ -13,7 +13,6 @@ import com.mango.backend.global.error.ErrorCode;
 import com.mango.backend.global.util.JwtProvider;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +46,6 @@ public class AuthService {
     }
 
     LocalDate birthDate = LocalDate.parse(request.birthDate());
-    byte age = (byte) Period.between(birthDate, LocalDate.now()).getYears();
 
     GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     Point location = geometryFactory.createPoint(
@@ -59,7 +57,6 @@ public class AuthService {
         .nickname(request.nickname())
         .password(passwordEncoder.encode(request.password()))
         .birthDate(birthDate)
-        .age(age)
         .gender(request.gender())
         .sigungu(request.sigungu())
         .distance(request.distance())
