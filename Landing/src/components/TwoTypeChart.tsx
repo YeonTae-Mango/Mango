@@ -8,6 +8,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { useWebViewMessage } from '../hooks/useWebViewMessage';
 
 // Chart.js 등록
 ChartJS.register(
@@ -23,6 +24,9 @@ function TwoTypeChart() {
   // 차트 데이터 (HTML 파일에서 가져온 데이터)
   const myData = [88, 35, 12, 15, 27, 40, 60, 80];
   const partnerData = [10, 70, 40, 30, 10, 10, 20, 30];
+  
+  // WebView 메시지 수신 훅 사용
+  const { receivedMessage } = useWebViewMessage();
   
   // 최고값 찾기
   const myMaxIndex = myData.indexOf(Math.max(...myData));
@@ -110,12 +114,17 @@ function TwoTypeChart() {
     },
   };
 
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       {/* Chart */}
       <div className="w-96 h-96">
         <Radar data={chartData} options={chartOptions} />
       </div>
+     <div className="ml-4 p-4 bg-white rounded shadow">
+       <h3 className="font-bold mb-2">React Native에서 받은 메시지:</h3>
+       <span className="text-lg text-blue-600">{receivedMessage || '메시지를 기다리는 중...'}</span>
+     </div>
     </div>
   );
 }
