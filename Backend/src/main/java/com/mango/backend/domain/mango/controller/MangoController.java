@@ -14,11 +14,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/mango")
 public class MangoController extends BaseController {
 
   private final MangoService mangoService;
@@ -29,7 +31,7 @@ public class MangoController extends BaseController {
           content = @Content(schema = @Schema(implementation = MangoUserResponse.class))),
       @ApiResponse(responseCode = "404", description = "유저 없음", content = @Content)
   })
-  @GetMapping("/mango/{userId}/followers")
+  @GetMapping("/{userId}/followers")
   public ResponseEntity<BaseResponse> getFollowers(
       @PathVariable Long userId,
       @RequestParam Integer page,
@@ -43,7 +45,7 @@ public class MangoController extends BaseController {
           content = @Content(schema = @Schema(implementation = MangoUserResponse.class))),
       @ApiResponse(responseCode = "404", description = "유저 없음", content = @Content)
   })
-  @GetMapping("/mango/{userId}/following")
+  @GetMapping("/{userId}/following")
   public ResponseEntity<BaseResponse> getFollowing(
       @PathVariable Long userId,
       @RequestParam Integer page,
