@@ -86,15 +86,21 @@ public class AuthService {
       return ServiceResult.failure(ErrorCode.AUTH_INVALID_CREDENTIALS);
     }
 
+    // JWT 발급
     String token = jwtProvider.generateToken(user.getId());
     Duration expire = Duration.ofMillis(
         jwtProvider.getExpiration(token).getTime() - System.currentTimeMillis());
     redisTemplate.opsForValue().set("JWT:" + user.getId(), token, expire);
     log.info("JWT token stored in Redis for userId {}: {}", user.getId(), token);
 
+    // 프로필 미설정 체크
+    if (user.getProfilePhoto() == null) {
+      return ServiceResult.failure(ErrorCode.AUTH_PROFILE_INCOMPLETE);
+    }
     LoginResponse response = LoginResponse.of(user.getId(), token);
     return ServiceResult.success(response);
   }
+
 
   @Transactional
   public ServiceResult<Void> logout(String token) {

@@ -58,6 +58,11 @@ public class AuthController extends BaseController {
           responseCode = "401",
           description = "이메일/비밀번호 불일치",
           content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+      ),
+      @ApiResponse(
+          responseCode = "409",
+          description = "프로필 이미지 미설정 – 프로필 설정 화면으로 이동 필요",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class))
       )
   })
   @PostMapping("/login")
