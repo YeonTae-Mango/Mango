@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ChatHeaderProps {
   userName?: string;
@@ -21,99 +22,46 @@ export default function ChatHeader({
   onProfilePress,
   onMenuPress,
 }: ChatHeaderProps) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.header}>
-      <TouchableOpacity style={styles.backButton} onPress={onBackPress}>
-        <Ionicons name="arrow-back" size={24} color="#333" />
-      </TouchableOpacity>
-
-      {showUserInfo && userName ? (
-        <TouchableOpacity style={styles.userInfo} onPress={onProfilePress}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{userName[0]}</Text>
-          </View>
-          <View style={styles.nameContainer}>
-            <Text style={styles.userName}>{userName}</Text>
-            <Text style={styles.userStatus}>핫플헌터</Text>
-          </View>
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <View
+        className="flex-row items-center p-4 border-b border-stroke bg-white"
+        style={{ paddingTop: Math.max(insets.top, 16) + 12 }}
+      >
+        <TouchableOpacity className="w-6 mr-4" onPress={onBackPress}>
+          <Ionicons name="arrow-back" size={24} color="#8899A8" />
         </TouchableOpacity>
-      ) : (
-        <View style={styles.titleContainer}>
-          <Text style={styles.headerTitle}>{title || '제목'}</Text>
-        </View>
-      )}
 
-      {showMenu ? (
-        <TouchableOpacity style={styles.menuButton} onPress={onMenuPress}>
-          <Ionicons name="ellipsis-vertical" size={24} color="#333" />
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.placeholder} />
-      )}
-    </View>
+        {showUserInfo && userName && (
+          <TouchableOpacity
+            className="flex-1 flex-row items-center"
+            onPress={onProfilePress}
+          >
+            <View className="w-12 h-12 rounded-full bg-mango-red justify-center items-center mr-2">
+              <Text className="text-white text-subheading-bold">
+                {userName[0]}
+              </Text>
+            </View>
+            <View className="flex-1">
+              <Text className="text-body-medium-semibold text-dark mb-0.5">
+                {userName}
+              </Text>
+              <Text className="text-caption-regular text-text-primary">
+                핫플헌터
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {showMenu && (
+          <TouchableOpacity className="w-6" onPress={onMenuPress}>
+            <Ionicons name="ellipsis-vertical" size={24} color="#8899A8" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    backgroundColor: '#fff',
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
-  },
-  userInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FF6B6B',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  avatarText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  nameContainer: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 2,
-  },
-  userStatus: {
-    fontSize: 12,
-    color: '#999',
-  },
-  titleContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  menuButton: {
-    padding: 8,
-  },
-  placeholder: {
-    width: 40,
-    height: 40,
-  },
-});
