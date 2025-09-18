@@ -118,6 +118,7 @@ springdoc:
     enabled: true
     path: /dev/api/v1/swagger-ui
     config-url: /dev/api/v1/api-docs/swagger-config
+    url: /dev/api/v1/api-docs
 ---
 
 spring:
