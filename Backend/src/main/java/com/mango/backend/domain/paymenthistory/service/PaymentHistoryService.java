@@ -33,11 +33,13 @@ public class PaymentHistoryService {
 
     @Value("${external.api.base-url}")
     private String externalApiBaseUrl;
-    private final RestClient restClient = RestClient.builder()
-            .baseUrl(externalApiBaseUrl)
-            .defaultHeader("Content-Type", "application/json")
-            .build();
 
+    private RestClient createRestClient() {
+        return RestClient.builder()
+                .baseUrl(externalApiBaseUrl)
+                .defaultHeader("Content-Type", "application/json")
+                .build();
+    }
     @Transactional
     public PaymentHistory savePaymentFromDto(PaymentHistoryDto dto) {
         PaymentHistory payment = PaymentHistory.from(dto);
@@ -107,6 +109,7 @@ public class PaymentHistoryService {
 
     private List<PaymentHistoryDto> callExternalPaymentApi(Long userId, String gender, String birthDate, int months) {
         try {
+            RestClient restClient = createRestClient();
             String uri = UriComponentsBuilder.fromPath("/ai-api/v1/payments")
                     .queryParam("gender", gender)
                     .queryParam("user_id", userId)
@@ -115,6 +118,7 @@ public class PaymentHistoryService {
                     .toUriString();
 
             log.info("외부 API 호출: {}", uri);
+            log.info("restClient : {}",restClient);
 
             PaymentApiResponse response = restClient.post()
                     .uri(uri)
@@ -136,6 +140,8 @@ public class PaymentHistoryService {
 
     private List<PaymentHistoryDto> callPaymentApi(UserSignUpEvent event) {
         try {
+            RestClient restClient = createRestClient();
+
             String uri = UriComponentsBuilder.fromPath("/ai-api/v1/payments")
                     .queryParam("gender", event.gender())
                     .queryParam("user_id", event.userId())
