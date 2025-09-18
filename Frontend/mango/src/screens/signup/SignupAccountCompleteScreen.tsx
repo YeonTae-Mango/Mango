@@ -3,17 +3,21 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Layout from '../../components/common/Layout';
-import CompleteButton from '../../components/signup/CompleteButton';
-import SignupDescription from '../../components/signup/SignupDescription';
 import SignupTitle from '../../components/signup/SignupTitle';
+import SignupDescription from '../../components/signup/SignupDescription';
+import CompleteButton from '../../components/signup/CompleteButton';
 
-export default function SignupCompleteScreen() {
+interface SignupAccountCompleteScreenProps {
+  onLoginSuccess: () => void;
+}
+
+export default function SignupAccountCompleteScreen({ onLoginSuccess }: SignupAccountCompleteScreenProps) {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
 
   const handleNext = () => {
-    // 프로필사진 업로드 화면으로 이동
-    navigation.navigate('SignupProfilePhoto');
+    // 계좌 연동 완료 후 메인 화면으로 이동
+    onLoginSuccess();
   };
 
   // CustomHeader와 동일한 높이 계산
@@ -21,7 +25,7 @@ export default function SignupCompleteScreen() {
 
   return (
     <Layout showHeader={false}>
-      <View
+      <View 
         className="flex-1 bg-white px-12"
         style={{ paddingTop: headerHeight }}
       >
@@ -33,15 +37,19 @@ export default function SignupCompleteScreen() {
         </View>
 
         {/* 메인 제목 */}
-        <SignupTitle title="회원가입이 완료되었습니다" />
+        <SignupTitle title="계좌 연동이 완료되었습니다" />
 
         {/* 안내 문구 */}
-        <SignupDescription
-          description={`이제 프로필 사진을 등록하고\n내 계좌를 앱과 연동하면\n매칭을 시작할게요!`}
+        <SignupDescription 
+          description="이제 새로운 사람들을 확인하세요!"
         />
 
         {/* 다음 버튼 */}
-        <CompleteButton text="다음" onPress={handleNext} isActive={true} />
+        <CompleteButton
+          text="시작하기"
+          onPress={handleNext}
+          isActive={true}
+        />
       </View>
     </Layout>
   );
