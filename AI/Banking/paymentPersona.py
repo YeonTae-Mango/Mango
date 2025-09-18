@@ -635,9 +635,9 @@ class GenderBasedPaymentGenerator:
 
     def select_persona_by_gender(self, gender: str) -> Tuple[str, Dict]:
         """성별에 따라 페르소나를 랜덤 선택 (나이 무시)"""
-        if gender == "남자":
+        if gender == "M":
             personas_pool = self.male_personas
-        elif gender == "여자":
+        elif gender == "F":
             personas_pool = self.female_personas
         else:
             # 기본값으로 남성 페르소나 사용
