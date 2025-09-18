@@ -1,15 +1,22 @@
 package com.mango.backend.domain.match.service;
 
 import com.mango.backend.domain.block.repository.BlockRepository;
+import com.mango.backend.domain.mango.repository.MangoRepository;
+import com.mango.backend.domain.match.dto.response.UserSwipeResponse;
 import com.mango.backend.domain.match.repository.MatchRepository;
-import com.mango.backend.domain.user.dto.response.UserInfoResponse;
+import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.domain.user.repository.UserRepository;
 import com.mango.backend.domain.visited.repository.VisitedRepository;
 import com.mango.backend.global.common.ServiceResult;
+import com.mango.backend.global.error.ErrorCode;
+import com.mango.backend.global.util.JwtProvider;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MatchService {
@@ -18,28 +25,58 @@ public class MatchService {
   private final UserRepository userRepository;
   private final VisitedRepository visitedRepository;
   private final BlockRepository blockRepository;
+  private final MangoRepository mangoRepository; // 내가 좋아요 누른 사람 ID 조회용
+  private final JwtProvider jwtProvider;
 
-  public ServiceResult<List<UserInfoResponse>> findNearbyUsers(String token, Double latitude,
-      Double longitude,
-      int page) {
-    //TODO : 이미 조회한 사용자는 안보이게
-    //       차단한 사용자는 보이지 않게
-    //       매칭된 사용자는 보이지 않게
-    //       가까운 사람 순
-    //       해당 리스트를 뽑아서 AI 서버로 보내기
-//    Pageable pageable = PageRequest.of(page, 10);
-//
-//    Page<User> userPage = matchRepository.findAllByDistanceFrom(latitude, longitude, pageable);
-//
-//    // 검색 결과 없을 때 -> 빈 리스트 반환
-//    if (userPage.isEmpty()) {
-//      return ServiceResult.success(List.of());
-//    }
-//
-//    List<UserInfoResponse> responses = userPage.stream()
-//        .map(UserInfoResponse::of)
-//        .toList();
+  // TODO 페이징 처리 필요
+  //      로케이션 변경 시 재계산 필요
+  //      찾고 싶은 범위 수정 시에도 재계산 필요
+  //      모두 계산을 해놓고, 유저에 대한 리스트는 레디스에 저장 -> 레디스에 없다면 다시 계산 필요
+  public ServiceResult<List<UserSwipeResponse>> getSwipeList(String token, Long requestId) {
+    Long userId = jwtProvider.getUserIdFromToken(token);
+    if (!userId.equals(requestId)) {
+      return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
+    }
+    User me = userRepository.findById(userId).orElse(null);
+    if (me == null) {
+      return ServiceResult.failure(ErrorCode.USER_NOT_FOUND);
+    }
 
-    return ServiceResult.success(null);
+    log.info("latitude = {}, longitude = {}", me.getLocation().getY(), me.getLocation().getX());
+
+    List<User> nearbyUsers = userRepository.findNearbyUsers(
+        me.getLocation().getY(), // latitude
+        me.getLocation().getX(), // longitude
+        me.getDistance()
+    );
+
+    Set<Long> visitedIds = visitedRepository.findVisitedUserIdsByUserId(userId);
+    Set<Long> blockedIds = blockRepository.findBlockedUserIdsByUserId(userId);
+    Set<Long> matchedIds = matchRepository.findMatchedUserIdsByUserId(userId);
+    Set<Long> iLikedIds = mangoRepository.findILikedUserIds(userId);
+    Set<Long> theyLikedIds = mangoRepository.findUsersWhoLikedMeIds(userId);
+    List<UserSwipeResponse> result = nearbyUsers.stream()
+        .filter(u -> !u.getId().equals(userId))          // 자기 자신 제외
+        .filter(u -> !visitedIds.contains(u.getId()))    // 방문 제외
+        .filter(u -> !blockedIds.contains(u.getId()))    // 차단 제외
+        .filter(u -> !matchedIds.contains(u.getId()))    // 매칭 제외
+        .filter(u -> !iLikedIds.contains(u.getId()))     // 이미 좋아요 누른 사람 제외
+        .map(u -> {
+          double distanceKm = me.distanceInKm(
+              me.getLocation().getY(), me.getLocation().getX(),
+              u.getLocation().getY(), u.getLocation().getX()
+          );
+
+          int distanceKmInt = (int) Math.round(distanceKm); // 정수 km로 변환
+          boolean theyLiked = theyLikedIds.contains(u.getId());
+
+          // id + 대분류(8개짜리) + 키워드(수량 제한 없음)를 AI 서버로 보내줘서
+          // 궁합 검사를 한 값을 기준으로 재정렬 한다.
+
+          return UserSwipeResponse.from(u, theyLiked, distanceKmInt);
+        })
+        .toList();
+
+    return ServiceResult.success(result);
   }
 }
