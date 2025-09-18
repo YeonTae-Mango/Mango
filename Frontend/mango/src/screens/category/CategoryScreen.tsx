@@ -77,7 +77,7 @@ export default function CategoryScreen({ onLogout }: CategoryScreenProps) {
   ];
 
   return (
-    <Layout onLogout={onLogout}>
+    <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <ScrollView
         className="flex-1 bg-white"
         showsVerticalScrollIndicator={false}

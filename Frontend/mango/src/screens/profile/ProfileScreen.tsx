@@ -33,7 +33,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
   };
 
   return (
-    <Layout onLogout={onLogout}>
+    <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <ScrollView className="flex-1 bg-white px-6 py-4">
         {/* 상단 헤더 */}
         <View className="flex-row justify-between items-center px-2">
