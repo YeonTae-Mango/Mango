@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, TouchableOpacity } from 'react-native';
+import { Image, Text, View, TouchableOpacity } from 'react-native';
 
 interface ProfileUploadFormProps {
   photos: string[];
@@ -16,8 +16,8 @@ export default function ProfileUploadForm({
     return (
       <View key={index} className="relative w-full h-full rounded-lg border-2 border-mango-red">
         {/* 회색 배경 (지도처럼) */}
-        <View className="w-full h-full bg-gray-400 items-center justify-center rounded-lg overflow-hidden">
-          <Text className="text-white text-lg font-semibold">사진</Text>
+        <View className="w-full h-full bg-gray items-center justify-center rounded-lg overflow-hidden">
+          <Text className="text-black text-lg font-semibold">사진</Text>
         </View>
         
         {/* 대표사진 배지 (첫 번째 사진만) */}
@@ -66,10 +66,6 @@ export default function ProfileUploadForm({
           </View>
         )}
         
-        {/* 빈 공간 (홀수 개일 때 레이아웃 유지) */}
-        {photos.length % 2 === 1 && photos.length < 4 && (
-          <View className="w-[48%] aspect-square mb-4" />
-        )}
       </View>
     </View>
   );

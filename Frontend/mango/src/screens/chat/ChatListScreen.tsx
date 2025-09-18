@@ -19,7 +19,7 @@ interface ChatListScreenProps {
 // 임시 데이터
 const generateMockData = (page: number): ChatRoom[] => {
   const mockUsers = [
-    '홍길동',
+    '홍사운드',
     '김철수',
     '이영희',
     '박민수',
