@@ -21,4 +21,10 @@ public class ChartController extends BaseController {
     ){
         return toResponseEntity(chartService.getMyCategoryChart(userId), "내 카테고리 차트 조회에 성공하였습니다.");
     }
+    @GetMapping("myMonthlyChart/{userId}")
+    public ResponseEntity<BaseResponse> getMyMonthlyChart(
+            @PathVariable Long userId
+    ){
+        return toResponseEntity(chartService.getMyMonthlyChart(userId), "내 이번달 결제 차트 조회에 성공하였습니다.");
+    }
 }
