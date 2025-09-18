@@ -20,14 +20,6 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Document(collection = "payment_history")
 public class PaymentHistory {
-    /**
-     * "user_id": 2,
-     * "payment_time": "2025-04-01 20:51:38",
-     * "category": "공연/전시",
-     * "subcategory": "공연관람",
-     * "payment_id": "965E992B",
-     * "payment_amount": 96100
-     */
     @Id
     private String id;
 
