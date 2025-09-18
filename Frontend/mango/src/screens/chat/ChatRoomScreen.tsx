@@ -1,6 +1,7 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useRef, useState } from 'react';
 import { Alert, FlatList, KeyboardAvoidingView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ChatDateSeparator from '../../components/chat/ChatDateSeparator';
 import ChatHeader from '../../components/chat/ChatHeader';
 import ChatInputPanel from '../../components/chat/ChatInputPanel';
@@ -206,6 +207,9 @@ export default function ChatRoomScreen() {
         onBlockUser={handleBlockUser}
         onReportUser={handleReportUser}
       />
+
+      {/* 하단 SafeArea - 갤럭시 네비게이션 바와 겹치지 않도록 */}
+      <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'white' }} />
     </View>
   );
 }
