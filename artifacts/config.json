@@ -1,0 +1,20 @@
+{
+  "config": {
+    "seed": 42,
+    "batch_size": 256,
+    "epochs": 25,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "hidden": 128,
+    "dropout": 0.2,
+    "emb_small": 64,
+    "emb_time": 4,
+    "emb_dow": 3,
+    "emb_amt": 3,
+    "vocab_time": 6,
+    "vocab_dow": 7,
+    "vocab_amt": 5
+  },
+  "vocab_small": 28,
+  "max_len": 32
+}

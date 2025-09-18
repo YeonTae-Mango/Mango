@@ -11,15 +11,22 @@ __pycache__/
 .idea/
 .vscode/
 
-# data / artifacts (whitelist the one we need)
-AI/Banking/*.csv
-seq_dataset.npz
-artifacts/*
-!artifacts/small_embeddings.npy
+# 개발용 임시 파일들만 제외
+*.tmp
+*.temp
+test_*.py
+debug_*.py
 
 # logs
 logs/
 *.log
 
-# misc
+# 민감한 정보만 제외
 .env
+*.key
+*.secret
+config_local.py
+
+# 큰 용량의 불필요한 파일들
+*.zip
+*.tar.gz
