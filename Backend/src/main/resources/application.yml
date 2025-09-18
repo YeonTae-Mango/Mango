@@ -113,13 +113,11 @@ jwt:
 springdoc:
   api-docs:
     enabled: true
-    path: /api/v1/api-docs
+    path: /dev/api/v1/api-docs
   swagger-ui:
     enabled: true
-    path: /api/v1/swagger-ui
-  servers:
-    - url: https://j13a408.p.ssafy.io/dev
-      description: Development Server
+    path: /dev/api/v1/swagger-ui
+    config-url: /dev/api/v1/api-docs/swagger-config
 ---
 
 spring:
