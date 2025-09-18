@@ -38,8 +38,8 @@ public enum ErrorCode {
      ============================ */
   FILE_UPLOAD_FAILED("FILE000", "파일 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   FILE_TOO_MANY("FILE001", "업로드 가능한 파일 개수를 초과했습니다.", HttpStatus.BAD_REQUEST),
-  FILE_TOO_LITLE("FILE003", "업로드 가능한 파일 개수가 부족합니다.", HttpStatus.BAD_REQUEST),
   FILE_NOT_FOUND("FILE002", "파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  FILE_TOO_LITTLE("FILE003", "업로드 가능한 파일 개수가 부족합니다.", HttpStatus.CONFLICT),
   /* ============================
      SERVER ERROR (서버 내부 오류)
      ============================ */

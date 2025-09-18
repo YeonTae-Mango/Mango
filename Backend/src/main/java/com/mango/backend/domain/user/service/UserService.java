@@ -98,7 +98,7 @@ public class UserService {
       return ServiceResult.failure(ErrorCode.FILE_TOO_MANY);
     }
     if (newFiles.isEmpty()) {
-      return ServiceResult.failure(ErrorCode.FILE_TOO_LITLE);
+      return ServiceResult.failure(ErrorCode.FILE_TOO_LITTLE);
     }
     return userRepository.findById(requestId)
         .map(user -> {

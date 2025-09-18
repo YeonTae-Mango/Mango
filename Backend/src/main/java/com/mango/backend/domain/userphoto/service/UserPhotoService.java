@@ -57,7 +57,7 @@ public class UserPhotoService {
       return ServiceResult.failure(ErrorCode.FILE_TOO_MANY);
     }
     if (files.isEmpty()) {
-      return ServiceResult.failure(ErrorCode.FILE_TOO_LITLE);
+      return ServiceResult.failure(ErrorCode.FILE_TOO_LITTLE);
     }
     return userRepository.findById(userId)
         .map(user -> {
