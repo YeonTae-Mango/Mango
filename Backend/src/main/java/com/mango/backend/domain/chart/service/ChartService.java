@@ -29,15 +29,15 @@ import java.util.Map;
 @Transactional
 public class ChartService {
 
-    private final JwtProvider jwtProvider;
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final MainCodeRepository mainCodeRepository;
 
     public ServiceResult<MyCategoryChartResponse> getMyCategoryChart(Long userId) {
-        Instant now = Instant.now();
-        Instant oneMonthAgo = now.minus(30, ChronoUnit.DAYS);
+        LocalDateTime now = LocalDateTime.now();
 
-        List<PaymentHistory> recentOneMonthPayments = paymentHistoryRepository.findByUserIdAndPaymentDateBetween(userId, oneMonthAgo, now);
+        LocalDateTime oneMonthAgo = now.minusMonths(1);
+
+        List<PaymentHistory> recentOneMonthPayments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(userId, oneMonthAgo, now);
         List<MainCode> mainCodes = mainCodeRepository.findByMainCodeStartingWith("PH_");
         Map<String, Long> statistics = new HashMap<>();
         long total = 0L;
@@ -47,8 +47,8 @@ public class ChartService {
         }
 
         for (PaymentHistory paymentHistory : recentOneMonthPayments) {
-            statistics.merge(paymentHistory.getPrimaryCategory(), paymentHistory.getPrice(), Long::sum);
-            total += paymentHistory.getPrice();
+            statistics.merge(paymentHistory.getCategory(), paymentHistory.getPaymentAmount(), Long::sum);
+            total += paymentHistory.getPaymentAmount();
         }
 
         List<Map.Entry<String, Long>> entries = new ArrayList<>(statistics.entrySet());
@@ -75,16 +75,13 @@ public class ChartService {
     }
 
     public ServiceResult<MyMonthlyChartResponse> getMyMonthlyChart(Long userId) {
-        Instant now = Instant.now();
-        Instant sixMonthAgo = now.atZone(ZoneId.systemDefault())
-                .minusMonths(6)
-                .toInstant();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime sixMonthAgo = now.minusMonths(6);
 
-        List<PaymentHistory> recentOneMonthPayments = paymentHistoryRepository.findByUserIdAndPaymentDateBetween(userId, sixMonthAgo, now);
+        List<PaymentHistory> recentOneMonthPayments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(userId, sixMonthAgo, now);
         Map<Integer, Long> statistics = new HashMap<>();
         for (PaymentHistory paymentHistory : recentOneMonthPayments) {
-            statistics.merge(LocalDateTime.ofInstant(paymentHistory.getPaymentDate(), ZoneId.systemDefault()).getMonthValue(),
-                    paymentHistory.getPrice(), Long::sum);
+            statistics.merge(paymentHistory.getPaymentTime().getMonthValue(), paymentHistory.getPaymentAmount(), Long::sum);
         }
 
         List<Map.Entry<Integer, Long>> entries = new ArrayList<>(statistics.entrySet());
