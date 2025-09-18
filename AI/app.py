@@ -3,8 +3,11 @@ from fastapi import FastAPI, Query, HTTPException, Body
 from fastapi.responses import JSONResponse
 from datetime import datetime
 from typing import Optional
+from typing import Dict, List
 from .New_User.payments_api import generate_payments_json
 from .Analyze.infer_cosine import infer_profile
+from .Matching.matching import match_one_to_many, load_candidates_from_json
+from pathlib import Path
 
 app = FastAPI(title="Payments API")
 
@@ -35,7 +38,7 @@ def to_preferred_shape(analysis: dict, focus_big: str = "음식") -> dict:
     focus = [{"name": x["name"], "score": round(float(x.get("score", 0.0)), 2)}
              for x in focus_list]
 
-    return {"대표유형": types, "키워드": keywords, focus_big: focus}
+    return {"main_type": types, "keyword": keywords, "foods": focus}
 
 @app.get("/payments", summary="Payments")
 def payments(
@@ -73,3 +76,50 @@ def profile_cosine(payload: dict = Body(...)):
                              tau=0.7, include_missing_zero=True)
     # 키워드 전체 + '음식' 섹션 전체
     return to_preferred_shape(analysis, focus_big="음식")
+
+@app.post(
+    "/match/users",
+    summary="(내 프로필 vs 전체 유저) 매칭 점수/순위",
+    description="""요청 본문:
+{
+  "ref": { ...한 명의 프로필(JSON)... },
+  "candidates": [ ...프로필 리스트... ]  // 생략하면 dataset_path에서 로드
+  "dataset_path": "AI/user_category_data.json" // 옵션
+}
+응답: [{"user_id":1,"matching_rank":3,"matching_percent":82}, ...]
+""",
+)
+def match_users(payload: Dict = Body(...)):
+    # 1) 기준 유저(필수)
+    ref = payload.get("ref")
+    if ref is None:
+        raise HTTPException(status_code=400, detail="'ref' (기준 유저 프로필)이 필요합니다.")
+
+    # 2) 후보 목록: 직접 주거나 파일에서 로드
+    cands: Optional[List[Dict]] = payload.get("candidates")
+    if cands is None:
+        dataset_path = payload.get("dataset_path")
+        if dataset_path is None:
+            # 기본 경로: AI/Matching/user_category_data.json 을 먼저 시도, 없으면 프로젝트 루트
+            default1 = Path(__file__).resolve().parent / "Matching" / "user_category_data.json"
+            default2 = Path.cwd() / "user_category_data.json"
+            if default1.exists():
+                dataset_path = str(default1)
+            elif default2.exists():
+                dataset_path = str(default2)
+            else:
+                raise HTTPException(status_code=400,
+                    detail="candidates 또는 dataset_path 를 제공해 주세요.")
+        try:
+            cands = load_candidates_from_json(dataset_path)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"데이터셋 로드 실패: {e}")
+
+    # 3) 계산
+    results = match_one_to_many(ref, cands)
+
+    # 4) 최종 형태(요청하신 최소 필드만)
+    slim = [{"user_id": r["user_id"],
+             "matching_rank": r["matching_rank"],
+             "matching_percent": r["matching_percent"]} for r in results]
+    return slim
