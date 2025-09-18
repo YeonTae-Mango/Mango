@@ -50,7 +50,7 @@ public class User {
   @Column(name = "birth_date", nullable = false)
   private LocalDate birthDate;
 
-  @Column(name = "gender", nullable = false, length = 10)
+  @Column(name = "gender", nullable = false, length = 10) // 남자 : M, 여자 : F
   private String gender;
 
   @Column(name = "sigungu", length = 30)
