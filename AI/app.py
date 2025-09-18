@@ -45,8 +45,8 @@ def to_preferred_shape(analysis: dict, focus_big: str = "음식") -> dict:
 
 # ---------- 2) 매핑/임베딩 (현재 사용하지 않음, infer_cosine.py에서 처리) ----------
 # 이 함수들은 infer_cosine.py에서 동적 경로로 처리되므로 여기서는 제거
-
-@app.get("/payments", summary="Payments")
+BASE_URL = "/ai-api/v1"
+@app.post(f"{BASE_URL}/payments", summary="Payments")
 def payments(
     gender: str = Query(..., description="성별 (남자/여자)"),
     user_id: int = Query(..., description="요청 유저ID (응답에는 포함되지 않음)"),
@@ -75,7 +75,7 @@ def payments(
     ]
     return JSONResponse(content=cleaned)
 
-@app.post("/profile/cosine", summary="코사인 기반 대표유형/키워드 (파라미터 없음)")
+@app.post(f"{BASE_URL}/profile/cosine", summary="코사인 기반 대표유형/키워드 (파라미터 없음)")
 def profile_cosine(payload: dict = Body(...)):
     # artifacts/small_embeddings.npy 사용 - 경로를 동적으로 계산
     current_dir = Path(__file__).resolve().parent
@@ -86,7 +86,7 @@ def profile_cosine(payload: dict = Body(...)):
     return to_preferred_shape(analysis, focus_big="음식")
 
 @app.post(
-    "/match/users",
+    f"{BASE_URL}/match/users",
     summary="(내 프로필 vs 전체 유저) 매칭 점수/순위",
     description="""요청 본문:
 {
