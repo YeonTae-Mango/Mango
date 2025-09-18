@@ -104,7 +104,7 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
   };
 
   return (
-    <Layout onLogout={onLogout}>
+    <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <FlatList
         data={chatRooms}
         renderItem={renderChatItem}
