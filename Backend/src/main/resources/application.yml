@@ -97,8 +97,7 @@ spring:
       password: ${REDIS_PASSWORD}
 logging:
   level:
-    org.springframework.data.mongodb.core.MongoTemplate: INFO
-    org.hibernate.sql: warn
+    root: WARN
 
 upload:
   dir: /app/uploads/dev/
