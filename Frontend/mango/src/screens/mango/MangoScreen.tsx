@@ -82,7 +82,7 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
   ];
 
   return (
-    <Layout onLogout={onLogout}>
+    <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <View className="flex-1 bg-white">
         {/* 탭 컴포넌트 */}
         <MangoTab activeTab={activeTab} onTabChange={handleTabChange} />

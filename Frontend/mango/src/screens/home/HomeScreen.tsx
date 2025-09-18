@@ -74,7 +74,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   };
 
   return (
-    <Layout onLogout={onLogout}>
+    <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <View className="flex-1 bg-white relative">
         {/* 프로필 카드 - 스와이프 제스처 감지 및 애니메이션을 처리 */}
         <ProfileCard
