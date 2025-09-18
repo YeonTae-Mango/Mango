@@ -341,9 +341,9 @@ def generate_payments_json(
     payments = gen.generate_for_user(profile, months=months, end_date=end_date, user_id=user_id)
 
     return {
-        "user": {"birthdate": bdt_str, "gender": gender, "age": age_val, "user_id": user_id},
-        "period": {"months": months, "end_date": end_date.strftime("%Y-%m-%d")},
-        "count": len(payments),  # 기대: 180
+        # "user": {"birthdate": bdt_str, "gender": gender, "age": age_val, "user_id": user_id},
+        # "period": {"months": months, "end_date": end_date.strftime("%Y-%m-%d")},
+        # "count": len(payments),  # 기대: 180
         "payments": [vars(p) for p in payments]
     }
 
