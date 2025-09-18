@@ -3,9 +3,9 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Layout from '../../components/common/Layout';
-import CompleteButton from '../../components/signup/CompleteButton';
-import SignupDescription from '../../components/signup/SignupDescription';
 import SignupTitle from '../../components/signup/SignupTitle';
+import SignupDescription from '../../components/signup/SignupDescription';
+import CompleteButton from '../../components/signup/CompleteButton';
 
 export default function SignupCompleteScreen() {
   const navigation = useNavigation<any>();
@@ -21,7 +21,7 @@ export default function SignupCompleteScreen() {
 
   return (
     <Layout showHeader={false}>
-      <View
+      <View 
         className="flex-1 bg-white px-12"
         style={{ paddingTop: headerHeight }}
       >
@@ -36,12 +36,16 @@ export default function SignupCompleteScreen() {
         <SignupTitle title="회원가입이 완료되었습니다" />
 
         {/* 안내 문구 */}
-        <SignupDescription
+        <SignupDescription 
           description={`이제 프로필 사진을 등록하고\n내 계좌를 앱과 연동하면\n매칭을 시작할게요!`}
         />
 
         {/* 다음 버튼 */}
-        <CompleteButton text="다음" onPress={handleNext} isActive={true} />
+        <CompleteButton
+          text="다음"
+          onPress={handleNext}
+          isActive={true}
+        />
       </View>
     </Layout>
   );

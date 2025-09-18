@@ -16,7 +16,7 @@ export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
   const handleLogin = () => {
     // 로그인 로직 구현
     console.log('로그인 시도:', { email, password });
-
+    
     // 로그인 성공 시 onLoginSuccess 호출
     if (onLoginSuccess) {
       onLoginSuccess();
