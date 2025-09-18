@@ -15,8 +15,7 @@ public record UserUpdateRequest(
     @NotNull Integer distance,
     @NotNull String introduction,
     @NotNull Long profilePhotoId,
-    List<MultipartFile> photos,
-    List<Byte> orders
+    List<MultipartFile> photos
 ) {
 
   public static UserUpdateRequest of(
@@ -27,8 +26,7 @@ public record UserUpdateRequest(
       Integer distance,
       String introduction,
       Long profilePhotoId,
-      List<MultipartFile> photos,
-      List<Byte> orders
+      List<MultipartFile> photos
 
   ) {
     return UserUpdateRequest.builder()
@@ -40,12 +38,10 @@ public record UserUpdateRequest(
         .introduction(introduction)
         .profilePhotoId(profilePhotoId)
         .photos(photos)
-        .orders(orders)
         .build();
   }
 
-  public static UserUpdateRequest of(UserUpdateRequest req, List<MultipartFile> photos,
-      List<Byte> orders) {
+  public static UserUpdateRequest of(UserUpdateRequest req, List<MultipartFile> photos) {
     return of(
         req.nickname(),
         req.longitude(),
@@ -54,8 +50,7 @@ public record UserUpdateRequest(
         req.distance(),
         req.introduction(),
         req.profilePhotoId(),
-        photos,
-        orders
+        photos
     );
   }
 }

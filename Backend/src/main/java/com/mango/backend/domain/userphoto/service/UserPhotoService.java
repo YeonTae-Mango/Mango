@@ -56,6 +56,9 @@ public class UserPhotoService {
     if (files.size() > 4) {
       return ServiceResult.failure(ErrorCode.FILE_TOO_MANY);
     }
+    if (files.isEmpty()) {
+      return ServiceResult.failure(ErrorCode.FILE_TOO_LITTLE);
+    }
     return userRepository.findById(userId)
         .map(user -> {
           List<UserPhoto> photosToSave = new ArrayList<>();

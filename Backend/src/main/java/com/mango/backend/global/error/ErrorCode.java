@@ -15,6 +15,7 @@ public enum ErrorCode {
   AUTH_FORBIDDEN("AUTH_002", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
   AUTH_INVALID_CREDENTIALS("AUTH_005", "이메일 또는 비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
   AUTH_INVALID_TOKEN("AUTH_009", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED),
+  AUTH_PROFILE_INCOMPLETE("AUTH_010", "프로필을 완성해주세요.", HttpStatus.CONFLICT),
   /* ============================
      USER (사용자 관련)
      ============================ */
@@ -38,6 +39,7 @@ public enum ErrorCode {
   FILE_UPLOAD_FAILED("FILE000", "파일 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   FILE_TOO_MANY("FILE001", "업로드 가능한 파일 개수를 초과했습니다.", HttpStatus.BAD_REQUEST),
   FILE_NOT_FOUND("FILE002", "파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  FILE_TOO_LITTLE("FILE003", "업로드 가능한 파일 개수가 부족합니다.", HttpStatus.CONFLICT),
   /* ============================
      SERVER ERROR (서버 내부 오류)
      ============================ */
