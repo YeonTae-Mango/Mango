@@ -8,7 +8,7 @@ interface GenderFormProps {
 
 export default function GenderForm({ selectedGender, onGenderSelect }: GenderFormProps) {
   return (
-    <View className="flex-1 pt-20">
+    <View className="flex-1 pt-10">
       {/* 안내 문구 */}
       <View className="mb-16">
         <Text className="text-heading-bold text-text-primary text-center">
@@ -17,7 +17,7 @@ export default function GenderForm({ selectedGender, onGenderSelect }: GenderFor
       </View>
 
       {/* 성별 선택 버튼들 */}
-      <View className="flex-row justify-center gap-8">
+      <View className="flex-row justify-center gap-4">
         {/* 남자 버튼 */}
         <TouchableOpacity
           className={`h-14 px-16 rounded-xl justify-center items-center ${

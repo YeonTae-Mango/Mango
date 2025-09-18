@@ -1,15 +1,15 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-interface SignupButtonProps {
+interface CompleteButtonProps {
   isActive: boolean;
   onPress: () => void;
   text: string;
 }
 
-export default function SignupButton({ isActive, onPress, text }: SignupButtonProps) {
+export default function CompleteButton({ isActive, onPress, text }: CompleteButtonProps) {
   return (
-    <View className="pb-40">
+    <View className="flex-1 justify-end pb-40">
       <TouchableOpacity
         className={`h-14 rounded-xl justify-center items-center ${
           isActive ? 'bg-mango-red' : 'bg-stroke'

@@ -9,7 +9,11 @@ import {
 import Layout from '../../components/common/Layout';
 import CustomHeader from '../../components/common/CustomHeader';
 
-export default function BaseScreen() {
+interface BaseScreenProps {
+  onLoginSuccess?: () => void;
+}
+
+export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,7 +21,13 @@ export default function BaseScreen() {
   const handleLogin = () => {
     // 로그인 로직 구현
     console.log('로그인 시도:', { email, password });
-    navigation.navigate('Login');
+    
+    // 로그인 성공 시 onLoginSuccess 호출
+    if (onLoginSuccess) {
+      onLoginSuccess();
+    } else {
+      navigation.navigate('Login');
+    }
   };
 
   const handleSignup = () => {
