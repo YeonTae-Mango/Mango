@@ -30,7 +30,7 @@ export default function BirthdateForm({ value, onChangeText }: BirthdateFormProp
   };
 
   return (
-    <View className="flex-1 pt-20">
+    <View className="flex-1 pt-10">
       {/* 안내 문구 */}
       <View className="mb-16">
         <Text className="text-heading-bold text-text-primary text-center">
