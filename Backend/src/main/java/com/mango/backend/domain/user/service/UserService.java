@@ -93,59 +93,52 @@ public class UserService {
       return ServiceResult.failure(ErrorCode.USER_NICKNAME_LENGTH);
     }
 
-    if (request.photos().size() > 4) {
+    List<MultipartFile> newFiles = request.photos();
+    if (newFiles.size() > 4) {
       return ServiceResult.failure(ErrorCode.FILE_TOO_MANY);
+    }
+    if (newFiles.isEmpty()) {
+      return ServiceResult.failure(ErrorCode.FILE_TOO_LITTLE);
     }
     return userRepository.findById(requestId)
         .map(user -> {
           user.updateProfile(request);
 
-          List<MultipartFile> newFiles = request.photos();
-          List<Byte> orders = request.orders();
+          // 기존 사진 삭제
+          List<UserPhoto> existingPhotos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(user);
+          for (UserPhoto photo : existingPhotos) {
+            try {
+              fileUtil.deleteFile(photo.getPhotoUrl(), "profile");
+            } catch (IOException e) {
+              log.warn("기존 파일 삭제 실패: {}", photo.getPhotoUrl(), e);
+            }
+          }
+          userPhotoRepository.deleteAll(existingPhotos);
 
-          if (orders != null && !newFiles.isEmpty()) {
-            List<UserPhoto> existingPhotos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(
-                user);
-
-            // order -> file 매핑
-            for (int i = 0; i < orders.size(); i++) {
-              byte order = orders.get(i);
-              MultipartFile file = newFiles.get(i);
-
-              String url;
-              try {
-                url = fileUtil.saveFile(file, "profile");
-              } catch (IOException e) {
-                throw new RuntimeException("사진 저장 실패", e);
-              }
-
-              UserPhoto targetPhoto;
-              if (existingPhotos.size() >= order) {
-                // 교체 케이스
-                UserPhoto existing = existingPhotos.get(order - 1);
-                try {
-                  fileUtil.deleteFile(existing.getPhotoUrl(), "profile");
-                } catch (IOException e) {
-                  log.warn("기존 파일 삭제 실패: {}", existing.getPhotoUrl(), e);
-                }
-                existing.updatePhotoUrl(url);
-                targetPhoto = existing;
-              } else {
-                UserPhoto newPhoto = UserPhoto.builder()
-                    .user(user)
-                    .photoUrl(url)
-                    .photoOrder(order)
-                    .build();
-                existingPhotos.add(newPhoto);
-                targetPhoto = newPhoto;
-              }
-              if (order == 1) {
-                user.updateProfilePhoto(targetPhoto);
-              }
+          // 새 사진 저장 및 매핑
+          for (int i = 0; i < newFiles.size(); i++) {
+            MultipartFile file = newFiles.get(i);
+            String url;
+            try {
+              url = fileUtil.saveFile(file, "profile");
+            } catch (IOException e) {
+              throw new RuntimeException("사진 저장 실패", e);
             }
 
-            userPhotoRepository.saveAll(existingPhotos);
+            UserPhoto newPhoto = UserPhoto.builder()
+                .user(user)
+                .photoUrl(url)
+                .photoOrder((byte) (i + 1))
+                .build();
+
+            userPhotoRepository.save(newPhoto);
+
+            // 1번 사진은 대표 프로필
+            if (i == 0) {
+              user.updateProfilePhoto(newPhoto);
+            }
           }
+
           return ServiceResult.success(UserUpdateResponse.fromEntity(user));
         })
         .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
