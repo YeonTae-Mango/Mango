@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "mango",
+    "name": "Mango",
     "slug": "mango",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/mango_icon.png",
+    "icon": "./assets/images/mango.png",
     "splash": {
-      "image": "./assets/images/mango_gradient.png",
-      "resizeMode": "contain",
+      "image": "./assets/images/splash.png",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "scheme": "mango",
@@ -16,13 +16,25 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.blueconecell.mango",
+      "icon": "./assets/images/mango.png",
+      "splash": {
+        "image": "./assets/images/splash.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#ffffff"
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/mango_icon.png",
+        "foregroundImage": "./assets/images/mango.png",
+        "backgroundColor": "#ffffff",
+        "monochromeImage": "./assets/images/mango.png"
+      },
+      "splash": {
+        "image": "./assets/images/splash.png",
+        "resizeMode": "cover",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -31,19 +43,8 @@
     },
     "web": {
       "bundler": "metro",
-      "favicon": "./assets/images/mango_icon.png"
+      "favicon": "./assets/images/mango.png"
     },
-    "plugins": [
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/mango_gradient.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
-    ],
     "extra": {
       "eas": {
         "projectId": "6e109fda-6bf6-4d50-a62c-3c12e49b7f95"
