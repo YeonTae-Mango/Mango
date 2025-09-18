@@ -8,6 +8,8 @@ from .New_User.payments_api import generate_payments_json
 from .Analyze.infer_cosine import infer_profile
 from .Matching.matching import match_one_to_many, load_candidates_from_json
 from pathlib import Path
+import json
+import numpy as np
 
 app = FastAPI(title="Payments API")
 
@@ -41,6 +43,9 @@ def to_preferred_shape(analysis: dict, focus_big: str = "음식") -> dict:
 
     return {"main_type": types, "keyword": keywords, "foods": focus}
 
+# ---------- 2) 매핑/임베딩 (현재 사용하지 않음, infer_cosine.py에서 처리) ----------
+# 이 함수들은 infer_cosine.py에서 동적 경로로 처리되므로 여기서는 제거
+
 @app.get("/payments", summary="Payments")
 def payments(
     gender: str = Query(..., description="성별 (남자/여자)"),
@@ -72,8 +77,10 @@ def payments(
 
 @app.post("/profile/cosine", summary="코사인 기반 대표유형/키워드 (파라미터 없음)")
 def profile_cosine(payload: dict = Body(...)):
-    # artifacts/small_embeddings.npy 사용
-    analysis = infer_profile(payload, emb_path="artifacts/small_embeddings.npy",
+    # artifacts/small_embeddings.npy 사용 - 경로를 동적으로 계산
+    current_dir = Path(__file__).resolve().parent
+    emb_path = current_dir / "artifacts" / "small_embeddings.npy"
+    analysis = infer_profile(payload, emb_path=str(emb_path),
                              tau=0.7, include_missing_zero=True)
     # 키워드 전체 + '음식' 섹션 전체
     return to_preferred_shape(analysis, focus_big="음식")

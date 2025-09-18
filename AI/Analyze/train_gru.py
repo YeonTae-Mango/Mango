@@ -12,8 +12,8 @@ from pathlib import Path
 
 # ---------------------- 설정 ----------------------
 ARTI = Path("artifacts"); ARTI.mkdir(exist_ok=True)
-NPZ_PATH = "seq_dataset.npz"                     # 1단계 산출물
-SMALL2ID = "mappings/small2id.json"              # 1단계 산출물
+NPZ_PATH = "../seq_dataset.npz"                     # 수정 필요
+SMALL2ID = "../mappings/small2id.json"              # 수정 필요
 RAW_CSV  = "C:/Users/SSAFY/Desktop/망고/S13P21A408/AI/Banking/trainset.csv"  # 유저 임베딩 추출용
 
 CONFIG = {

@@ -40,12 +40,24 @@ TYPE_KEYWORDS: Dict[str, List[str]] = {
 
 # ---------- 2) 매핑/임베딩 ----------
 def load_mappings():
-    small2id = json.load(open("mappings/small2id.json","r",encoding="utf-8"))
-    id2small = json.load(open("mappings/id2small.json","r",encoding="utf-8"))
+    # 현재 파일의 디렉토리를 기준으로 프로젝트 루트를 찾음
+    current_dir = Path(__file__).resolve().parent
+    project_root = current_dir.parent.parent  # AI/Analyze -> AI -> 프로젝트 루트
+    
+    small2id_path = project_root / "AI" / "mappings" / "small2id.json"
+    id2small_path = project_root / "AI" / "mappings" / "id2small.json"
+    
+    small2id = json.load(open(small2id_path, "r", encoding="utf-8"))
+    id2small = json.load(open(id2small_path, "r", encoding="utf-8"))
     id2small = {int(k):v for k,v in id2small.items()}
     return small2id, id2small
 
-def load_small_embeddings(path="artifacts/small_embeddings.npy"):
+def load_small_embeddings(path=None):
+    if path is None:
+        # 기본 경로를 동적으로 계산
+        current_dir = Path(__file__).resolve().parent
+        project_root = current_dir.parent.parent  # AI/Analyze -> AI -> 프로젝트 루트
+        path = project_root / "AI" / "artifacts" / "small_embeddings.npy"
     return np.load(path)  # (vocab, dim), 0은 padding
 
 # ---------- 3) 유틸 ----------
@@ -125,7 +137,7 @@ def build_keyword_pool(id2small: Dict[int,str]) -> List[str]:
 
 # ---------- 4) 메인 추론 ----------
 def infer_profile(payload: dict,
-                  emb_path="artifacts/small_embeddings.npy",
+                  emb_path="../../artifacts/small_embeddings.npy",
                   tau: float = 0.7,
                   include_missing_zero: bool = True) -> dict:
     small2id, id2small = load_mappings()
@@ -195,7 +207,7 @@ if __name__ == "__main__":
     import argparse
     p = argparse.ArgumentParser()
     p.add_argument("--input", required=True, help="mock.json")
-    p.add_argument("--emb", default="artifacts/small_embeddings.npy")
+    p.add_argument("--emb", default="../../artifacts/small_embeddings.npy")
     p.add_argument("--output", default="profile_cosine.json")
     p.add_argument("--tau", type=float, default=0.7)
     p.add_argument("--no-missing-zero", action="store_true",
