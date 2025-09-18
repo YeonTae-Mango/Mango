@@ -20,9 +20,10 @@ def birthdate_from_age(age: int, ref: Optional[datetime] = None) -> str:
     return f"{year:04d}-{month:02d}-{day:02d}"
 
 def to_preferred_shape(analysis: dict, focus_big: str = "음식") -> dict:
-    # 대표유형 확률 정규화(보기 좋게 소수 2자리)
+    # 대표유형 확률 정규화(보기 좋게 소수 2자리) - "음식" 제외
     types = [{"name": t["name"], "prob": float(t.get("prob", 0.0))}
-             for t in analysis.get("대표유형", [])]
+             for t in analysis.get("대표유형", [])
+             if t["name"] != "음식"]
     s = sum(t["prob"] for t in types) or 1.0
     for t in types:
         t["prob"] = round(t["prob"]/s, 2)
