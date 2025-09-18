@@ -74,6 +74,9 @@ spring:
   config:
     activate:
       on-profile: dev
+  sql:
+    init:
+      mode: always
   datasource:
     url: jdbc:mysql://${MYSQL_CONTAINER_NAME}:3306/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
     username: ${MYSQL_USER}
@@ -87,6 +90,7 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: false
         show_sql: false
+    defer-datasource-initialization: true
 
   data:
     mongodb:
