@@ -47,7 +47,7 @@ export default function Header({ onLogout }: HeaderProps) {
         className="flex-row items-center justify-between p-4 bg-white"
         style={{ paddingTop: Math.max(insets.top, 16) + 16 }} // 상단 안전 영역 + 추가 패딩
       >
-        <Text className="text-heading-bold text-mango-red">Mango</Text>
+        <Text className="text-heading-bold text-mango-red">mango</Text>
         <View className="flex-row items-center">
           <TouchableOpacity onPress={handleNotificationPress}>
             <Ionicons
