@@ -1,6 +1,8 @@
 package com.mango.backend.domain.match.repository;
 
+import com.mango.backend.domain.match.entity.Match;
 import com.mango.backend.domain.user.entity.User;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,4 +36,6 @@ public interface MatchRepository extends JpaRepository<User, Long> {
       @Param("longitude") Double longitude,
       Pageable pageable
   );
+
+  List<Match> findAllByUserOrUserId2(User user, User userId2);
 }
