@@ -7,17 +7,12 @@ import com.mango.backend.domain.maincode.repository.MainCodeRepository;
 import com.mango.backend.domain.paymenthistory.entity.PaymentHistory;
 import com.mango.backend.domain.paymenthistory.repository.PaymentHistoryRepository;
 import com.mango.backend.global.common.ServiceResult;
-import com.mango.backend.global.error.ErrorCode;
-import com.mango.backend.global.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,11 +28,13 @@ public class ChartService {
     private final MainCodeRepository mainCodeRepository;
 
     public ServiceResult<MyCategoryChartResponse> getMyCategoryChart(Long userId) {
+        log.info("getMyCategoryChart {}", userId);
         LocalDateTime now = LocalDateTime.now();
 
         LocalDateTime oneMonthAgo = now.minusMonths(1);
 
         List<PaymentHistory> recentOneMonthPayments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(userId, oneMonthAgo, now);
+        log.info("recentOneMonthPayments {}", recentOneMonthPayments);
         List<MainCode> mainCodes = mainCodeRepository.findByMainCodeStartingWith("PH_");
         Map<String, Long> statistics = new HashMap<>();
         long total = 0L;
@@ -45,12 +42,13 @@ public class ChartService {
         for (MainCode mainCode : mainCodes) {
             statistics.put(mainCode.getMainCodeName(), 0L);
         }
+        log.info("getMyCategoryChart {}", statistics);
 
         for (PaymentHistory paymentHistory : recentOneMonthPayments) {
             statistics.merge(paymentHistory.getCategory(), paymentHistory.getPaymentAmount(), Long::sum);
             total += paymentHistory.getPaymentAmount();
         }
-
+        log.info("recentOneMonthPayments {}", recentOneMonthPayments);
         List<Map.Entry<String, Long>> entries = new ArrayList<>(statistics.entrySet());
         entries.sort(Map.Entry.<String, Long>comparingByValue().reversed());
 
