@@ -184,8 +184,8 @@ VALUES ('FOOD001', 'LS_FOOD', '한식', '한식을(를) 나타내는 코드', tr
 -- == 유저 ==
 INSERT IGNORE INTO mango_db.users (birth_date, distance, last_sync_at, profile_photo_id, user_id, gender, nickname, sigungu, email, password, introduction, location)
 VALUES
-('2000-01-13', 10, '2025-09-15 12:10:51.547212', 3, 1, 'M', '정연', '서울시 동작구', 'kimjeongyeon113@gmail.com', '$2a$10$bPC2VFs.9jIIG5uj5zeH.eyz1ZfWKHnvtYSVvGzmf1foYRuTWSikS', '안녕하세요! 저는 개발과 음악을 좋아합니다.', ST_GeomFromText('POINT (37.593894 127.063466)', 4326)),
-('1999-06-18', 5, '2025-09-16 00:06:39.594416', 7, 2, 'F', '아이유', '서울시 강남구', 'user0002@gmail.com', '$2a$10$uJMM7VVI6VHsmb8XaC4d/O9m/O0wDxN5b1KgAygiu33gU8S3/P.He', null, ST_GeomFromText('POINT (37.593894 127.063466)', 4326)),
+('2000-01-13', 10, '2025-09-15 12:10:51.547212', null, 1, 'M', '정연', '서울시 동작구', 'kimjeongyeon113@gmail.com', '$2a$10$bPC2VFs.9jIIG5uj5zeH.eyz1ZfWKHnvtYSVvGzmf1foYRuTWSikS', '안녕하세요! 저는 개발과 음악을 좋아합니다.', ST_GeomFromText('POINT (37.593894 127.063466)', 4326)),
+('1999-06-18', 5, '2025-09-16 00:06:39.594416', null, 2, 'F', '아이유', '서울시 강남구', 'user0002@gmail.com', '$2a$10$uJMM7VVI6VHsmb8XaC4d/O9m/O0wDxN5b1KgAygiu33gU8S3/P.He', null, ST_GeomFromText('POINT (37.593894 127.063466)', 4326)),
 ('1975-11-19', 10, '2025-09-21 18:17:00.000000', null, 3, 'M', '나나', '송파구', 'user1@example.com', '$2b$12$QyeiS9KD1RR06DHsobw7DOc4mgq6Cro1LhKXbqdb5h8id4tAQYD.u', '안녕하세요, 나나 입니다.', ST_GeomFromText('POINT (37.593894 127.063466)', 4326)),
 ('1983-08-14', 1, '2025-09-21 03:09:00.000000', null, 4, 'M', '태호', '영등포구', 'user2@example.com', '$2b$12$QyeiS9KD1RR06DHsobw7DOc4mgq6Cro1LhKXbqdb5h8id4tAQYD.u', '안녕하세요, 태호 입니다.', ST_GeomFromText('POINT (37.530204 127.094098)', 4326)),
 ('1980-12-05', 20, '2025-10-02 16:32:00.000000', null, 5, 'M', '호태', '서초구', 'user3@example.com', '$2b$12$QyeiS9KD1RR06DHsobw7DOc4mgq6Cro1LhKXbqdb5h8id4tAQYD.u', '안녕하세요, 호태 입니다.', ST_GeomFromText('POINT (37.56878 127.094769)', 4326)),
