@@ -40,6 +40,11 @@ public enum ErrorCode {
   FILE_TOO_MANY("FILE001", "업로드 가능한 파일 개수를 초과했습니다.", HttpStatus.BAD_REQUEST),
   FILE_NOT_FOUND("FILE002", "파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   FILE_TOO_LITTLE("FILE003", "업로드 가능한 파일 개수가 부족합니다.", HttpStatus.CONFLICT),
+
+  /* ============================
+     EXTERNAL ERROR(외부 서버 관련 -> AI 서버, 마이데이터 서버)
+     ============================ */
+  NO_PAYMENT_DATA("EXTERNAL001", "분석할 결제 데이터가 없습니다.",HttpStatus.NO_CONTENT),
   /* ============================
      SERVER ERROR (서버 내부 오류)
      ============================ */
