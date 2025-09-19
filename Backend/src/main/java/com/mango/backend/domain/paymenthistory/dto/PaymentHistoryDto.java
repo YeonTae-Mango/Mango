@@ -2,12 +2,15 @@ package com.mango.backend.domain.paymenthistory.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mango.backend.domain.paymenthistory.entity.PaymentHistory;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter @Setter
+@Builder
 public class PaymentHistoryDto {
     @JsonProperty("user_id")
     private Long userId;
@@ -27,4 +30,15 @@ public class PaymentHistoryDto {
 
     @JsonProperty("payment_amount")
     private Long paymentAmount;
+
+    public static PaymentHistoryDto from(PaymentHistory  paymentHistory) {
+        return PaymentHistoryDto.builder()
+                .userId(paymentHistory.getUserId())
+                .paymentTime(paymentHistory.getPaymentTime())
+                .category(paymentHistory.getCategory())
+                .subcategory(paymentHistory.getSubcategory())
+                .externalPaymentId(paymentHistory.getExternalPaymentId())
+                .paymentAmount(paymentHistory.getPaymentAmount())
+                .build();
+    }
 }
