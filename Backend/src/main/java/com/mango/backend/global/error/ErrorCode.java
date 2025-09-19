@@ -32,7 +32,13 @@ public enum ErrorCode {
   USER_INVALID_LOCATION("USER011", "위치 정보를 다시 확인해주세요", HttpStatus.BAD_REQUEST),
   USER_INVALID_DISTANCE("USER012", "거리제한을 다시 확인해주세요", HttpStatus.BAD_REQUEST),
   USER_INVALID_INTRODUCTION("USER013", "한줄소개를 다시 확인해주세요", HttpStatus.BAD_REQUEST),
-  USER_ALEADY_BLOCKED("USER014", "이미 차단된 사용자입니다.", HttpStatus.BAD_REQUEST),
+  USER_ALREADY_BLOCKED("USER014", "이미 차단된 사용자입니다.", HttpStatus.BAD_REQUEST),
+  /* ============================
+     FCM (푸시 알림 관련)
+     ============================ */
+  FCM_TOKEN_NOT_FOUND("FCM_001", "FCM 토큰이 존재)하지 않습니다.", HttpStatus.NOT_FOUND),
+  FCM_SEND_FAILED("FCM_002", "푸시 알림 전송에) 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
   /* ============================
      FILE ERROR(파일 업로드 관련)
      ============================ */

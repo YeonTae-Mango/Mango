@@ -7,7 +7,7 @@ import com.mango.backend.domain.auth.dto.request.SignUpRequest;
 import com.mango.backend.domain.auth.dto.response.LoginResponse;
 import com.mango.backend.domain.auth.dto.response.SignUpResponse;
 import com.mango.backend.domain.auth.repository.AuthRepository;
-import com.mango.backend.domain.even.UserSignUpEvent;
+import com.mango.backend.domain.event.UserSignUpEvent;
 import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
@@ -37,7 +37,7 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtProvider jwtProvider;
   private final RedisTemplate<String, String> redisTemplate;
-  private final ApplicationEventPublisher  eventPublisher;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   public ServiceResult<SignUpResponse> signUp(SignUpRequest request) {

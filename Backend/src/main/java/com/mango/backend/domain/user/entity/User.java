@@ -73,6 +73,9 @@ public class User {
   @JoinColumn(name = "profile_photo_id")
   private UserPhoto profilePhoto;
 
+  @Column(name = "fcm_token")
+  private String fcmToken;
+
   public void updateProfile(UserUpdateRequest request) {
     if (request.nickname() != null) {
       this.nickname = request.nickname();
