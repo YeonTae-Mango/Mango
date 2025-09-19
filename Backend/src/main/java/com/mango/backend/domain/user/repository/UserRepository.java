@@ -2,10 +2,11 @@ package com.mango.backend.domain.user.repository;
 
 import com.mango.backend.domain.user.dto.projection.UserWithMango;
 import com.mango.backend.domain.user.entity.User;
-import io.lettuce.core.dynamic.annotation.Param;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -26,8 +27,27 @@ public interface UserRepository extends JpaRepository<User, Long> {
           LEFT JOIN Mango mTo   ON mTo.from.id = u.id AND mTo.to.id = :requestId
           WHERE u.id = :targetId
       """)
-  Optional<UserWithMango> findUserWithMangoStatus(@Param("requestId") Long requestId,
+  Optional<UserWithMango> findUserWithMangoStatus(
+      @Param("requestId") Long requestId,
       @Param("targetId") Long targetId);
 
-
+  @Query(value = """
+      SELECT u.*
+      FROM users u
+      WHERE u.location IS NOT NULL
+      AND ST_Distance_Sphere(
+            u.location,
+            ST_GeomFromText(CONCAT('POINT(', :latitude, ' ', :longitude, ')'), 4326)
+          ) <= :distance * 1000
+      ORDER BY ST_Distance_Sphere(
+            u.location,
+            ST_GeomFromText(CONCAT('POINT(', :latitude, ' ', :longitude, ')'), 4326)
+          )
+      """,
+      nativeQuery = true)
+  List<User> findNearbyUsers(
+      @Param("latitude") Double latitude,
+      @Param("longitude") Double longitude,
+      @Param("distance") Integer distance);
 }
+

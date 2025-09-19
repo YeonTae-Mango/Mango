@@ -32,7 +32,7 @@ public enum ErrorCode {
   USER_INVALID_LOCATION("USER011", "위치 정보를 다시 확인해주세요", HttpStatus.BAD_REQUEST),
   USER_INVALID_DISTANCE("USER012", "거리제한을 다시 확인해주세요", HttpStatus.BAD_REQUEST),
   USER_INVALID_INTRODUCTION("USER013", "한줄소개를 다시 확인해주세요", HttpStatus.BAD_REQUEST),
-
+  USER_ALEADY_BLOCKED("USER014", "이미 차단된 사용자입니다.", HttpStatus.BAD_REQUEST),
   /* ============================
      FILE ERROR(파일 업로드 관련)
      ============================ */
