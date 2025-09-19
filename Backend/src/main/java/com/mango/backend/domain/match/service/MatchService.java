@@ -72,8 +72,29 @@ public class MatchService {
 
           // id + 대분류(8개짜리) + 키워드(수량 제한 없음)를 AI 서버로 보내줘서
           // 궁합 검사를 한 값을 기준으로 재정렬 한다.
+          // TODO : AI 서버와 연동 필요
+          // ------------------------
+          // 🔹 목데이터 (1개, 3개, 1개만)
+          // ------------------------
+          String mockMainType = "뷰티형";
 
-          return UserSwipeResponse.from(u, theyLiked, distanceKmInt);
+          List<String> mockKeywords = List.of(
+              "일반스포츠",
+              "카페/디저트",
+              "미용서비스"
+          );
+
+          String mockFood = "한식";
+          // ------------------------
+
+          return UserSwipeResponse.from(
+              u,
+              theyLiked,
+              distanceKmInt,
+              mockMainType,
+              mockKeywords,
+              mockFood
+          );
         })
         .toList();
 
