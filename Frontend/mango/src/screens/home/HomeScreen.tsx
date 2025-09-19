@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Layout from '../../components/common/Layout';
 import ActionButtons from '../../components/home/ActionButtons';
+import NoMoreProfilesModal from '../../components/home/NoMoreProfilesModal';
 import ProfileCard, { ProfileCardRef } from '../../components/home/ProfileCard';
 
 interface HomeScreenProps {
@@ -17,6 +18,9 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     null // 방향
   );
   const [swipeIntensity, setSwipeIntensity] = useState(0); // 강도
+
+  // 모달 상태 관리
+  const [showNoMoreProfilesModal, setShowNoMoreProfilesModal] = useState(false);
 
   const profileData = {
     userId: 123,
@@ -73,9 +77,33 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     // TODO: 현재 액션(좋아요/거절)을 서버에 전송하는 로직 구현
   };
 
+  // 모달 핸들러
+  const handleShowNoMoreProfiles = () => {
+    setShowNoMoreProfilesModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowNoMoreProfilesModal(false);
+  };
+
+  const handleConfirmDistance = (distance: number) => {
+    console.log(`거리 조정: ${distance}km`);
+    // TODO: 거리 설정을 서버에 전송하고 새로운 프로필을 가져오는 로직 구현
+  };
+
   return (
     <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <View className="flex-1 bg-white relative">
+        {/* 테스트 버튼 - 모달을 열기 위한 임시 버튼 */}
+        <View className="absolute top-4 right-4 z-40">
+          <TouchableOpacity
+            className="bg-orange-500 px-4 py-2 rounded-full"
+            onPress={handleShowNoMoreProfiles}
+          >
+            <Text className="text-white font-medium">모달 테스트</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* 프로필 카드 - 스와이프 제스처 감지 및 애니메이션을 처리 */}
         <ProfileCard
           ref={profileCardRef}
@@ -93,6 +121,13 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
             swipeIntensity={swipeIntensity}
           />
         </View>
+
+        {/* NoMoreProfiles 모달 */}
+        <NoMoreProfilesModal
+          visible={showNoMoreProfilesModal}
+          onClose={handleCloseModal}
+          onConfirm={handleConfirmDistance}
+        />
       </View>
     </Layout>
   );
