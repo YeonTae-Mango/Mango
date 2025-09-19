@@ -30,6 +30,7 @@ public class WebSecurityConfig {
 
   // Local & Dev 화이트리스트
   private static final String[] AUTH_WHITE_LIST_LOCAL_DEV = {
+      "/**",
       "/api/**",
       "/dev/**",
       "/v3/api-docs/**",
@@ -40,6 +41,7 @@ public class WebSecurityConfig {
 
   // Prod 화이트리스트
   private static final String[] AUTH_WHITE_LIST_PROD = {
+      "/**",
       "/api/**",
       "/actuator/**"
   };
