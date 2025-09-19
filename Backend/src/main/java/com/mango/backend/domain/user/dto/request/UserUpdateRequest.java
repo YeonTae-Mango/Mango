@@ -1,5 +1,6 @@
 package com.mango.backend.domain.user.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.Builder;
 import org.springframework.web.multipart.MultipartFile;
@@ -7,15 +8,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Builder
 public record UserUpdateRequest(
 
-    String nickname,
-    Double longitude,
-    Double latitude,
-    String sigungu,
-    Integer distance,
-    String introduction,
-    Long profilePhotoId,
-    List<MultipartFile> photos,
-    List<Byte> orders
+    @NotNull String nickname,
+    @NotNull Double longitude,
+    @NotNull Double latitude,
+    @NotNull String sigungu,
+    @NotNull Integer distance,
+    @NotNull String introduction,
+    @NotNull Long profilePhotoId,
+    List<MultipartFile> photos
 ) {
 
   public static UserUpdateRequest of(
@@ -26,8 +26,7 @@ public record UserUpdateRequest(
       Integer distance,
       String introduction,
       Long profilePhotoId,
-      List<MultipartFile> photos,
-      List<Byte> orders
+      List<MultipartFile> photos
 
   ) {
     return UserUpdateRequest.builder()
@@ -39,12 +38,10 @@ public record UserUpdateRequest(
         .introduction(introduction)
         .profilePhotoId(profilePhotoId)
         .photos(photos)
-        .orders(orders)
         .build();
   }
 
-  public static UserUpdateRequest of(UserUpdateRequest req, List<MultipartFile> photos,
-      List<Byte> orders) {
+  public static UserUpdateRequest of(UserUpdateRequest req, List<MultipartFile> photos) {
     return of(
         req.nickname(),
         req.longitude(),
@@ -53,8 +50,7 @@ public record UserUpdateRequest(
         req.distance(),
         req.introduction(),
         req.profilePhotoId(),
-        photos,
-        orders
+        photos
     );
   }
 }

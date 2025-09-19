@@ -10,6 +10,9 @@ management:
     web:
       exposure:
         include: health,info,prometheus
+external:
+  api:
+    base-url: https://j13a408.p.ssafy.io
 ---
 
 # ## local 프로필 설정
@@ -71,19 +74,23 @@ spring:
   config:
     activate:
       on-profile: dev
+  sql:
+    init:
+      mode: always
   datasource:
     url: jdbc:mysql://${MYSQL_CONTAINER_NAME}:3306/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
-    username: ${MYSQL_USER}
-    password: ${MYSQL_PASSWORD}
+    username: root
+    password: ${MYSQL_ROOT_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: false
         show_sql: false
+    defer-datasource-initialization: true
 
   data:
     mongodb:
@@ -94,8 +101,7 @@ spring:
       password: ${REDIS_PASSWORD}
 logging:
   level:
-    org.springframework.data.mongodb.core.MongoTemplate: INFO
-    org.hibernate.sql: warn
+    root: WARN
 
 upload:
   dir: /app/uploads/dev/
@@ -111,10 +117,12 @@ jwt:
 springdoc:
   api-docs:
     enabled: true
-    path: /api/v1/api-docs
+    path: /dev/api/v1/api-docs
   swagger-ui:
     enabled: true
-    path: /api/v1/swagger-ui
+    path: /dev/api/v1/swagger-ui
+    config-url: /dev/api/v1/api-docs/swagger-config
+    url: /dev/api/v1/api-docs
 ---
 
 spring:
@@ -144,7 +152,7 @@ spring:
       password: ${REDIS_PASSWORD}
 logging:
   level:
-    org.springframework.data.mongodb.core.MongoTemplate: INFO
+    org.springframework.data.mongodb.core.MongoTemplate: WARN
     org.hibernate.sql: warn
 
 upload:
