@@ -98,7 +98,7 @@ export default function ProfileEditScreen() {
           <>
             {/* 프로필 사진 섹션 */}
             <View className="mb-8 mt-4 px-4">
-              <Text className="text-heading-bold text-text-primary mb-4">프로필 사진</Text>
+              <Text className="text-subheading-bold text-text-primary mb-4">프로필 사진</Text>
               <ProfileUploadForm
                 photos={photos}
                 onPhotoUpload={handlePhotoUpload}
@@ -108,7 +108,7 @@ export default function ProfileEditScreen() {
 
             {/* 기본 정보 섹션 */}
             <View className="mb-12 px-4">
-              <Text className="text-heading-bold text-text-primary mb-4">기본 정보</Text>
+              <Text className="text-subheading-bold text-text-primary mb-4">기본 정보</Text>
                 <View className="h-14 bg-gray rounded-xl px-4 justify-center">
                   <Text className="text-body-large-regular text-text-primary">{basicInfo}</Text>
                 </View>
@@ -116,7 +116,7 @@ export default function ProfileEditScreen() {
 
             {/* 한 마디 섹션 */}
             <View className="mb-12 px-4">
-              <Text className="text-heading-bold text-text-primary mb-4">한 마디</Text>
+              <Text className="text-subheading-bold text-text-primary mb-4">한 마디</Text>
                 <View className="h-14 border border-mango-red rounded-xl px-4 justify-center">
                   <TextInput className="text-body-large-regular text-text-primary" value={oneWord} onChangeText={setOneWord} />
                 </View>
@@ -125,7 +125,7 @@ export default function ProfileEditScreen() {
             {/* 위치 정보 섹션 */}
             <View className="mb-12 px-4">
               <View className="flex-row justify-between items-center mb-4">
-                <Text className="text-heading-bold text-text-primary">위치 정보</Text>
+                <Text className="text-subheading-bold text-text-primary">위치 정보</Text>
                 <TouchableOpacity>
                   <Text className="text-body-large-semibold text-mango-red">위치 업데이트</Text>
                 </TouchableOpacity>
@@ -146,7 +146,7 @@ export default function ProfileEditScreen() {
 
             {/* 상대방과의 거리 섹션 */}
             <View className="mb-12 px-4">
-              <Text className="text-heading-bold text-text-primary mb-8">희망하는 반경</Text>
+              <Text className="text-subheading-bold text-text-primary mb-8">희망하는 반경</Text>
               
               {/* 슬라이더 영역 */}
               <View className="mb-4">

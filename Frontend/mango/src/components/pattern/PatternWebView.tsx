@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 
 interface PatternWebViewProps {
-  activeTab: 'type' | 'category' | 'keyword' | 'time';
+  activeTab: 'type' | 'category' | 'keyword' | 'time' | 'month' | 'history';
 }
 
 export default function PatternWebView({ activeTab }: PatternWebViewProps) {
@@ -28,6 +28,16 @@ export default function PatternWebView({ activeTab }: PatternWebViewProps) {
         return {
           title: '시간대 분석 결과',
           description: '시간대별 소비 패턴 분석이 표시됩니다'
+        };
+      case 'month':
+        return {
+          title: '월별 분석 결과',
+          description: '월별 소비 패턴 분석이 표시됩니다'
+        };
+      case 'history':
+        return {
+          title: '소비 내역 분석',
+          description: '상세 소비 내역이 표시됩니다'
         };
       default:
         return {
