@@ -50,9 +50,19 @@ public class AuthService {
 
     LocalDate birthDate = LocalDate.parse(request.birthDate());
 
+    double latitude = request.latitude();
+    double longitude = request.longitude();
+
+    if (latitude < -90 || latitude > 90) {
+      return ServiceResult.failure(ErrorCode.USER_INVALID_INPUT);
+    }
+    if (longitude < -180 || longitude > 180) {
+      return ServiceResult.failure(ErrorCode.USER_INVALID_INPUT);
+    }
+
     GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     Point location = geometryFactory.createPoint(
-        new Coordinate(request.longitude(), request.latitude())
+            new Coordinate(longitude, latitude) // (lon, lat) 순서
     );
 
     User user = User.builder()

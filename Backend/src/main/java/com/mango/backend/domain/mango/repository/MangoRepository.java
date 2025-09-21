@@ -34,5 +34,7 @@ public interface MangoRepository extends JpaRepository<Mango, Long> {
 
   @Query("select m.from.id from Mango m where m.to.id = :userId")
   Set<Long> findUsersWhoLikedMeIds(@Param("userId") Long userId);
+
+  boolean existsByFromAndTo(User from, User to);
 }
 
