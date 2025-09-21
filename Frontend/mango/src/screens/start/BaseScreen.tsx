@@ -29,6 +29,10 @@ export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
     navigation.navigate('Signup');
   };
 
+  const handleTest = () => {
+    navigation.navigate('Test');
+  };
+
   return (
     <Layout showHeader={false}>
       <CustomHeader title="로그인" onBackPress={() => navigation.goBack()} />
@@ -90,6 +94,16 @@ export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* 테스트 버튼 */}
+        <TouchableOpacity
+          className="h-12 bg-blue-500 rounded-xl justify-center items-center"
+          onPress={handleTest}
+        >
+          <Text className="text-base font-semibold text-white">
+            테스트
+          </Text>
+        </TouchableOpacity>
       </View>
     </Layout>
   );
