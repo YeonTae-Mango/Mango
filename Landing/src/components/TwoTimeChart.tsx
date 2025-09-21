@@ -101,10 +101,12 @@ function TwoTimeChart() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      {/* Chart */}
-      <div className="w-96 h-96">
-        <Bar data={chartData} options={chartOptions} />
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 80px)' }}>
+        {/* Chart */}
+        <div className="w-96 h-96">
+          <Bar data={chartData} options={chartOptions} />
+        </div>
       </div>
     </div>
   );
