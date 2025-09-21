@@ -9,5 +9,7 @@ import java.util.Optional;
 @Repository
 public interface ConsumptionPatternRepository extends MongoRepository<ConsumptionPattern, String> {
 
+    Optional<ConsumptionPattern> findFirstByUserIdOrderByStartDateDesc(Long userId);
+
     ConsumptionPattern findFirstByUserIdOrderByEndDateDesc(Long userId);
 }

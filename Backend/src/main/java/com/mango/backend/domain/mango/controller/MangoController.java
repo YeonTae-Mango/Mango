@@ -82,6 +82,6 @@ public class MangoController extends BaseController {
           @RequestBody VisitedRequest request
   ) {
     ServiceResult<Void> result = visitedService.markVisited(userId, request.requestId());
-    return toResponseEntity(result, "방문 처리에 성공하였습니다.");
+    return toResponseEntity(result, "싫어요 처리에 성공하였습니다.");
   }
 }
