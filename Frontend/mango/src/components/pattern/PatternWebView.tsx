@@ -1,11 +1,13 @@
 import React from 'react';
 import { Text, View } from 'react-native';
+import { WebView } from 'react-native-webview';
 
 interface PatternWebViewProps {
   activeTab: 'type' | 'category' | 'keyword' | 'time' | 'month' | 'history';
 }
 
 export default function PatternWebView({ activeTab }: PatternWebViewProps) {
+
   // 탭별 웹뷰 메시지 설정
   const getWebViewMessage = () => {
     switch (activeTab) {
@@ -51,13 +53,53 @@ export default function PatternWebView({ activeTab }: PatternWebViewProps) {
 
   return (
     <View className="px-4 pb-8">
-      <View className="h-[400px] bg-gray rounded-2xl items-center justify-center">
-        <Text className="text-body-large-regular text-text-primary">
-          {webViewMessage.title}
-        </Text>
-        <Text className="text-body-medium-regular text-secondary mt-2">
-          {webViewMessage.description}
-        </Text>
+      <View className="h-[400px] bg-gray rounded-2xl overflow-hidden">
+        {activeTab === 'category' ? (
+          <WebView
+            source={{ uri: 'https://j13a408.p.ssafy.io/myCategoryChart' }}
+            style={{ flex: 1 }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            scalesPageToFit={true}
+          />
+        ) : activeTab === 'month' ? (
+          <WebView
+            source={{ uri: 'https://j13a408.p.ssafy.io/myMonthlyChart' }}
+            style={{ flex: 1 }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            scalesPageToFit={true}
+          />
+        ) : activeTab === 'keyword' ? (
+          <WebView
+            source={{ uri: 'https://j13a408.p.ssafy.io/myKeywordChart' }}
+            style={{ flex: 1 }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            scalesPageToFit={true}
+          />
+        ) : activeTab === 'history' ? (
+          <WebView
+            source={{ uri: 'https://j13a408.p.ssafy.io/myThisMonthChart' }}
+            style={{ flex: 1 }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            scalesPageToFit={true}
+          />
+        ) : (
+          <View className="flex-1 items-center justify-center">
+            <Text className="text-body-large-regular text-text-primary">
+              {webViewMessage.title}
+            </Text>
+            <Text className="text-body-medium-regular text-secondary mt-2">
+              {webViewMessage.description}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
