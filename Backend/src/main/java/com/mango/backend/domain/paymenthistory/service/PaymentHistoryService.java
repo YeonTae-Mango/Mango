@@ -1,9 +1,8 @@
 package com.mango.backend.domain.paymenthistory.service;
 
 import com.mango.backend.domain.event.UserSignUpEvent;
-import com.mango.backend.domain.paymenthistory.dto.PaymentApiResponse;
-import com.mango.backend.domain.paymenthistory.dto.response.PaymentApiResponse;
 import com.mango.backend.domain.paymenthistory.dto.PaymentHistoryDto;
+import com.mango.backend.domain.paymenthistory.dto.response.PaymentApiResponse;
 import com.mango.backend.domain.paymenthistory.entity.PaymentHistory;
 import com.mango.backend.domain.paymenthistory.repository.PaymentHistoryRepository;
 import com.mango.backend.domain.user.entity.User;
