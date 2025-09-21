@@ -27,4 +27,28 @@ public class ChartController extends BaseController {
     ){
         return toResponseEntity(chartService.getMyMonthlyChart(userId), "내 이번달 결제 차트 조회에 성공하였습니다.");
     }
+    @GetMapping("myKeywordChart/{userId}")
+    public ResponseEntity<BaseResponse> getMyKeywordChart(
+            @PathVariable Long userId
+    ){
+        return toResponseEntity(chartService.getMyKeywordChart(userId), "내 최신 키워드 차트 조회에 성공하였습니다.");
+    }
+    @GetMapping("myThisMonthChart/{userId}")
+    public ResponseEntity<BaseResponse> getMyThisMonthChart(
+            @PathVariable Long userId
+    ){
+        return toResponseEntity(chartService.getMyThisMonthChart(userId), "내 이번달 결제 금액 추이 차트 조회에 성공하였습니다.");
+    }
+    @GetMapping("twoTimeChart/{userId}")
+    public ResponseEntity<BaseResponse> getMyTwoTimeChart(
+            @PathVariable Long userId
+    ){
+        return toResponseEntity(chartService.getTwoTimeChart(userId), "결제 시간별 비교 차트 조회에 성공하였습니다.");
+    }
+    @GetMapping("twoTypeChart/{userId}")
+    public ResponseEntity<BaseResponse> getTwoTypeChart(
+            @PathVariable Long userId
+    ){
+        return toResponseEntity(chartService.getTwoTypeChart(userId), "대표유형 비교 차트 조회에 성공하였습니다.");
+    }
 }

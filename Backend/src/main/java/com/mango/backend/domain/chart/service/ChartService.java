@@ -2,6 +2,7 @@ package com.mango.backend.domain.chart.service;
 
 import com.mango.backend.domain.chart.dto.response.MyCategoryChartResponse;
 import com.mango.backend.domain.chart.dto.response.MyMonthlyChartResponse;
+import com.mango.backend.domain.chart.dto.response.MyThisMonthChartResponse;
 import com.mango.backend.domain.maincode.entity.MainCode;
 import com.mango.backend.domain.maincode.repository.MainCodeRepository;
 import com.mango.backend.domain.paymenthistory.entity.PaymentHistory;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,6 +95,64 @@ public class ChartService {
         }
 
         MyMonthlyChartResponse response = new MyMonthlyChartResponse(label, data);
+        return ServiceResult.success(response);
+    }
+
+    public ServiceResult<MyThisMonthChartResponse> getMyThisMonthChart(Long userId) {
+        List<PaymentHistory> recentOneMonthPayments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(userId, LocalDateTime.now().minusMonths(1).withDayOfMonth(1), LocalDateTime.now());
+        Long[] lastMonth = new Long[31];
+        Long[] thisMonthRaw = new Long[31];
+        lastMonth[0] = 0L;
+        thisMonthRaw[0] = 0L;
+        int todayIndex = LocalDate.now().getDayOfMonth() - 1;
+        int lastMonthIndex = LocalDate.now().minusMonths(1).getMonthValue();
+
+        Long lastMonthCost = 0L;
+        Long thisMonthCost = 0L;
+        int lastMonthLastDay = LocalDate.now().minusMonths(1).lengthOfMonth();
+        for (PaymentHistory ph : recentOneMonthPayments) {
+            LocalDateTime phTime = ph.getPaymentTime();
+
+            if (lastMonthIndex == phTime.getMonthValue()) {
+                lastMonthCost += ph.getPaymentAmount();
+                lastMonth[phTime.getDayOfMonth() - 1] = lastMonthCost;
+            } else {
+                thisMonthCost += ph.getPaymentAmount();
+                thisMonthRaw[phTime.getDayOfMonth() - 1] = thisMonthCost;
+            }
+        }
+        for (int i = 1; i < 31; i++) {
+            if (i < lastMonthLastDay && lastMonth[i] == null && lastMonth[i - 1] != null) {
+                lastMonth[i] = lastMonth[i - 1];
+            }
+            if (i <= todayIndex && thisMonthRaw[i] == null && thisMonthRaw[i - 1] != null) {
+                thisMonthRaw[i] = thisMonthRaw[i - 1];
+            }
+        }
+        Long[] lastMonthInTenK = new Long[31];
+        Long[] thisMonthInTenK = new Long[31];
+
+        for (int i = 0; i < 31; i++) {
+            lastMonthInTenK[i] = lastMonth[i] != null ? lastMonth[i] / 10000 : null;
+            thisMonthInTenK[i] = thisMonthRaw[i] != null ? thisMonthRaw[i] / 10000 : null;
+        }
+
+        MyThisMonthChartResponse response = new MyThisMonthChartResponse(lastMonthInTenK, thisMonthInTenK, todayIndex);
+        return ServiceResult.success(response);
+    }
+
+    public ServiceResult<?> getMyKeywordChart(Long userId) {
+        String response = "";
+        return ServiceResult.success(response);
+    }
+
+    public ServiceResult<?> getTwoTimeChart(Long userId) {
+        String response = "";
+        return ServiceResult.success(response);
+    }
+
+    public ServiceResult<?> getTwoTypeChart(Long userId) {
+        String response = "";
         return ServiceResult.success(response);
     }
 
