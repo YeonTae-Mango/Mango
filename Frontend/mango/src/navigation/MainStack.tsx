@@ -4,6 +4,7 @@ import CategorySwipeScreen from '../screens/category/CategorySwipeScreen';
 import ChatRoomScreen from '../screens/chat/ChatRoomScreen';
 import NotificationScreen from '../screens/notification/NotificationScreen';
 import MatchingpatternScreen from '../screens/pattern/MatchingpatternScreen';
+import CategoryDetailScreen from '../screens/profile/CategoryDetailScreen';
 import MyPatternScreen from '../screens/profile/MyPatternScreen';
 import ProfileDetailScreen from '../screens/profile/ProfileDetailScreen';
 import ProfileEditScreen from '../screens/profile/ProfileEditScreen';
@@ -35,6 +36,7 @@ export default function MainStack({ onLogout }: MainStackProps) {
       <Stack.Screen name="MyPattern" component={MyPatternScreen} />
       <Stack.Screen name="MatchingPattern" component={MatchingpatternScreen} />
       <Stack.Screen name="CategorySwipe" component={CategorySwipeScreen} />
+      <Stack.Screen name="CategoryDetail" component={CategoryDetailScreen} />
     </Stack.Navigator>
   );
 }
