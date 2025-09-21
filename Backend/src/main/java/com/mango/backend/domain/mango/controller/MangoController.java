@@ -62,7 +62,7 @@ public class MangoController extends BaseController {
           @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = BaseResponse.class))),
           @ApiResponse(responseCode = "404", description = "유저를 찾을 수 없음", content = @Content(schema = @Schema(implementation = BaseResponse.class)))
   })
-  @PostMapping("/{userId}")
+  @PostMapping("like/{userId}")
   public ResponseEntity<BaseResponse> likeUser(
           @PathVariable Long userId,
           @RequestBody MangoRequest request
@@ -71,16 +71,17 @@ public class MangoController extends BaseController {
     return toResponseEntity(result, "망고에 성공하였습니다.");
   }
 
-  @Operation(summary = "유저 방문 처리", description = "특정 유저를 방문 처리합니다. 다음에 목록 조회 시 visited 여부로 필터링 됩니다.")
+  @Operation(summary = "사람 싫어요 하기(= 방문 처리 하기)", description = "특정 유저를 방문 처리합니다. 다음에 목록 조회 시 visited 여부로 필터링 됩니다.")
   @ApiResponses({
           @ApiResponse(responseCode = "200", description = "방문 처리 성공"),
           @ApiResponse(responseCode = "404", description = "유저를 찾을 수 없음")
   })
-  @PostMapping
+  @PostMapping("/dislike/{userId}")
   public ResponseEntity<BaseResponse> visitUser(
+          @PathVariable Long userId,
           @RequestBody VisitedRequest request
   ) {
-    ServiceResult<Void> result = visitedService.markVisited(request.fromUserId(), request.toUserId());
+    ServiceResult<Void> result = visitedService.markVisited(userId, request.requestId());
     return toResponseEntity(result, "방문 처리에 성공하였습니다.");
   }
 }
