@@ -54,11 +54,27 @@ public class UserService {
     Long requestId = jwtProvider.getUserIdFromToken(token);
 
     if (userId.equals(requestId)) {
-      // 내 정보 조회
       log.info("내 정보 조회 : {}", userId);
 
       return userRepository.findById(userId)
-          .map(user -> ServiceResult.success(MyInfoResponse.fromEntity(user)))
+          .map(user -> {
+              // TODO : AI 서버와 연동 필요
+              // ------------------------
+              // 🔹 목데이터 (1개, 3개, 1개만)
+              // ------------------------
+              String mockMainType = "뷰티형";
+
+              List<String> mockKeywords = List.of(
+                      "일반스포츠",
+                      "카페/디저트",
+                      "미용서비스"
+              );
+
+              String mockFood = "한식";
+              // ------------------------
+                  return ServiceResult.success(MyInfoResponse.of(user, mockMainType, mockKeywords, mockFood));
+              }
+          )
           .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
     } else {
       log.info("타인 정보 조회 : {}", requestId);

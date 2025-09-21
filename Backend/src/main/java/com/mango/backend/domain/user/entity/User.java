@@ -121,6 +121,9 @@ public class User {
     this.profilePhoto = userPhoto;
   }
 
+  public void updateFcmToken(String fcmToken) {
+    this.fcmToken = fcmToken;
+  }
   public double distanceInKm(double lat1, double lon1, double lat2, double lon2) {
     final int R = 6371; // 지구 반경 (km)
     double dLat = Math.toRadians(lat2 - lat1);

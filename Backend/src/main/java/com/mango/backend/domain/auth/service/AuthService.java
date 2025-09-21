@@ -90,7 +90,11 @@ public class AuthService {
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
       return ServiceResult.failure(ErrorCode.AUTH_INVALID_CREDENTIALS);
     }
-
+    // fcmToken 업데이트
+    if (request.fcmToken() != null && !request.fcmToken().isBlank()) {
+      user.updateFcmToken(request.fcmToken());
+      authRepository.save(user);
+    }
     // JWT 발급
     String token = jwtProvider.generateToken(user.getId());
     Duration expire = Duration.ofMillis(
