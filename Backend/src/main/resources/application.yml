@@ -130,12 +130,12 @@ jwt:
 springdoc:
   api-docs:
     enabled: true
-    path: /dev/api/v1/api-docs
+    path: /api/v1/api-docs
   swagger-ui:
     enabled: true
-    path: /dev/api/v1/swagger-ui
-    config-url: /dev/api/v1/api-docs/swagger-config
-    url: /dev/api/v1/api-docs
+    path: /api/v1/swagger-ui
+    config-url: /api/v1/api-docs/swagger-config
+    url: /api/v1/api-docs
 
 firebase:
   type: ${FCM_TYPE}
