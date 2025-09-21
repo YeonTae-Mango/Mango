@@ -46,10 +46,11 @@ public class ChartController extends BaseController {
     ){
         return toResponseEntity(chartService.getTwoTimeChart(myUserId,otherUserId), "결제 시간별 비교 차트 조회에 성공하였습니다.");
     }
-    @GetMapping("twoTypeChart/{userId}")
+    @GetMapping("twoTypeChart/{myUserId}/{otherUserId}")
     public ResponseEntity<BaseResponse> getTwoTypeChart(
-            @PathVariable Long userId
+            @PathVariable Long myUserId,
+            @PathVariable Long otherUserId
     ){
-        return toResponseEntity(chartService.getTwoTypeChart(userId), "대표유형 비교 차트 조회에 성공하였습니다.");
+        return toResponseEntity(chartService.getTwoTypeChart(myUserId,otherUserId), "대표유형 비교 차트 조회에 성공하였습니다.");
     }
 }

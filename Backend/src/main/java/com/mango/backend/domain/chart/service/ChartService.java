@@ -2,6 +2,7 @@ package com.mango.backend.domain.chart.service;
 
 import com.mango.backend.domain.chart.dto.response.*;
 import com.mango.backend.domain.consumptionpattern.entity.ConsumptionPattern;
+import com.mango.backend.domain.consumptionpattern.entity.TypeItem;
 import com.mango.backend.domain.consumptionpattern.repository.ConsumptionPatternRepository;
 import com.mango.backend.domain.maincode.entity.MainCode;
 import com.mango.backend.domain.maincode.repository.MainCodeRepository;
@@ -193,8 +194,32 @@ public class ChartService {
         return ServiceResult.success(response);
     }
 
-    public ServiceResult<?> getTwoTypeChart(Long userId) {
-        String response = "";
+    public ServiceResult<TwoTypeChartResponse> getTwoTypeChart(Long myUserId, Long otherUserId) {
+        List<MainCode> mainTypes = mainCodeRepository.findByMainCodeStartingWith("LS_");
+        ConsumptionPattern myLatestPattern = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(myUserId);
+        ConsumptionPattern otherLatestPattern = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(otherUserId);
+        String[] labels = new String[mainTypes.size()];
+        int[] myData = new int[mainTypes.size()];
+        int[] partnerData = new int[mainTypes.size()];
+
+        Map<String, Integer> myDataMap = new HashMap<>();
+        Map<String, Integer> otherDataMap = new HashMap<>();
+
+        for (TypeItem ti : myLatestPattern.getMainType()) {
+            myDataMap.put(ti.getName(), (int) (ti.getProb() * 100));
+        }
+        for (TypeItem ti : otherLatestPattern.getMainType()) {
+            otherDataMap.put(ti.getName(), (int) (ti.getProb() * 100));
+        }
+
+        for (int i = 0; i < mainTypes.size(); i++) {
+            String typeName = mainTypes.get(i).getMainCodeName();
+            labels[i] = typeName;
+            myData[i] = myDataMap.getOrDefault(typeName, 0);
+            partnerData[i] = otherDataMap.getOrDefault(typeName, 0);
+        }
+
+        TwoTypeChartResponse response = new TwoTypeChartResponse(labels, myData, partnerData);
         return ServiceResult.success(response);
     }
 
