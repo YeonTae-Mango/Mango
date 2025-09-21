@@ -35,6 +35,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     SELECT u.*
     FROM users u
     WHERE u.location IS NOT NULL
+    AND u.gender != :gender
     AND ST_Distance_Sphere(
           u.location,
           ST_GeomFromText(CONCAT('POINT(', :longitude, ' ', :latitude, ')'), 4326)
