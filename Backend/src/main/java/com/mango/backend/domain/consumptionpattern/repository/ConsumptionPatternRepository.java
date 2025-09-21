@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ConsumptionPatternRepository extends MongoRepository<ConsumptionPattern, String> {
 
+    ConsumptionPattern findFirstByUserIdOrderByEndDateDesc(Long userId);
 }
