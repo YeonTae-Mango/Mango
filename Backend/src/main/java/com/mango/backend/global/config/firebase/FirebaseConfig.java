@@ -5,18 +5,20 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
 import java.io.FileInputStream;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class FirebaseConfig {
 
+  @Value("${FIREBASE_KEY_PATH:FireBaseKey.json}")
+  private String firebaseKeyPath;
+
   @PostConstruct
   public void init() {
     try {
       if (FirebaseApp.getApps().isEmpty()) {
-        FileInputStream serviceAccount =
-            //TODO : 환경변수로 JSON 빼야 함
-            new FileInputStream("src/main/resources/FireBaseKey.json");
+        FileInputStream serviceAccount = new FileInputStream(firebaseKeyPath);
 
         FirebaseOptions options = FirebaseOptions.builder()
             .setCredentials(GoogleCredentials.fromStream(serviceAccount))
