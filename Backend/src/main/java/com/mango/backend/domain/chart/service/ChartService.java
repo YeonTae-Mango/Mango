@@ -1,9 +1,6 @@
 package com.mango.backend.domain.chart.service;
 
-import com.mango.backend.domain.chart.dto.response.MyCategoryChartResponse;
-import com.mango.backend.domain.chart.dto.response.MyKeywordChartResponse;
-import com.mango.backend.domain.chart.dto.response.MyMonthlyChartResponse;
-import com.mango.backend.domain.chart.dto.response.MyThisMonthChartResponse;
+import com.mango.backend.domain.chart.dto.response.*;
 import com.mango.backend.domain.consumptionpattern.entity.ConsumptionPattern;
 import com.mango.backend.domain.consumptionpattern.repository.ConsumptionPatternRepository;
 import com.mango.backend.domain.maincode.entity.MainCode;
@@ -147,14 +144,14 @@ public class ChartService {
     }
 
     public ServiceResult<MyKeywordChartResponse> getMyKeywordChart(Long userId) {
-        ConsumptionPattern latestPattern  = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(userId);
-        if (latestPattern==null) {
+        ConsumptionPattern latestPattern = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(userId);
+        if (latestPattern == null) {
             return ServiceResult.failure(ErrorCode.NO_CONSUMPTION_PATTERNS);
         }
         String[] labels = new String[6];
         int[] data = new int[6];
 
-        for(int i=0; i<6; i++){
+        for (int i = 0; i < 6; i++) {
             labels[i] = latestPattern.getKeyword().get(i).getName();
             data[i] = (int) Math.round(latestPattern.getKeyword().get(i).getScore() * 100);
         }
@@ -162,8 +159,37 @@ public class ChartService {
         return ServiceResult.success(response);
     }
 
-    public ServiceResult<?> getTwoTimeChart(Long userId) {
-        String response = "";
+    public ServiceResult<TwoTimeChartResponse> getTwoTimeChart(Long myUserId, Long otherUserId) {
+        List<PaymentHistory> myPayments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(myUserId, LocalDateTime.now().minusMonths(6), LocalDateTime.now());
+        List<PaymentHistory> otherPayments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(otherUserId, LocalDateTime.now().minusMonths(6), LocalDateTime.now());
+
+        int[] myData = new int[4];
+        int[] yourData = new int[4];
+        String[] timeLabels = {"06시", "12시", "18시", "24시"};
+        String hotTime;
+
+        countPaymentByTime(myPayments, myData);
+        countPaymentByTime(otherPayments, yourData);
+
+        int bigIndex = 0;
+        int bigData = myData[0];
+        for (int i = 1; i < 4; i++) {
+            if (bigData < myData[i]) {
+                bigData = myData[i];
+                bigIndex = i;
+            }
+        }
+        if (bigIndex == 0) {
+            hotTime = "자정 ~ 오전 6시";
+        } else if (bigIndex == 1) {
+            hotTime = "오전 6시 ~ 정오";
+        } else if (bigIndex == 2) {
+            hotTime = "정오 ~ 오후 6시";
+        } else {
+            hotTime = "오후 6시 ~ 자정";
+        }
+
+        TwoTimeChartResponse response = new TwoTimeChartResponse(myData, yourData, timeLabels, hotTime);
         return ServiceResult.success(response);
     }
 
@@ -172,4 +198,18 @@ public class ChartService {
         return ServiceResult.success(response);
     }
 
+    private static void countPaymentByTime(List<PaymentHistory> payments, int[] data) {
+        for (PaymentHistory ph : payments) {
+            LocalDateTime phTime = ph.getPaymentTime();
+            if (phTime.getHour() <= 6) {
+                data[0]++;
+            } else if (phTime.getHour() <= 12) {
+                data[1]++;
+            } else if (phTime.getHour() <= 18) {
+                data[2]++;
+            } else {
+                data[3]++;
+            }
+        }
+    }
 }

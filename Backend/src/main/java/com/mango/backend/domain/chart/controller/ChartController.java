@@ -39,11 +39,12 @@ public class ChartController extends BaseController {
     ){
         return toResponseEntity(chartService.getMyThisMonthChart(userId), "내 이번달 결제 금액 추이 차트 조회에 성공하였습니다.");
     }
-    @GetMapping("twoTimeChart/{userId}")
+    @GetMapping("twoTimeChart/{myUserId}/{otherUserId}")
     public ResponseEntity<BaseResponse> getMyTwoTimeChart(
-            @PathVariable Long userId
+            @PathVariable Long myUserId,
+            @PathVariable Long otherUserId
     ){
-        return toResponseEntity(chartService.getTwoTimeChart(userId), "결제 시간별 비교 차트 조회에 성공하였습니다.");
+        return toResponseEntity(chartService.getTwoTimeChart(myUserId,otherUserId), "결제 시간별 비교 차트 조회에 성공하였습니다.");
     }
     @GetMapping("twoTypeChart/{userId}")
     public ResponseEntity<BaseResponse> getTwoTypeChart(
