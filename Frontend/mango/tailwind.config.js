@@ -75,6 +75,12 @@ module.exports = {
           lineHeight: '24px',
           fontWeight: '600',
         },
+        'body-large-bold': {
+          fontFamily: ['Pretendard', 'sans-serif'],
+          fontSize: '16px',
+          lineHeight: '24px',
+          fontWeight: '800',
+        },
         // Body Medium
         'body-medium-regular': {
           fontFamily: ['Pretendard', 'sans-serif'],
