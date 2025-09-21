@@ -1,13 +1,17 @@
 package com.mango.backend.domain.chart.service;
 
 import com.mango.backend.domain.chart.dto.response.MyCategoryChartResponse;
+import com.mango.backend.domain.chart.dto.response.MyKeywordChartResponse;
 import com.mango.backend.domain.chart.dto.response.MyMonthlyChartResponse;
 import com.mango.backend.domain.chart.dto.response.MyThisMonthChartResponse;
+import com.mango.backend.domain.consumptionpattern.entity.ConsumptionPattern;
+import com.mango.backend.domain.consumptionpattern.repository.ConsumptionPatternRepository;
 import com.mango.backend.domain.maincode.entity.MainCode;
 import com.mango.backend.domain.maincode.repository.MainCodeRepository;
 import com.mango.backend.domain.paymenthistory.entity.PaymentHistory;
 import com.mango.backend.domain.paymenthistory.repository.PaymentHistoryRepository;
 import com.mango.backend.global.common.ServiceResult;
+import com.mango.backend.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,7 @@ public class ChartService {
 
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final MainCodeRepository mainCodeRepository;
+    private final ConsumptionPatternRepository consumptionPatternRepository;
 
     public ServiceResult<MyCategoryChartResponse> getMyCategoryChart(Long userId) {
         log.info("getMyCategoryChart {}", userId);
@@ -141,8 +146,19 @@ public class ChartService {
         return ServiceResult.success(response);
     }
 
-    public ServiceResult<?> getMyKeywordChart(Long userId) {
-        String response = "";
+    public ServiceResult<MyKeywordChartResponse> getMyKeywordChart(Long userId) {
+        ConsumptionPattern latestPattern  = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(userId);
+        if (latestPattern==null) {
+            return ServiceResult.failure(ErrorCode.NO_CONSUMPTION_PATTERNS);
+        }
+        String[] labels = new String[6];
+        int[] data = new int[6];
+
+        for(int i=0; i<6; i++){
+            labels[i] = latestPattern.getKeyword().get(i).getName();
+            data[i] = (int) Math.round(latestPattern.getKeyword().get(i).getScore() * 100);
+        }
+        MyKeywordChartResponse response = new MyKeywordChartResponse(labels, data);
         return ServiceResult.success(response);
     }
 

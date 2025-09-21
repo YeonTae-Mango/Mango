@@ -51,6 +51,11 @@ public enum ErrorCode {
      EXTERNAL ERROR(외부 서버 관련 -> AI 서버, 마이데이터 서버)
      ============================ */
   NO_PAYMENT_DATA("EXTERNAL001", "분석할 결제 데이터가 없습니다.",HttpStatus.NO_CONTENT),
+
+  /* ============================
+   CONSUMPTION ERROR(소비패턴 관련 오류)
+   ============================ */
+  NO_CONSUMPTION_PATTERNS("CONSUMPTION001","소비패턴 데이터가 없습니다.",HttpStatus.NO_CONTENT),
   /* ============================
      SERVER ERROR (서버 내부 오류)
      ============================ */
