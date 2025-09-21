@@ -1,37 +1,24 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useRef } from 'react';
+import React from 'react';
 import { Text, View } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomHeader from '../../components/common/CustomHeader';
-import Layout from '../../components/common/Layout';
 
 export default function TestScreen() {
   const navigation = useNavigation<any>();
-  const webViewRef = useRef<WebView>(null);
-
-  const dummyData = {
-    data: [103, 432, 223, 1181, 6680, 768000, 2600]
-  };
-
-  // WebView가 로드된 후 데이터 메시지 전송
-  const handleWebViewLoad = () => {
-    webViewRef.current?.postMessage(JSON.stringify(dummyData));
-  };
 
   return (
-    <Layout showHeader={false}>
+    <SafeAreaView edges={['top']} className="flex-1">
       <CustomHeader title="테스트" onBackPress={() => navigation.goBack()} />
       
-      <View className="flex-1 bg-white">
-        <WebView 
-          ref={webViewRef}
-          source={{uri: 'http://70.12.246.220:5173/myCategoryChart'}}
-          onLoadEnd={handleWebViewLoad}
-          originWhitelist={['*']}
-          style={{ flex: 1 }}
-        />
+      <View className="flex-1 bg-white justify-center items-center px-4">
+        <Text className="text-heading-bold text-text-primary text-center">
+          네이버 지도 기능이{'\n'}LocationForm으로 이동되었습니다
+        </Text>
+        <Text className="text-body-medium text-secondary text-center mt-4">
+          회원가입 화면에서 위치 선택 단계를 확인해보세요!
+        </Text>
       </View>
-    </Layout>
+    </SafeAreaView>
   );
 }
-
