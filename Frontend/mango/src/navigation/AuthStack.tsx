@@ -6,6 +6,7 @@ import SignupCompleteScreen from '../screens/signup/SignupCompleteScreen';
 import SignupProfilePhotoScreen from '../screens/signup/SignupProfilePhotoScreen';
 import SignupScreen from '../screens/signup/SignupScreen';
 import BaseScreen from '../screens/start/BaseScreen';
+import TestScreen from '../screens/start/TestScreen';
 
 const Stack = createStackNavigator();
 
@@ -33,6 +34,7 @@ export default function AuthStack({ onLoginSuccess }: AuthStackProps) {
       <Stack.Screen name="SignupAccountComplete">
         {() => <SignupAccountCompleteScreen onLoginSuccess={onLoginSuccess} />}
       </Stack.Screen>
+      <Stack.Screen name="Test" component={TestScreen} />
     </Stack.Navigator>
   );
 }

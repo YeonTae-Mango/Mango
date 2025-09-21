@@ -13,6 +13,21 @@
     "scheme": "mango",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "plugins": [
+      [
+        "@mj-studio/react-native-naver-map",
+        {
+          "client_id": "ui742rie0r",
+          "android": {
+            "ACCESS_FINE_LOCATION": true,
+            "ACCESS_COARSE_LOCATION": true
+          },
+          "ios": {
+            "NSLocationWhenInUseUsageDescription": "이 앱은 지도를 표시하기 위해 위치 권한이 필요합니다."
+          }
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.blueconecell.mango",
@@ -48,7 +63,9 @@
     "extra": {
       "eas": {
         "projectId": "6e109fda-6bf6-4d50-a62c-3c12e49b7f95"
-      }
+      },
+      "NCP_MAPS_CLIENT_ID": "ui742rie0r",
+      "NCP_MAPS_CLIENT_KEY": "wAckYNP0KrkSIjBNliHWcUcwdGmyrabEr6lmiipy"
     }
   }
 }
