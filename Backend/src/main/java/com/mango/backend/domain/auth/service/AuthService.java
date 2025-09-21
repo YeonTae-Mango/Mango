@@ -7,6 +7,7 @@ import com.mango.backend.domain.auth.dto.request.SignUpRequest;
 import com.mango.backend.domain.auth.dto.response.LoginResponse;
 import com.mango.backend.domain.auth.dto.response.SignUpResponse;
 import com.mango.backend.domain.auth.repository.AuthRepository;
+import com.mango.backend.domain.event.UserSignUpEvent;
 import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
@@ -20,6 +21,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtProvider jwtProvider;
   private final RedisTemplate<String, String> redisTemplate;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   public ServiceResult<SignUpResponse> signUp(SignUpRequest request) {
@@ -47,9 +50,19 @@ public class AuthService {
 
     LocalDate birthDate = LocalDate.parse(request.birthDate());
 
+    double latitude = request.latitude();
+    double longitude = request.longitude();
+
+    if (latitude < -90 || latitude > 90) {
+      return ServiceResult.failure(ErrorCode.USER_INVALID_INPUT);
+    }
+    if (longitude < -180 || longitude > 180) {
+      return ServiceResult.failure(ErrorCode.USER_INVALID_INPUT);
+    }
+
     GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     Point location = geometryFactory.createPoint(
-        new Coordinate(request.longitude(), request.latitude())
+            new Coordinate(longitude, latitude) // (lon, lat) 순서
     );
 
     User user = User.builder()
@@ -58,13 +71,15 @@ public class AuthService {
         .password(passwordEncoder.encode(request.password()))
         .birthDate(birthDate)
         .gender(request.gender())
-        .sigungu(request.sigungu())
+        .sigungu(request.concatenateAddress())
         .distance(request.distance())
         .location(location)
         .lastSyncAt(now())
         .build();
 
     authRepository.save(user);
+
+    eventPublisher.publishEvent(UserSignUpEvent.from(user));
 
     SignUpResponse response = SignUpResponse.of(
         user.getId(),
@@ -85,16 +100,26 @@ public class AuthService {
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
       return ServiceResult.failure(ErrorCode.AUTH_INVALID_CREDENTIALS);
     }
-
+    // fcmToken 업데이트
+    if (request.fcmToken() != null && !request.fcmToken().isBlank()) {
+      user.updateFcmToken(request.fcmToken());
+      authRepository.save(user);
+    }
+    // JWT 발급
     String token = jwtProvider.generateToken(user.getId());
     Duration expire = Duration.ofMillis(
         jwtProvider.getExpiration(token).getTime() - System.currentTimeMillis());
     redisTemplate.opsForValue().set("JWT:" + user.getId(), token, expire);
     log.info("JWT token stored in Redis for userId {}: {}", user.getId(), token);
 
+    // 프로필 미설정 체크
+    if (user.getProfilePhoto() == null) {
+      return ServiceResult.failure(ErrorCode.AUTH_PROFILE_INCOMPLETE);
+    }
     LoginResponse response = LoginResponse.of(user.getId(), token);
     return ServiceResult.success(response);
   }
+
 
   @Transactional
   public ServiceResult<Void> logout(String token) {

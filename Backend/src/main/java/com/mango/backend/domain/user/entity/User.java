@@ -50,7 +50,7 @@ public class User {
   @Column(name = "birth_date", nullable = false)
   private LocalDate birthDate;
 
-  @Column(name = "gender", nullable = false, length = 10)
+  @Column(name = "gender", nullable = false, length = 10) // 남자 : M, 여자 : F
   private String gender;
 
   @Column(name = "sigungu", length = 30)
@@ -66,19 +66,22 @@ public class User {
   @Column(name = "last_sync_at")
   private LocalDateTime lastSyncAt;
 
-  @Column(name = "location", columnDefinition = "POINT SRID 4326")
+  @Column(name = "location", columnDefinition = "POINT SRID 4326", nullable = false)
   private Point location;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "profile_photo_id")
   private UserPhoto profilePhoto;
 
+  @Column(name = "fcm_token")
+  private String fcmToken;
+
   public void updateProfile(UserUpdateRequest request) {
     if (request.nickname() != null) {
       this.nickname = request.nickname();
     }
     if (request.sigungu() != null) {
-      this.sigungu = request.sigungu();
+      this.sigungu = request.concatenateAddress();
     }
     if (request.distance() != null) {
       this.distance = request.distance();
@@ -87,22 +90,27 @@ public class User {
       this.introduction = request.introduction();
     }
 
-    // 위도/경도 값이 모두 있을 때만 location 갱신
     if (request.latitude() != null && request.longitude() != null) {
       GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-      this.location = geometryFactory.createPoint(
-          new Coordinate(request.longitude(), request.latitude()));
+
+      // 기존 위치가 없으면 바로 갱신
+      if (this.location == null) {
+        this.location = geometryFactory.createPoint(
+            new Coordinate(request.longitude(), request.latitude()));
+      } else {
+        double distanceKm = distanceInKm(
+            this.location.getY(), this.location.getX(),
+            request.latitude(), request.longitude());
+
+        // 1km 이상일 때만 갱신
+        if (distanceKm >= 1.0) {
+          this.location = geometryFactory.createPoint(
+              new Coordinate(request.longitude(), request.latitude()));
+        }
+      }
     }
 
     this.lastSyncAt = LocalDateTime.now();
-  }
-
-  public void updateLocation(Double latitude, Double longitude) {
-    if (latitude != null && longitude != null) {
-      GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-      this.location = geometryFactory.createPoint(new Coordinate(longitude, latitude));
-      this.lastSyncAt = LocalDateTime.now();
-    }
   }
 
   public int getAge() {
@@ -111,5 +119,19 @@ public class User {
 
   public void updateProfilePhoto(UserPhoto userPhoto) {
     this.profilePhoto = userPhoto;
+  }
+
+  public void updateFcmToken(String fcmToken) {
+    this.fcmToken = fcmToken;
+  }
+  public double distanceInKm(double lat1, double lon1, double lat2, double lon2) {
+    final int R = 6371; // 지구 반경 (km)
+    double dLat = Math.toRadians(lat2 - lat1);
+    double dLon = Math.toRadians(lon2 - lon1);
+    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   }
 }

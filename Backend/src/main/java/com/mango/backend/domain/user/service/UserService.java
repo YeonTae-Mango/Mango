@@ -54,11 +54,27 @@ public class UserService {
     Long requestId = jwtProvider.getUserIdFromToken(token);
 
     if (userId.equals(requestId)) {
-      // 내 정보 조회
       log.info("내 정보 조회 : {}", userId);
 
       return userRepository.findById(userId)
-          .map(user -> ServiceResult.success(MyInfoResponse.fromEntity(user)))
+          .map(user -> {
+              // TODO : AI 서버와 연동 필요
+              // ------------------------
+              // 🔹 목데이터 (1개, 3개, 1개만)
+              // ------------------------
+              String mockMainType = "뷰티형";
+
+              List<String> mockKeywords = List.of(
+                      "일반스포츠",
+                      "카페/디저트",
+                      "미용서비스"
+              );
+
+              String mockFood = "한식";
+              // ------------------------
+                  return ServiceResult.success(MyInfoResponse.of(user, mockMainType, mockKeywords, mockFood));
+              }
+          )
           .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
     } else {
       log.info("타인 정보 조회 : {}", requestId);
@@ -93,59 +109,52 @@ public class UserService {
       return ServiceResult.failure(ErrorCode.USER_NICKNAME_LENGTH);
     }
 
-    if (request.photos().size() > 4) {
+    List<MultipartFile> newFiles = request.photos();
+    if (newFiles.size() > 4) {
       return ServiceResult.failure(ErrorCode.FILE_TOO_MANY);
+    }
+    if (newFiles.isEmpty()) {
+      return ServiceResult.failure(ErrorCode.FILE_TOO_LITTLE);
     }
     return userRepository.findById(requestId)
         .map(user -> {
           user.updateProfile(request);
 
-          List<MultipartFile> newFiles = request.photos();
-          List<Byte> orders = request.orders();
+          // 기존 사진 삭제
+          List<UserPhoto> existingPhotos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(user);
+          for (UserPhoto photo : existingPhotos) {
+            try {
+              fileUtil.deleteFile(photo.getPhotoUrl(), "profile");
+            } catch (IOException e) {
+              log.warn("기존 파일 삭제 실패: {}", photo.getPhotoUrl(), e);
+            }
+          }
+          userPhotoRepository.deleteAll(existingPhotos);
 
-          if (orders != null && !newFiles.isEmpty()) {
-            List<UserPhoto> existingPhotos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(
-                user);
-
-            // order -> file 매핑
-            for (int i = 0; i < orders.size(); i++) {
-              byte order = orders.get(i);
-              MultipartFile file = newFiles.get(i);
-
-              String url;
-              try {
-                url = fileUtil.saveFile(file, "profile");
-              } catch (IOException e) {
-                throw new RuntimeException("사진 저장 실패", e);
-              }
-
-              UserPhoto targetPhoto;
-              if (existingPhotos.size() >= order) {
-                // 교체 케이스
-                UserPhoto existing = existingPhotos.get(order - 1);
-                try {
-                  fileUtil.deleteFile(existing.getPhotoUrl(), "profile");
-                } catch (IOException e) {
-                  log.warn("기존 파일 삭제 실패: {}", existing.getPhotoUrl(), e);
-                }
-                existing.updatePhotoUrl(url);
-                targetPhoto = existing;
-              } else {
-                UserPhoto newPhoto = UserPhoto.builder()
-                    .user(user)
-                    .photoUrl(url)
-                    .photoOrder(order)
-                    .build();
-                existingPhotos.add(newPhoto);
-                targetPhoto = newPhoto;
-              }
-              if (order == 1) {
-                user.updateProfilePhoto(targetPhoto);
-              }
+          // 새 사진 저장 및 매핑
+          for (int i = 0; i < newFiles.size(); i++) {
+            MultipartFile file = newFiles.get(i);
+            String url;
+            try {
+              url = fileUtil.saveFile(file, "profile");
+            } catch (IOException e) {
+              throw new RuntimeException("사진 저장 실패", e);
             }
 
-            userPhotoRepository.saveAll(existingPhotos);
+            UserPhoto newPhoto = UserPhoto.builder()
+                .user(user)
+                .photoUrl(url)
+                .photoOrder((byte) (i + 1))
+                .build();
+
+            userPhotoRepository.save(newPhoto);
+
+            // 1번 사진은 대표 프로필
+            if (i == 0) {
+              user.updateProfilePhoto(newPhoto);
+            }
           }
+
           return ServiceResult.success(UserUpdateResponse.fromEntity(user));
         })
         .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
@@ -156,19 +165,16 @@ public class UserService {
       return -1; // 위치 정보 없음
     }
 
-    double lat1 = me.getLocation().getX();
-    double lon1 = me.getLocation().getY();
-    double lat2 = other.getLocation().getX();
-    double lon2 = other.getLocation().getY();
+    double lat1 = me.getLocation().getY(); // latitude
+    double lon1 = me.getLocation().getX(); // longitude
+    double lat2 = other.getLocation().getY();
+    double lon2 = other.getLocation().getX();
+
     log.info("Calculating distance between ({}, {}) and ({}, {})", lat1, lon1, lat2, lon2);
-    // 하버사인 공식 (단위: km)
-    double R = 6371; // 지구 반경 (km)
-    double dLat = Math.toRadians(lat2 - lat1);
-    double dLon = Math.toRadians(lon2 - lon1);
-    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return (int) Math.round(R * c);
+
+    // User 엔티티에 있는 distanceInKm 메서드 사용
+    double distanceKm = me.distanceInKm(lat1, lon1, lat2, lon2);
+
+    return (int) Math.round(distanceKm);
   }
 }

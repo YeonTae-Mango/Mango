@@ -44,6 +44,7 @@ out/
 /mysql/
 /redis/
 
+FireBaseKey.json
 
 ### Personal env. ###
 CLAUDE.md

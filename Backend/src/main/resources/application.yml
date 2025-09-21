@@ -1,4 +1,4 @@
-spring:
+0spring:
   application:
     name: Backend
   profiles:
@@ -10,6 +10,9 @@ management:
     web:
       exposure:
         include: health,info,prometheus
+external:
+  api:
+    base-url: https://j13a408.p.ssafy.io
 ---
 
 # ## local 프로필 설정
@@ -18,6 +21,9 @@ spring:
   config:
     activate:
       on-profile: local
+  sql:
+    init:
+      mode: always
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:${MYSQL_HOST_PORT}/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
@@ -31,7 +37,7 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
         show_sql: true
-  #    defer-datasource-initialization: true
+    defer-datasource-initialization: true
 
   data:
     mongodb:
@@ -62,16 +68,32 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
 
+firebase:
+  type: ${FCM_TYPE}
+  project-id: ${FCM_PROJECT_ID}
+  private-key-id: ${FCM_PRIVATE_KEY_ID}
+  private-key: ${FCM_PRIVATE_KEY}
+  client-email: ${FCM_CLIENT_EMAIL}
+  client-id: ${FCM_CLIENT_ID}
+  auth-uri: ${FCM_AUTH_URI}
+  token-uri: ${FCM_TOKEN_URI}
+  auth-provider-x509-cert-url: ${FCM_AUTH_PROVIDER_X509_CERT_URL}
+  client-x509-cert-url: ${FCM_CLIENT_X509_CERT_URL}
+  universe-domain: ${FCM_UNIVERSE_DOMAIN}
+
 ---
 
 spring:
   config:
     activate:
       on-profile: dev
+  sql:
+    init:
+      mode: always
   datasource:
     url: jdbc:mysql://${MYSQL_CONTAINER_NAME}:3306/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
-    username: ${MYSQL_USER}
-    password: ${MYSQL_PASSWORD}
+    username: root
+    password: ${MYSQL_ROOT_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -81,6 +103,7 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: false
         show_sql: false
+    defer-datasource-initialization: true
 
   data:
     mongodb:
@@ -91,12 +114,11 @@ spring:
       password: ${REDIS_PASSWORD}
 logging:
   level:
-    org.springframework.data.mongodb.core.MongoTemplate: INFO
-    org.hibernate.sql: warn
+    root: INFO
 
 upload:
   dir: /app/uploads/dev/
-  base-url: https://j13a408.p.ssafy.io/api/v1/photos/
+  base-url: https://j13a408.p.ssafy.io/dev/api/v1/photos/
 custom:
   service:
     url: ${BACKEND_URL}
@@ -112,6 +134,24 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /api/v1/swagger-ui
+
+firebase:
+  type: ${FCM_TYPE}
+  project-id: ${FCM_PROJECT_ID}
+  private-key-id: ${FCM_PRIVATE_KEY_ID}
+  private-key: ${FCM_PRIVATE_KEY}
+  client-email: ${FCM_CLIENT_EMAIL}
+  client-id: ${FCM_CLIENT_ID}
+  auth-uri: ${FCM_AUTH_URI}
+  token-uri: ${FCM_TOKEN_URI}
+  auth-provider-x509-cert-url: ${FCM_AUTH_PROVIDER_X509_CERT_URL}
+  client-x509-cert-url: ${FCM_CLIENT_X509_CERT_URL}
+  universe-domain: ${FCM_UNIVERSE_DOMAIN}
+server:
+  servlet:
+    context-path: /dev
+  forward-headers-strategy: framework
+  use-forward-headers: true
 ---
 
 spring:
@@ -141,7 +181,7 @@ spring:
       password: ${REDIS_PASSWORD}
 logging:
   level:
-    org.springframework.data.mongodb.core.MongoTemplate: INFO
+    org.springframework.data.mongodb.core.MongoTemplate: WARN
     org.hibernate.sql: warn
 
 upload:
@@ -162,3 +202,16 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /api/v1/swagger-ui
+
+firebase:
+  type: ${FCM_TYPE}
+  project-id: ${FCM_PROJECT_ID}
+  private-key-id: ${FCM_PRIVATE_KEY_ID}
+  private-key: ${FCM_PRIVATE_KEY}
+  client-email: ${FCM_CLIENT_EMAIL}
+  client-id: ${FCM_CLIENT_ID}
+  auth-uri: ${FCM_AUTH_URI}
+  token-uri: ${FCM_TOKEN_URI}
+  auth-provider-x509-cert-url: ${FCM_AUTH_PROVIDER_X509_CERT_URL}
+  client-x509-cert-url: ${FCM_CLIENT_X509_CERT_URL}
+  universe-domain: ${FCM_UNIVERSE_DOMAIN}
