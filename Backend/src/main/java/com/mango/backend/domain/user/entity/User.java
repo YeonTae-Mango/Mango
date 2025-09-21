@@ -81,7 +81,7 @@ public class User {
       this.nickname = request.nickname();
     }
     if (request.sigungu() != null) {
-      this.sigungu = request.sigungu();
+      this.sigungu = request.concatenateAddress();
     }
     if (request.distance() != null) {
       this.distance = request.distance();

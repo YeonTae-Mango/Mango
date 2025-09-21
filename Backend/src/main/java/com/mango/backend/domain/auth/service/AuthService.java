@@ -61,7 +61,7 @@ public class AuthService {
         .password(passwordEncoder.encode(request.password()))
         .birthDate(birthDate)
         .gender(request.gender())
-        .sigungu(request.sigungu())
+        .sigungu(request.concatenateAddress())
         .distance(request.distance())
         .location(location)
         .lastSyncAt(now())

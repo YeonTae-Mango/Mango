@@ -14,6 +14,7 @@ public record MyInfoResponse(
     String gender,
     String latitude,
     String longitude,
+    String sido,
     String sigungu,
     Integer distance,
     String introduction,
@@ -24,7 +25,7 @@ public record MyInfoResponse(
 ) {
 
   public static MyInfoResponse of(User user, String mainType, List<String> keywords,
-      String food) {
+                                  String food) {
     String latitude = null;
     String longitude = null;
     if (user.getLocation() != null) {
@@ -32,22 +33,32 @@ public record MyInfoResponse(
       longitude = String.valueOf(user.getLocation().getX()); // 경도
     }
 
+    String sido = null;
+    String sigungu = null;
+    if (user.getSigungu() != null && user.getSigungu().contains(" ")) {
+      String[] parts = user.getSigungu().split(" ", 2); // 앞부분, 뒷부분
+      sido = parts[0];
+      sigungu = parts[1];
+    }
+
     return new MyInfoResponse(
-        user.getId(),
-        user.getEmail(),
-        user.getNickname(),
-        user.getBirthDate(),
-        user.getAge(),
-        user.getGender(),
-        latitude,
-        longitude,
-        user.getSigungu(),
-        user.getDistance(),
-        user.getIntroduction(),
-        user.getLastSyncAt(),
-        mainType,
-        keywords,
-        food
+            user.getId(),
+            user.getEmail(),
+            user.getNickname(),
+            user.getBirthDate(),
+            user.getAge(),
+            user.getGender(),
+            latitude,
+            longitude,
+            sido,          // 앞부분
+            sigungu,       // 뒷부분
+            user.getDistance(),
+            user.getIntroduction(),
+            user.getLastSyncAt(),
+            mainType,
+            keywords,
+            food
     );
   }
+
 }
