@@ -118,7 +118,7 @@ logging:
 
 upload:
   dir: /app/uploads/dev/
-  base-url: https://j13a408.p.ssafy.io/api/v1/photos/
+  base-url: https://j13a408.p.ssafy.io/dev/api/v1/photos/
 custom:
   service:
     url: ${BACKEND_URL}
