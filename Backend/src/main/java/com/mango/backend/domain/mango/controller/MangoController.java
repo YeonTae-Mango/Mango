@@ -1,8 +1,10 @@
 package com.mango.backend.domain.mango.controller;
 
+import com.mango.backend.domain.mango.dto.request.MangoRequest;
 import com.mango.backend.domain.mango.dto.response.MangoUserResponse;
 import com.mango.backend.domain.mango.service.MangoService;
 import com.mango.backend.global.common.BaseController;
+import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.common.api.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,12 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,4 +49,23 @@ public class MangoController extends BaseController {
       @RequestHeader("Authorization") String token) {
     return toResponseEntity(mangoService.getUsersILiked(userId, page), "내가 망고한 사람 조회에 성공했습니다.");
   }
+
+  @Operation(
+          summary = "사람 망고하기",
+          description = "특정 유저에게 좋아요(망고)를 합니다. 자기 자신에게는 망고할 수 없습니다."
+  )
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "망고 성공"),
+          @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+          @ApiResponse(responseCode = "404", description = "유저를 찾을 수 없음", content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+  })
+  @PostMapping("/{userId}")
+  public ResponseEntity<BaseResponse> likeUser(
+          @PathVariable Long userId,
+          @RequestBody MangoRequest request
+  ) {
+    ServiceResult<Void> result = mangoService.likeUser(userId, request.requestId());
+    return toResponseEntity(result, "망고에 성공하였습니다.");
+  }
+
 }
