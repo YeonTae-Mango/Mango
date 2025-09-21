@@ -8,8 +8,11 @@ public record SignUpRequest(
     String gender, // 남자 : M, 여자 : F
     Double latitude,
     Double longitude,
+    String sido,
     String sigungu,
     Integer distance
 ) {
-
+    public String concatenateAddress() {
+        return sido + " " + sigungu;
+    }
 }
