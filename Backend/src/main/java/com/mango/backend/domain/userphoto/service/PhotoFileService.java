@@ -28,13 +28,11 @@ public class PhotoFileService {
           .body(fileBytes);
 
     } catch (FileNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .header(HttpHeaders.CONTENT_TYPE, "text/plain; charset=UTF-8")
-          .body(("파일을 찾을 수 없습니다: " + filename).getBytes(StandardCharsets.UTF_8));
+      // 파일이 없을 때: body에 null을 넣고 http code를 404 Not Found로 설정
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     } catch (IOException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .header(HttpHeaders.CONTENT_TYPE, "text/plain; charset=UTF-8")
-          .body(("파일 처리 중 오류가 발생했습니다: " + filename).getBytes(StandardCharsets.UTF_8));
+      // 기타 I/O 오류: body에 null을 넣고 http code를 500 Internal Server Error로 설정
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     }
   }
 }

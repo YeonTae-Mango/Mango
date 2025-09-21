@@ -51,7 +51,7 @@ public class BlockService {
 
     // 이미 차단했는지 확인
     if (blockRepository.findByFromAndTo(me, target).isPresent()) {
-      return ServiceResult.failure(ErrorCode.USER_ALEADY_BLOCKED);
+      return ServiceResult.failure(ErrorCode.USER_ALREADY_BLOCKED);
     }
 
     // 차단 생성

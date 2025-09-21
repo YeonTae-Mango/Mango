@@ -3,6 +3,7 @@ package com.mango.backend.domain.user.dto.response;
 import com.mango.backend.domain.user.entity.User;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record MyInfoResponse(
     Long userId,
@@ -16,10 +17,14 @@ public record MyInfoResponse(
     String sigungu,
     Integer distance,
     String introduction,
-    LocalDateTime lastSyncAt
+    LocalDateTime lastSyncAt,
+    String mainType,
+    List<String> keywords,
+    String food
 ) {
 
-  public static MyInfoResponse fromEntity(User user) {
+  public static MyInfoResponse of(User user, String mainType, List<String> keywords,
+      String food) {
     String latitude = null;
     String longitude = null;
     if (user.getLocation() != null) {
@@ -39,7 +44,10 @@ public record MyInfoResponse(
         user.getSigungu(),
         user.getDistance(),
         user.getIntroduction(),
-        user.getLastSyncAt()
+        user.getLastSyncAt(),
+        mainType,
+        keywords,
+        food
     );
   }
 }
