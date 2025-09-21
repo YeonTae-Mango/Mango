@@ -36,9 +36,10 @@ public class MangoService {
     Pageable pageable = PageRequest.of(page, 10); // 10명씩
     Page<User> usersPage = mangoRepository.findUsersILikedWithProfile(userId, pageable);
 
+    // TODO : 메인 타입 호출해서 보내주기
     List<MangoUserResponse> response = usersPage.stream()
-        .map(MangoUserResponse::from)
-        .collect(Collectors.toList());
+            .map(user -> MangoUserResponse.of(user, "핫플형"))
+            .collect(Collectors.toList());
 
     return ServiceResult.success(response);
   }
@@ -47,9 +48,10 @@ public class MangoService {
     Pageable pageable = PageRequest.of(page, 10); // 10명씩
     Page<User> usersPage = mangoRepository.findUsersWhoLikedMeWithProfile(userId, pageable);
 
+    // TODO : 메인 타입 호출해서 보내주기
     List<MangoUserResponse> response = usersPage.stream()
-        .map(MangoUserResponse::from)
-        .collect(Collectors.toList());
+            .map(user -> MangoUserResponse.of(user, "핫플형"))
+            .collect(Collectors.toList());
 
     return ServiceResult.success(response);
 

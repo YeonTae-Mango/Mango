@@ -7,10 +7,11 @@ public record MangoUserResponse(
     String profileUrl,
     String nickname,
     int age,
-    String sigungu
+    String sigungu,
+    String mainType
 ) {
 
-  public static MangoUserResponse from(User user) {
+  public static MangoUserResponse of(User user, String mainType) {
     String profileUrl = user.getProfilePhoto() != null
         ? user.getProfilePhoto().getPhotoUrl()
         : null;
@@ -20,7 +21,8 @@ public record MangoUserResponse(
         profileUrl,
         user.getNickname(),
         user.getAge(),
-        user.getSigungu()
+        user.getSigungu(),
+        mainType
     );
   }
 }
