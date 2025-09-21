@@ -1,5 +1,7 @@
 package com.mango.backend.domain.mango.service;
 
+import com.mango.backend.domain.consumptionpattern.entity.TypeItem;
+import com.mango.backend.domain.consumptionpattern.repository.ConsumptionPatternRepository;
 import com.mango.backend.domain.event.NotificationEvent;
 import com.mango.backend.domain.mango.dto.response.MangoUserResponse;
 import com.mango.backend.domain.mango.entity.Mango;
@@ -30,15 +32,23 @@ public class MangoService {
   private final MangoRepository mangoRepository;
   private final UserRepository userRepository;
   private final MatchRepository matchRepository;
+  private final ConsumptionPatternRepository consumptionPatternRepository;
   private final ApplicationEventPublisher publisher;
 
   public ServiceResult<List<MangoUserResponse>> getUsersILiked(Long userId, int page) {
     Pageable pageable = PageRequest.of(page, 10); // 10명씩
     Page<User> usersPage = mangoRepository.findUsersILikedWithProfile(userId, pageable);
-
-    // TODO : 메인 타입 호출해서 보내주기
     List<MangoUserResponse> response = usersPage.stream()
-            .map(user -> MangoUserResponse.of(user, "핫플형"))
+            .map(user -> {
+              // MongoDB에서 mainType 가져오기
+              String mainType = consumptionPatternRepository
+                      .findFirstByUserIdOrderByStartDateDesc(user.getId())
+                      .flatMap(cp -> cp.getMainType().stream().findFirst())
+                      .map(TypeItem::getName)
+                      .orElse("없음");
+
+              return MangoUserResponse.of(user, mainType);
+            })
             .collect(Collectors.toList());
 
     return ServiceResult.success(response);
@@ -48,9 +58,17 @@ public class MangoService {
     Pageable pageable = PageRequest.of(page, 10); // 10명씩
     Page<User> usersPage = mangoRepository.findUsersWhoLikedMeWithProfile(userId, pageable);
 
-    // TODO : 메인 타입 호출해서 보내주기
     List<MangoUserResponse> response = usersPage.stream()
-            .map(user -> MangoUserResponse.of(user, "핫플형"))
+            .map(user -> {
+              // MongoDB에서 mainType 가져오기
+              String mainType = consumptionPatternRepository
+                      .findFirstByUserIdOrderByStartDateDesc(user.getId())
+                      .flatMap(cp -> cp.getMainType().stream().findFirst())
+                      .map(TypeItem::getName)
+                      .orElse("없음");
+
+              return MangoUserResponse.of(user, mainType);
+            })
             .collect(Collectors.toList());
 
     return ServiceResult.success(response);
