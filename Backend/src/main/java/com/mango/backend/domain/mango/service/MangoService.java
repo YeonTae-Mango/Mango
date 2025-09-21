@@ -94,16 +94,18 @@ public class MangoService {
               .build();
       matchRepository.save(match);
 
-      // 이벤트 발행
-      publisher.publishEvent(NotificationEvent.from(
-              fromUser.getId(),
-              "매칭 성공 !",
-              toUser.getNickname() + "님과 매칭되었습니다!"
-      ));
+      // 매칭 알림 1회만 발송
+      String fromMsg = toUser.getNickname() + "님과 매치되었습니다";
+      String toMsg = fromUser.getNickname() + "님과 매치되었습니다";
+
+      publisher.publishEvent(NotificationEvent.from(fromUser.getId(), "새로운 매칭이 있어요!", fromMsg));
+      publisher.publishEvent(NotificationEvent.from(toUser.getId(), "새로운 매칭이 있어요!", toMsg));
+    } else {
+      // 매칭이 아니면 좋아요 알림만 발송
       publisher.publishEvent(NotificationEvent.from(
               toUser.getId(),
-              "매칭 성공 !",
-              fromUser.getNickname() + "님과 매칭되었습니다!"
+              "망고를 받았어요!",
+              fromUser.getNickname() + "님이 나를 망고 했습니다"
       ));
     }
     return ServiceResult.success(null);
