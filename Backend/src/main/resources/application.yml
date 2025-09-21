@@ -150,6 +150,8 @@ firebase:
 server:
   servlet:
     context-path: /dev
+  forward-headers-strategy: framework
+  use-forward-headers: true
 ---
 
 spring:
