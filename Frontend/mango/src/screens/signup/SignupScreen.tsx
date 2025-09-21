@@ -8,6 +8,7 @@ import PasswordForm from '../../components/signup/PasswordForm';
 import BirthdateForm from '../../components/signup/BirthdateForm';
 import GenderForm from '../../components/signup/GenderForm';
 import LocationForm from '../../components/signup/LocationForm';
+import RadiusForm from '../../components/signup/RadiusForm';
 import SignupButton from '../../components/signup/SignupButton';
 import { useSignupAnimation } from '../../hooks/useSignupAnimation';
 
@@ -22,6 +23,9 @@ export default function SignupScreen() {
   const [gender, setGender] = useState<'male' | 'female' | ''>('');
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
+  const [latitude, setLatitude] = useState(37.5013);
+  const [longitude, setLongitude] = useState(127.0396);
+  const [radius, setRadius] = useState(300);
 
   const handleNext = () => {
     // 각 단계별 유효성 검사
@@ -42,13 +46,17 @@ export default function SignupScreen() {
       alert('위치를 선택해주세요.');
       return;
     }
+    if (currentStep === 'radius' && radius < 100) {
+      alert('반경을 설정해주세요.');
+      return;
+    }
 
     // 마지막 단계가 아니면 다음 단계로 이동
-    if (currentStep !== 'location') {
+    if (currentStep !== 'radius') {
       goToNextStep();
     } else {
       // 회원가입 완료
-      console.log('회원가입 완료:', { email, password, birthdate, gender, city, district });
+      console.log('회원가입 완료:', { email, password, birthdate, gender, city, district, latitude, longitude, radius });
       navigation.navigate('SignupComplete');
     }
   };
@@ -68,6 +76,7 @@ export default function SignupScreen() {
   const birthdateTransform = getTransform('birthdate');
   const genderTransform = getTransform('gender');
   const locationTransform = getTransform('location');
+  const radiusTransform = getTransform('radius');
 
   return (
     <KeyboardAvoidingView 
@@ -146,14 +155,35 @@ export default function SignupScreen() {
             <LocationForm
               city={city}
               district={district}
+              onLocationChange={(newCity, newDistrict, newLatitude, newLongitude) => {
+                setCity(newCity);
+                setDistrict(newDistrict);
+                setLatitude(newLatitude);
+                setLongitude(newLongitude);
+              }}
               onCityPress={() => {
-                // 임시로 서울시 설정
-                setCity('서울시');
+                // 시/도 선택 로직 (필요시 구현)
+                console.log('시/도 선택');
               }}
               onDistrictPress={() => {
-                // 임시로 강남구 설정
-                setDistrict('강남구');
+                // 구/군 선택 로직 (필요시 구현)
+                console.log('구/군 선택');
               }}
+            />
+          </Animated.View>
+
+          {/* 반경 폼 */}
+          <Animated.View 
+            className="absolute inset-0"
+            style={{
+              transform: [{ translateX: radiusTransform }],
+            }}
+          >
+            <RadiusForm
+              latitude={latitude}
+              longitude={longitude}
+              radius={radius}
+              onRadiusChange={setRadius}
             />
           </Animated.View>
         </View>
@@ -165,10 +195,11 @@ export default function SignupScreen() {
             currentStep === 'password' ? !!password : 
             currentStep === 'birthdate' ? !!birthdate :
             currentStep === 'gender' ? !!gender :
-            !!(city && district)
+            currentStep === 'location' ? !!(city && district) :
+            currentStep === 'radius' ? radius >= 100 : false
           }
           onPress={handleNext}
-          text={currentStep === 'location' ? '가입 완료' : '다음'}
+          text={currentStep === 'radius' ? '가입 완료' : '다음'}
         />
       </View>
     </KeyboardAvoidingView>
