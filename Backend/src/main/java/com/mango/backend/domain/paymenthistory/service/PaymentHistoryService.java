@@ -1,14 +1,16 @@
 package com.mango.backend.domain.paymenthistory.service;
 
-import com.mango.backend.domain.even.UserSignUpEvent;
-import com.mango.backend.domain.paymenthistory.dto.response.PaymentApiResponse;
+import com.mango.backend.domain.event.UserSignUpEvent;
 import com.mango.backend.domain.paymenthistory.dto.PaymentHistoryDto;
+import com.mango.backend.domain.paymenthistory.dto.response.PaymentApiResponse;
 import com.mango.backend.domain.paymenthistory.entity.PaymentHistory;
 import com.mango.backend.domain.paymenthistory.repository.PaymentHistoryRepository;
 import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.domain.user.repository.UserRepository;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
