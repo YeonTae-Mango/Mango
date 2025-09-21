@@ -32,7 +32,7 @@ public class MatchService {
   //      로케이션 변경 시 재계산 필요
   //      찾고 싶은 범위 수정 시에도 재계산 필요
   //      모두 계산을 해놓고, 유저에 대한 리스트는 레디스에 저장 -> 레디스에 없다면 다시 계산 필요
-  public ServiceResult<List<UserSwipeResponse>> getSwipeList(String token, Long requestId) {
+  public ServiceResult<List<UserSwipeResponse>> getSwipeList(String token, Long requestId, String category) {
     Long userId = jwtProvider.getUserIdFromToken(token);
     if (!userId.equals(requestId)) {
       return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
@@ -61,14 +61,14 @@ public class MatchService {
         .filter(u -> !blockedIds.contains(u.getId()))    // 차단 제외
         .filter(u -> !matchedIds.contains(u.getId()))    // 매칭 제외
         .filter(u -> !iLikedIds.contains(u.getId()))     // 이미 좋아요 누른 사람 제외
-        .map(u -> {
+        .map(user -> {
           double distanceKm = me.distanceInKm(
               me.getLocation().getY(), me.getLocation().getX(),
-              u.getLocation().getY(), u.getLocation().getX()
+              user.getLocation().getY(), user.getLocation().getX()
           );
 
           int distanceKmInt = (int) Math.round(distanceKm); // 정수 km로 변환
-          boolean theyLiked = theyLikedIds.contains(u.getId());
+          boolean theyLiked = theyLikedIds.contains(user.getId());
 
           // id + 대분류(8개짜리) + 키워드(수량 제한 없음)를 AI 서버로 보내줘서
           // 궁합 검사를 한 값을 기준으로 재정렬 한다.
@@ -88,7 +88,7 @@ public class MatchService {
           // ------------------------
 
           return UserSwipeResponse.from(
-              u,
+              user,
               theyLiked,
               distanceKmInt,
               mockMainType,
@@ -96,6 +96,8 @@ public class MatchService {
               mockFood
           );
         })
+        // category 필터 적용: category가 지정된 경우 mockMainType과 일치하는 것만 남김
+        .filter(resp -> category == null || category.equals(resp.mainType()))
         .toList();
 
     return ServiceResult.success(result);

@@ -33,6 +33,8 @@ public enum ErrorCode {
   USER_INVALID_DISTANCE("USER012", "거리제한을 다시 확인해주세요", HttpStatus.BAD_REQUEST),
   USER_INVALID_INTRODUCTION("USER013", "한줄소개를 다시 확인해주세요", HttpStatus.BAD_REQUEST),
   USER_ALREADY_BLOCKED("USER014", "이미 차단된 사용자입니다.", HttpStatus.BAD_REQUEST),
+  USER_CANNOT_LIKE_SELF("USER015", "자기 자신을 좋아요 할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    USER_ALREADY_LIKED("USER016", "이미 좋아요한 사용자입니다.", HttpStatus.BAD_REQUEST),
   /* ============================
      FCM (푸시 알림 관련)
      ============================ */
