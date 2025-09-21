@@ -1,9 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Layout from '../../components/common/Layout';
+import AccountReconnectionModal from '../../components/home/AccountReconnectionModal';
 import ActionButtons from '../../components/home/ActionButtons';
 import NoMoreProfilesModal from '../../components/home/NoMoreProfilesModal';
 import ProfileCard, { ProfileCardRef } from '../../components/home/ProfileCard';
+import ReconnectionCompleteModal from '../../components/home/ReconnectionCompleteModal';
 
 interface HomeScreenProps {
   onLogout?: () => void;
@@ -21,6 +23,10 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
 
   // 모달 상태 관리
   const [showNoMoreProfilesModal, setShowNoMoreProfilesModal] = useState(false);
+  const [showReconnectionCompleteModal, setShowReconnectionCompleteModal] =
+    useState(false);
+  const [showAccountReconnectionModal, setShowAccountReconnectionModal] =
+    useState(false);
 
   const profileData = {
     userId: 123,
@@ -82,8 +88,18 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     setShowNoMoreProfilesModal(true);
   };
 
+  const handleShowReconnectionComplete = () => {
+    setShowReconnectionCompleteModal(true);
+  };
+
+  const handleShowAccountReconnection = () => {
+    setShowAccountReconnectionModal(true);
+  };
+
   const handleCloseModal = () => {
     setShowNoMoreProfilesModal(false);
+    setShowReconnectionCompleteModal(false);
+    setShowAccountReconnectionModal(false);
   };
 
   const handleConfirmDistance = (distance: number) => {
@@ -94,13 +110,25 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   return (
     <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <View className="flex-1 bg-white relative">
-        {/* 테스트 버튼 - 모달을 열기 위한 임시 버튼 */}
-        <View className="absolute top-4 right-4 z-40">
+        {/* 테스트 버튼들 - 모달을 열기 위한 임시 버튼들 */}
+        <View className="absolute top-4 right-4 z-40 space-y-2">
           <TouchableOpacity
-            className="bg-orange-500 px-4 py-2 rounded-full"
+            className="bg-orange-500 px-3 py-2 rounded-full"
             onPress={handleShowNoMoreProfiles}
           >
-            <Text className="text-white font-medium">모달 테스트</Text>
+            <Text className="text-white font-medium text-xs">프로필 없음</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-green-500 px-3 py-2 rounded-full"
+            onPress={handleShowReconnectionComplete}
+          >
+            <Text className="text-white font-medium text-xs">재연동 완료</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-blue-500 px-3 py-2 rounded-full"
+            onPress={handleShowAccountReconnection}
+          >
+            <Text className="text-white font-medium text-xs">계좌 재연동</Text>
           </TouchableOpacity>
         </View>
 
@@ -122,11 +150,19 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           />
         </View>
 
-        {/* NoMoreProfiles 모달 */}
+        {/* 모달들 */}
         <NoMoreProfilesModal
           visible={showNoMoreProfilesModal}
           onClose={handleCloseModal}
           onConfirm={handleConfirmDistance}
+        />
+        <ReconnectionCompleteModal
+          visible={showReconnectionCompleteModal}
+          onClose={handleCloseModal}
+        />
+        <AccountReconnectionModal
+          visible={showAccountReconnectionModal}
+          onClose={handleCloseModal}
         />
       </View>
     </Layout>
