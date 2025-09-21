@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FirebaseConfig {
 
-  @Value("${FIREBASE_KEY_PATH:FireBaseKey.json}")
+  @Value("${FIREBASE_KEY_PATH:src/main/resources/FireBaseKey.json}")
   private String firebaseKeyPath;
 
   @PostConstruct
