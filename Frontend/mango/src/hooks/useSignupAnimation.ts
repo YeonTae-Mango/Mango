@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Animated } from 'react-native';
 
-type SignupStep = 'email' | 'password' | 'birthdate' | 'gender' | 'location';
+type SignupStep = 'email' | 'password' | 'birthdate' | 'gender' | 'location' | 'radius';
 
 const ANIMATION_DURATION = 300;
 
@@ -15,6 +15,7 @@ export function useSignupAnimation() {
     new Animated.Value(1),   // birthdate (2)
     new Animated.Value(1),   // gender (3)
     new Animated.Value(1),   // location (4)
+    new Animated.Value(1),   // radius (5)
   ]).current;
 
   const stepIndex: Record<SignupStep, number> = {
@@ -23,6 +24,7 @@ export function useSignupAnimation() {
     birthdate: 2,
     gender: 3,
     location: 4,
+    radius: 5,
   };
 
   // 애니메이션 실행 함수
@@ -50,7 +52,7 @@ export function useSignupAnimation() {
 
   // 다음 단계로 이동
   const goToNextStep = () => {
-    const steps: SignupStep[] = ['email', 'password', 'birthdate', 'gender', 'location'];
+    const steps: SignupStep[] = ['email', 'password', 'birthdate', 'gender', 'location', 'radius'];
     const currentIndex = steps.indexOf(currentStep);
     
     if (currentIndex < steps.length - 1) {
@@ -61,7 +63,7 @@ export function useSignupAnimation() {
 
   // 이전 단계로 이동
   const goToPrevStep = () => {
-    const steps: SignupStep[] = ['email', 'password', 'birthdate', 'gender', 'location'];
+    const steps: SignupStep[] = ['email', 'password', 'birthdate', 'gender', 'location', 'radius'];
     const currentIndex = steps.indexOf(currentStep);
     
     if (currentIndex > 0) {
@@ -80,7 +82,7 @@ export function useSignupAnimation() {
         inputRange: [-1, 0],
         outputRange: [-400, 0],
       });
-    } else if (step === 'location') {
+    } else if (step === 'radius') {
       return animValue.interpolate({
         inputRange: [0, 1],
         outputRange: [0, 400],
