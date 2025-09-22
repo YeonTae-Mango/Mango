@@ -67,7 +67,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     /**
      * 특정 사용자가 참여한 채팅방 개수 조회
      * 
-     * === 언제 사용하나요? ===
+     * === 사용 시기 ===
      * - 사용자 프로필에서 "진행 중인 채팅 N개" 표시
      * - 채팅방 개수 제한 검사 (필요시)
      * - 통계 데이터 수집
