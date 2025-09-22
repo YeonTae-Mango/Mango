@@ -13,15 +13,27 @@ const apiClient = axios.create({
 // 요청 인터셉터 추가 (토큰 자동 첨부 + 디버깅)
 apiClient.interceptors.request.use(
   async config => {
-    // 토큰이 필요한 요청에 자동으로 Authorization 헤더 추가
-    try {
-      const token = await getAccessToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-        console.log('🔐 Authorization 헤더 추가됨');
+    // 인증이 필요없는 엔드포인트 목록
+    const publicEndpoints = ['/auth/login', '/auth/signup'];
+
+    // 현재 요청이 인증이 필요없는 엔드포인트인지 확인
+    const isPublicEndpoint = publicEndpoints.some(endpoint =>
+      config.url?.includes(endpoint)
+    );
+
+    // 토큰이 필요한 요청에만 자동으로 Authorization 헤더 추가
+    if (!isPublicEndpoint) {
+      try {
+        const token = await getAccessToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+          console.log('🔐 Authorization 헤더 추가됨');
+        }
+      } catch (error) {
+        console.warn('⚠️ 토큰 조회 실패:', error);
       }
-    } catch (error) {
-      console.warn('⚠️ 토큰 조회 실패:', error);
+    } else {
+      console.log('🔓 공개 엔드포인트 - 토큰 제외');
     }
 
     console.log('📤 API 요청:', {

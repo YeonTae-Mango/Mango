@@ -5,6 +5,7 @@ import {
   sendMangoDislike,
   sendMangoLike,
 } from '../api/swipe';
+
 import type { SwipeAction, UseSwipeOptions } from '../types/swipe';
 
 export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {

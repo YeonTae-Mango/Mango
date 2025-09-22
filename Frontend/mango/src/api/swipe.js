@@ -10,6 +10,7 @@ import apiClient from './client';
 export const getSwipeProfiles = async (userId, category = null) => {
   try {
     const token = await getAuthToken();
+
     const params = {
       userId: userId,
     };
@@ -40,6 +41,7 @@ export const getSwipeProfiles = async (userId, category = null) => {
 export const sendMangoLike = async (userId, requestId) => {
   try {
     const token = await getAuthToken();
+
     const response = await apiClient.post(
       `/mango/like/${userId}`,
       {
@@ -68,6 +70,7 @@ export const sendMangoLike = async (userId, requestId) => {
 export const sendMangoDislike = async (userId, requestId) => {
   try {
     const token = await getAuthToken();
+
     const response = await apiClient.post(
       `/mango/dislike/${userId}`,
       {
