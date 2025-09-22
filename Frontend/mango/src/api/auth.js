@@ -37,8 +37,25 @@ export const setTestCredentials = async (token, userId) => {
   try {
     await AsyncStorage.setItem('authToken', token);
     await AsyncStorage.setItem('userId', userId.toString());
-    console.log(`테스트 자격증명 저장 완료: 사용자 ID ${userId}`);
+    console.log(`🧪 테스트 자격증명 저장 완료:`);
+    console.log(`   - 사용자 ID: ${userId}`);
+    console.log(`   - 토큰: ${token}`);
   } catch (error) {
     console.error('테스트 자격증명 저장 실패:', error);
+  }
+};
+
+/**
+ * 테스트용: 현재 저장된 자격증명을 콘솔에 출력
+ */
+export const logCurrentCredentials = async () => {
+  try {
+    const token = await getAuthToken();
+    const userId = await getCurrentUserId();
+    console.log(`📋 현재 저장된 자격증명:`);
+    console.log(`   - 사용자 ID: ${userId}`);
+    console.log(`   - 토큰: ${token}`);
+  } catch (error) {
+    console.error('자격증명 조회 실패:', error);
   }
 };

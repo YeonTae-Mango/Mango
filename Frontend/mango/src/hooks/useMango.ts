@@ -17,8 +17,10 @@ export const useMangoFollowing = (
     queryKey: ['mangoFollowing', userId, page],
     queryFn: () => getMangoFollowing(userId, page),
     enabled: !!userId, // userId가 있을 때만 쿼리 실행
-    staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
-    gcTime: 10 * 60 * 1000, // 10분간 메모리에 보관 (cacheTime은 deprecated)
+    staleTime: 30 * 1000, // 30초간만 캐시 유지 (더 자주 업데이트)
+    gcTime: 5 * 60 * 1000, // 5분간 메모리에 보관
+    refetchOnWindowFocus: true, // 윈도우 포커스시 자동 새로고침
+    refetchOnReconnect: true, // 네트워크 재연결시 자동 새로고침
     ...options,
   });
 };
@@ -38,8 +40,10 @@ export const useMangoFollowers = (
     queryKey: ['mangoFollowers', userId, page],
     queryFn: () => getMangoFollowers(userId, page),
     enabled: !!userId, // userId가 있을 때만 쿼리 실행
-    staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
-    gcTime: 10 * 60 * 1000, // 10분간 메모리에 보관
+    staleTime: 30 * 1000, // 30초간만 캐시 유지 (더 자주 업데이트)
+    gcTime: 5 * 60 * 1000, // 5분간 메모리에 보관
+    refetchOnWindowFocus: true, // 윈도우 포커스시 자동 새로고침
+    refetchOnReconnect: true, // 네트워크 재연결시 자동 새로고침
     ...options,
   });
 };
