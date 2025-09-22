@@ -31,7 +31,7 @@ function TwoTimeChart() {
         data: myData,
         backgroundColor: "rgba(255, 99, 132, 0.8)",
         borderColor: "rgba(255, 99, 132, 1)",
-        borderWidth: 1,
+        borderWidth: 2,
         borderRadius: {
           topLeft: 4,
           topRight: 4,
@@ -101,10 +101,12 @@ function TwoTimeChart() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      {/* Chart */}
-      <div className="w-96 h-96">
-        <Bar data={chartData} options={chartOptions} />
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 80px)' }}>
+        {/* Chart */}
+        <div className="w-96 h-96">
+          <Bar data={chartData} options={chartOptions} />
+        </div>
       </div>
     </div>
   );
