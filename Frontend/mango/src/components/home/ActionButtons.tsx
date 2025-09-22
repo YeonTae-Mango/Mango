@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 interface ActionButtonsProps {
-  onReject?: () => void;
+  onDislike?: () => void;
   onMango?: () => void;
   // 스와이프 상태 props (HomeScreen에서 전달받음)
   swipeDirection?: 'left' | 'right' | null;
@@ -16,7 +16,7 @@ interface ActionButtonsProps {
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
-  onReject,
+  onDislike,
   onMango,
   swipeDirection,
   swipeIntensity = 0,
@@ -27,11 +27,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   );
 
   // 버튼 클릭 핸들러 (시각적 피드백 포함)
-  const handleRejectPress = () => {
+  const handleDislikePress = () => {
     // 잠깐 피드백 애니메이션 표시
     setButtonPressed('left');
     setTimeout(() => setButtonPressed(null), 200); // 0.2초 후 초기화
-    onReject?.(); // 실제 거절 액션 실행
+    onDislike?.(); // 실제 거절 액션 실행
   };
 
   const handleMangoPress = () => {
@@ -94,7 +94,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       <Animated.View style={xButtonAnimatedStyle}>
         <TouchableOpacity
           className={`${xButtonBgColor} rounded-full w-20 h-20 items-center justify-center mr-12`}
-          onPress={handleRejectPress}
+          onPress={handleDislikePress}
         >
           <Ionicons name="close" size={30} color={xIconColor} />
         </TouchableOpacity>

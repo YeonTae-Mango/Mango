@@ -1,19 +1,86 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+// import { getCurrentUserId } from '../../api/auth'; // 실제 로그인 구현 시 사용
+import { setTestCredentials } from '../../api/auth'; // 테스트용
 import Layout from '../../components/common/Layout';
-import AccountReconnectionModal from '../../components/home/AccountReconnectionModal';
 import ActionButtons from '../../components/home/ActionButtons';
 import NoMoreProfilesModal from '../../components/home/NoMoreProfilesModal';
 import ProfileCard, { ProfileCardRef } from '../../components/home/ProfileCard';
-import ReconnectionCompleteModal from '../../components/home/ReconnectionCompleteModal';
+import { useSwipe } from '../../hooks/useSwipe';
 
 interface HomeScreenProps {
   onLogout?: () => void;
 }
 
 export default function HomeScreen({ onLogout }: HomeScreenProps) {
-  // ProfileCard ref 생성
-  const profileCardRef = useRef<ProfileCardRef>(null);
+  const profileCardRef = useRef<ProfileCardRef>(null); // ProfileCard 참조
+  const [userId, setUserId] = useState<number | null>(null); // 현재 로그인된 사용자 ID
+
+  // useSwipe 훅 사용
+  const {
+    profiles,
+    currentProfile,
+    isLoading,
+    isError,
+    error,
+    hasMoreProfiles,
+    likeProfile,
+    dislikeProfile,
+    likeProfileBySwipe,
+    dislikeProfileBySwipe,
+    completeSwipe,
+    refreshProfiles,
+    hasProfiles,
+  } = useSwipe(userId || 0, {
+    onSwipeSuccess: (direction: 'left' | 'right') => {
+      // API 성공 시 애니메이션 트리거 (버튼 클릭용)
+      profileCardRef.current?.triggerSwipe(direction);
+    },
+  }); // userId가 null이면 0으로 대체
+
+  // ===== 테스트용 자격증명 설정 =====
+  useEffect(() => {
+    const setTestAuth = async () => {
+      try {
+        // 테스트용 토큰과 사용자 ID 설정
+        const testToken =
+          'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDkiLCJpYXQiOjE3NTg1MTUzNDksImV4cCI6MTc1ODYwMTc0OX0.bFGTsYG1KE4LI4rOU4MWt5MN2gErk5V0rR-sSSCKp2Y';
+        const testUserId = 109;
+
+        await setTestCredentials(testToken, testUserId);
+        setUserId(testUserId);
+        console.log('테스트 자격증명 설정 완료');
+      } catch (error) {
+        console.error('테스트 자격증명 설정 실패:', error);
+      }
+    };
+    setTestAuth();
+  }, []);
+
+  // ===== 실제 로그인 구현 시 사용할 코드 (현재 주석 처리) =====
+  // useEffect(() => {
+  //   const fetchUserId = async () => {
+  //     try {
+  //       const id = await getCurrentUserId();
+  //       setUserId(id);
+  //     } catch (error) {
+  //       console.error('사용자 ID 가져오기 실패:', error);
+  //     }
+  //   };
+  //   fetchUserId();
+  // }, []);
+
+  // 모든 프로필을 다 조회한 경우 NoMoreProfilesModal 자동 표시
+  useEffect(() => {
+    if (
+      !isLoading &&
+      hasProfiles &&
+      !hasMoreProfiles &&
+      currentProfile === null
+    ) {
+      setShowNoMoreProfilesModal(true);
+    }
+  }, [isLoading, hasProfiles, hasMoreProfiles, currentProfile]);
 
   // 스와이프 상태 관리(방향 및 강도)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(
@@ -23,46 +90,25 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
 
   // 모달 상태 관리
   const [showNoMoreProfilesModal, setShowNoMoreProfilesModal] = useState(false);
-  const [showReconnectionCompleteModal, setShowReconnectionCompleteModal] =
-    useState(false);
-  const [showAccountReconnectionModal, setShowAccountReconnectionModal] =
-    useState(false);
 
-  const profileData = {
-    userId: 123,
-    nickname: '닝닝',
-    age: 26,
-    primaryCategory: '핫플헌터',
-    secondCategory1: '카페인중독',
-    secondCategory2: '인터넷쇼핑',
-    secondCategory3: '빵순이',
-    introduction: '한줄소개입니다',
-    imageUrls: {
-      imageUrl1:
-        'https://postfiles.pstatic.net/MjAyNTA5MDZfMzkg/MDAxNzU3MTY1MzgxOTgy.qGR7VaYRlN94ot1rrKgvvRYJ_vKcJdFYT0Ai1uZVA0Eg.IRYvwfJ2qcg4MuKJoqzlrsNBYCOTPP5pdlsMmv2rfrIg.JPEG/20250905%EF%BC%BF134146_%EF%BC%881%EF%BC%89.jpg?type=w966',
-      imageUrl2:
-        'https://postfiles.pstatic.net/MjAyNTA5MDZfMTE1/MDAxNzU3MTY1NDAyNjc3.D02T6VofqRJojShRS6lMpFw6QT4MmxzddylGh7vCay8g.geeFikDZC6m7HBBx8-uQPLcfGCMWnqBq365cBM-LKvAg.JPEG/900%EF%BC%BF20250905%EF%BC%BF134433.jpg?type=w966',
-      imageUrl3:
-        'https://postfiles.pstatic.net/MjAyNTA5MDZfNSAg/MDAxNzU3MTY1MzgzMTI0.fLd0OetY7hBC2Z8MZ-sQSGKiVfwbWWjUNnfdF26mNU8g.xex89sDuzUNvuNnx2C6VuMDpASZ7o_4wHOVqSiycsg8g.JPEG/900%EF%BC%BF20250905%EF%BC%BF135623.jpg?type=w966',
-      imageUrl4:
-        'https://postfiles.pstatic.net/MjAyNTA5MDZfMjg4/MDAxNzU3MTY1NDE0MTE3.2qXmMqK7suL5TS79-hyreiKwcQ9Yf7TDihqrD_xaV5sg.MXQ0kmqPHY7IDSZQXvDl6ZU-4xHoOBA5jyMHLcdpeBUg.JPEG/900%EF%BC%BF20250905%EF%BC%BF134131.jpg?type=w966',
-    },
-    likeme: true,
-    sigungu: '관악구',
-    distance: '2km',
-    likes: false,
-  };
-
-  const handleReject = () => {
-    console.log('Profile rejected');
-    // ProfileCard의 왼쪽 스와이프 애니메이션 트리거
-    profileCardRef.current?.triggerSwipe('left');
+  const handleDislike = () => {
+    if (currentProfile) {
+      // 버튼 클릭: API 먼저 호출
+      dislikeProfile(currentProfile.id);
+      // API 성공 후 애니메이션은 useSwipe 훅에서 처리
+    } else {
+      console.log('현재 프로필이 없음');
+    }
   };
 
   const handleMango = () => {
-    console.log('Profile mango');
-    // ProfileCard의 오른쪽 스와이프 애니메이션 트리거
-    profileCardRef.current?.triggerSwipe('right');
+    if (currentProfile) {
+      // 버튼 클릭: API 먼저 호출
+      likeProfile(currentProfile.id);
+      // API 성공 후 애니메이션은 useSwipe 훅에서 처리
+    } else {
+      console.log('현재 프로필이 없음');
+    }
   };
 
   // 스와이프 핸들러
@@ -76,74 +122,87 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     setSwipeIntensity(intensity); // 현재 스와이프 강도 업데이트
   };
 
-  // 다음 프로필 조회 핸들러
-  const handleNextProfile = (action: 'like' | 'reject') => {
-    console.log(`다음 프로필 로드: ${action}`);
-    // TODO: 실제 다음 프로필 데이터를 API에서 가져오는 로직 구현
-    // TODO: 현재 액션(좋아요/거절)을 서버에 전송하는 로직 구현
+  // 다음 프로필 조회 핸들러 (스와이프 완료 시 호출)
+  const handleNextProfile = (action: 'like' | 'dislike') => {
+    console.log(`handleNextProfile 호출 - action: ${action}`);
+    if (currentProfile) {
+      console.log(
+        `다음 프로필 로드: ${action}, profileId: ${currentProfile.id}`
+      );
+
+      // 스와이프 전용 함수 사용 (인덱스 증가 없이 API만 호출)
+      if (action === 'like') {
+        likeProfileBySwipe(currentProfile.id);
+      } else {
+        dislikeProfileBySwipe(currentProfile.id);
+      }
+
+      // 스와이프 완료 후 수동으로 인덱스 증가
+      completeSwipe();
+    } else {
+      console.log('현재 프로필이 없음 (handleNextProfile)');
+    }
   };
 
   // 모달 핸들러
-  const handleShowNoMoreProfiles = () => {
-    setShowNoMoreProfilesModal(true);
-  };
-
-  const handleShowReconnectionComplete = () => {
-    setShowReconnectionCompleteModal(true);
-  };
-
-  const handleShowAccountReconnection = () => {
-    setShowAccountReconnectionModal(true);
-  };
-
   const handleCloseModal = () => {
     setShowNoMoreProfilesModal(false);
-    setShowReconnectionCompleteModal(false);
-    setShowAccountReconnectionModal(false);
   };
 
   const handleConfirmDistance = (distance: number) => {
     console.log(`거리 조정: ${distance}km`);
-    // TODO: 거리 설정을 서버에 전송하고 새로운 프로필을 가져오는 로직 구현
+    // 거리 설정 후 새로운 프로필 가져오기
+    refreshProfiles();
+    setShowNoMoreProfilesModal(false);
   };
+
+  // 로딩 상태 처리
+  if (isLoading) {
+    return (
+      <Layout onLogout={onLogout} showBottomSafeArea={false}>
+        <View className="flex-1 bg-white justify-center items-center">
+          <Text className="text-lg text-gray-600">프로필을 불러오는 중...</Text>
+        </View>
+      </Layout>
+    );
+  }
+
+  // 에러 상태 처리
+  if (isError) {
+    return (
+      <Layout onLogout={onLogout} showBottomSafeArea={false}>
+        <View className="flex-1 bg-white justify-center items-center">
+          <Text className="text-lg text-red-600 mb-4">
+            프로필을 불러오는데 실패했습니다.
+          </Text>
+          <TouchableOpacity
+            onPress={() => refreshProfiles()}
+            className="bg-orange-500 px-6 py-3 rounded-full"
+          >
+            <Text className="text-white font-medium">다시 시도</Text>
+          </TouchableOpacity>
+        </View>
+      </Layout>
+    );
+  }
 
   return (
     <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <View className="flex-1 bg-white relative">
-        {/* 테스트 버튼들 - 모달을 열기 위한 임시 버튼들 */}
-        <View className="absolute top-4 right-4 z-40 space-y-2">
-          <TouchableOpacity
-            className="bg-orange-500 px-3 py-2 rounded-full"
-            onPress={handleShowNoMoreProfiles}
-          >
-            <Text className="text-white font-medium text-xs">프로필 없음</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="bg-green-500 px-3 py-2 rounded-full"
-            onPress={handleShowReconnectionComplete}
-          >
-            <Text className="text-white font-medium text-xs">재연동 완료</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="bg-blue-500 px-3 py-2 rounded-full"
-            onPress={handleShowAccountReconnection}
-          >
-            <Text className="text-white font-medium text-xs">계좌 재연동</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* 프로필 카드 - 스와이프 제스처 감지 및 애니메이션을 처리 */}
-        <ProfileCard
-          ref={profileCardRef}
-          profile={profileData}
-          onSwipeUpdate={handleSwipeUpdate}
-          onNextProfile={handleNextProfile}
-        />
+        {currentProfile && (
+          <ProfileCard
+            ref={profileCardRef}
+            profile={currentProfile}
+            onSwipeUpdate={handleSwipeUpdate}
+            onNextProfile={handleNextProfile}
+          />
+        )}
 
         {/* 액션 버튼 - 스와이프 상태에 따라 크기와 색상이 변동 */}
         <View className="absolute bottom-0 left-0 right-0 z-30">
           <ActionButtons
-            onReject={handleReject}
+            onDislike={handleDislike}
             onMango={handleMango}
             swipeDirection={swipeDirection}
             swipeIntensity={swipeIntensity}
@@ -155,14 +214,6 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           visible={showNoMoreProfilesModal}
           onClose={handleCloseModal}
           onConfirm={handleConfirmDistance}
-        />
-        <ReconnectionCompleteModal
-          visible={showReconnectionCompleteModal}
-          onClose={handleCloseModal}
-        />
-        <AccountReconnectionModal
-          visible={showAccountReconnectionModal}
-          onClose={handleCloseModal}
         />
       </View>
     </Layout>
