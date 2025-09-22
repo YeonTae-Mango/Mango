@@ -242,7 +242,7 @@ export const clearAllSecureData = async (): Promise<void> => {
 };
 
 /**
- * 토큰 존재 여부 확인
+ * 토큰 존재 여부 확인 (Access Token만 있어도 유효로 판단)
  * @returns boolean
  */
 export const hasValidTokens = async (): Promise<boolean> => {
@@ -254,10 +254,14 @@ export const hasValidTokens = async (): Promise<boolean> => {
     const accessToken = await getAccessToken();
     const refreshToken = await getRefreshToken();
 
-    const hasTokens = !!(accessToken && refreshToken);
+    // Access Token만 있어도 유효한 것으로 판단
+    const hasTokens = !!accessToken;
     console.log(
       '🔍 토큰 유효성 확인 결과:',
       hasTokens ? '유효한 토큰 존재' : '토큰 없음'
+    );
+    console.log(
+      `🔍 토큰 상세: Access(${accessToken ? '존재' : '없음'}), Refresh(${refreshToken ? '존재' : '없음'})`
     );
 
     return hasTokens;
