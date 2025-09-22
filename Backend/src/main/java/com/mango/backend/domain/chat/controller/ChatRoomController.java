@@ -7,6 +7,8 @@ import com.mango.backend.domain.chat.entity.ChatMessage;
 import com.mango.backend.domain.chat.entity.ChatRoom;
 import com.mango.backend.domain.chat.service.ChatMessageService;
 import com.mango.backend.domain.chat.service.ChatRoomService;
+import com.mango.backend.domain.user.entity.User;
+import com.mango.backend.domain.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,7 @@ public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
+    private final UserRepository userRepository;
 
     /**
      * 내 채팅방 목록 조회
@@ -218,11 +221,15 @@ public class ChatRoomController {
             
             // 3. 채팅방 응답 DTO 생성
             ChatRoomResponse response = ChatRoomResponse.from(chatRoom, userId);
-            
+            // User 서비스 연동하여 상대방 정보 설정
+            User otherUser = userRepository.findById(response.getOtherUserId())
+                    .orElse(null);
             // 4. 상대방 사용자 정보 설정 (User 연관관계 활용)
             // ChatRoom에서 User 정보를 가져와서 상대방 정보 설정 가능
-            String otherUserNickname = "User" + response.getOtherUserId(); // 여전히 임시 - ChatRoom에서도 User 연관관계 활용 필요
-            String otherUserProfileImage = "/images/default-profile.png";
+            String otherUserNickname = otherUser != null ? otherUser.getNickname() : "탈퇴한 사용자";
+            String otherUserProfileImage = (otherUser != null && otherUser.getProfilePhoto() != null)
+                    ? otherUser.getProfilePhoto().getPhotoUrl()
+                    : "/images/default-profile.png";
             response = response.withOtherUserInfo(otherUserNickname, otherUserProfileImage);
             
             // 5. 읽음 처리 후이므로 안 읽은 메시지는 0개
