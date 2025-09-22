@@ -1,8 +1,12 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import CustomHeader from '../../components/common/CustomHeader';
 import Layout from '../../components/common/Layout';
+import {
+  useLogin,
+  transformFormDataToLoginRequest,
+} from '../../hooks/useLogin';
 
 interface BaseScreenProps {
   onLoginSuccess?: () => void;
@@ -13,16 +17,48 @@ export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    // 로그인 로직 구현
-    console.log('로그인 시도:', { email, password });
-    
-    // 로그인 성공 시 onLoginSuccess 호출
-    if (onLoginSuccess) {
-      onLoginSuccess();
-    } else {
-      navigation.navigate('Login');
+  const { login, isLoading, error, isSuccess, clearError } = useLogin();
+
+  // 로그인 성공 시 처리
+  useEffect(() => {
+    if (isSuccess) {
+      console.log('🎉 로그인 성공! 다음 화면으로 이동');
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      } else {
+        navigation.navigate('Main'); // 또는 적절한 메인 화면으로 이동
+      }
     }
+  }, [isSuccess, onLoginSuccess, navigation]);
+
+  // 에러 발생 시 알림 표시
+  useEffect(() => {
+    if (error) {
+      console.log('❌ 로그인 에러 발생:', error);
+      Alert.alert('로그인 실패', error, [
+        {
+          text: '확인',
+          onPress: () => {
+            console.log('🧹 에러 알림 확인 - 에러 상태 초기화');
+            clearError();
+          },
+        },
+      ]);
+    }
+  }, [error, clearError]);
+
+  const handleLogin = async () => {
+    console.log('🔑 로그인 시도:', { email, password });
+
+    // 폼 데이터를 API 요청 형식으로 변환
+    const loginData = transformFormDataToLoginRequest({
+      email,
+      password,
+      // fcmToken은 추후 FCM 구현 시 추가
+    });
+
+    // 로그인 실행
+    await login(loginData);
   };
 
   const handleSignup = () => {
@@ -48,6 +84,7 @@ export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
+            editable={!isLoading}
           />
 
           <TextInput
@@ -58,23 +95,24 @@ export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
+            editable={!isLoading}
           />
         </View>
 
         {/* 로그인 버튼 */}
         <TouchableOpacity
           className={`h-14 rounded-xl justify-center items-center mb-10 ${
-            email && password ? 'bg-mango-red' : 'bg-stroke'
+            email && password && !isLoading ? 'bg-mango-red' : 'bg-stroke'
           }`}
           onPress={handleLogin}
-          disabled={!email || !password}
+          disabled={!email || !password || isLoading}
         >
           <Text
             className={`text-base font-semibold ${
-              email && password ? 'text-white' : 'text-secondary'
+              email && password && !isLoading ? 'text-white' : 'text-secondary'
             }`}
           >
-            로그인
+            {isLoading ? '로그인 중...' : '로그인'}
           </Text>
         </TouchableOpacity>
 
@@ -88,7 +126,7 @@ export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
         {/* 회원가입 링크 */}
         <View className="flex-row justify-center items-center">
           <Text className="text-sm text-secondary">계정이 없으신가요? </Text>
-          <TouchableOpacity onPress={handleSignup}>
+          <TouchableOpacity onPress={handleSignup} disabled={isLoading}>
             <Text className="text-sm text-mango-red font-semibold">
               회원가입
             </Text>
@@ -99,10 +137,9 @@ export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
         <TouchableOpacity
           className="h-12 bg-blue-500 rounded-xl justify-center items-center"
           onPress={handleTest}
+          disabled={isLoading}
         >
-          <Text className="text-base font-semibold text-white">
-            테스트
-          </Text>
+          <Text className="text-base font-semibold text-white">테스트</Text>
         </TouchableOpacity>
       </View>
     </Layout>
