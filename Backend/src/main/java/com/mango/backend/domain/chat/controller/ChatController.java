@@ -54,7 +54,7 @@ public class ChatController {
      * @param request 메시지 요청 데이터
      * @param principal 인증된 사용자 정보 (JWT에서 추출)
      */
-    @MessageMapping("/chat.message")
+    @MessageMapping("/chat-message")
     public void handleChatMessage(ChatMessageRequest request, Principal principal) {
         try {
             // 1. 사용자 ID 추출 (추후 JWT 토큰에서 추출하도록 개선)
@@ -234,7 +234,7 @@ public class ChatController {
      * @param chatRoomId 채팅방 ID
      * @param principal 인증된 사용자 정보
      */
-    @MessageMapping("/chat.read")
+    @MessageMapping("/chat-read")
     public void markMessagesAsRead(Long chatRoomId, Principal principal) {
         try {
             Long userId = extractUserIdFromPrincipal(principal);
