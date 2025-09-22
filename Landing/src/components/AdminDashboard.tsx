@@ -1,65 +1,10 @@
-import { BarChart3, Map, Users, TrendingUp, Home, Smartphone } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { BarChart3, Map, Users, TrendingUp } from "lucide-react";
+import Navigation from "./Navigation";
 
 function AdminDashboard() {
-  const location = useLocation();
-  
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
-              <div className="text-2xl font-bold text-orange-500">mango</div>
-            </Link>
-
-            {/* Navigation Links */}
-            <div className="flex items-center gap-6">
-              <Link
-                to="/"
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  isActive("/") 
-                    ? "bg-orange-100 text-orange-600" 
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-              >
-                <Home size={18} />
-                <span className="text-sm font-medium">랜딩</span>
-              </Link>
-
-              <Link
-                to="/admin"
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  isActive("/admin") 
-                    ? "bg-orange-100 text-orange-600" 
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-              >
-                <BarChart3 size={18} />
-                <span className="text-sm font-medium">관리자</span>
-              </Link>
-
-              <Link
-                to="/webView"
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  isActive("/webView") 
-                    ? "bg-orange-100 text-orange-600" 
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-              >
-                <Smartphone size={18} />
-                <span className="text-sm font-medium">웹뷰</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
