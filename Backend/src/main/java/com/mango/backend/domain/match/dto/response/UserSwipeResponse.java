@@ -9,7 +9,7 @@ public record UserSwipeResponse(
     Long id,
     String nickname,
     String introduction,
-    String profileImageUrl,
+    List<String> profileImageUrls,
     String sigungu,
     int age,
     double distance,
@@ -21,15 +21,16 @@ public record UserSwipeResponse(
 ) {
 
   public static UserSwipeResponse from(User user, boolean theyLiked, double distanceKm,
-      String mainType, List<String> keywords, String food) {
-    String profileUrl =
-        user.getProfilePhoto() != null ? user.getProfilePhoto().getPhotoUrl() : null;
+      String mainType, List<String> keywords, String food, List<String> profileImageUrls) {
+
+    // 사진이 없으면 빈 리스트로 처리
+    List<String> photos = profileImageUrls != null ? profileImageUrls : List.of();
 
     return new UserSwipeResponse(
         user.getId(),
         user.getNickname(),
         user.getIntroduction(),
-        profileUrl,
+        photos,
         user.getSigungu(),
         user.getAge(),
         distanceKm,

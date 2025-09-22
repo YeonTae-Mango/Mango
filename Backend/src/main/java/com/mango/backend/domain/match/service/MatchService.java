@@ -6,6 +6,7 @@ import com.mango.backend.domain.match.dto.response.UserSwipeResponse;
 import com.mango.backend.domain.match.repository.MatchRepository;
 import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.domain.user.repository.UserRepository;
+import com.mango.backend.domain.userphoto.repository.UserPhotoRepository;
 import com.mango.backend.domain.visited.repository.VisitedRepository;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
@@ -25,7 +26,8 @@ public class MatchService {
   private final UserRepository userRepository;
   private final VisitedRepository visitedRepository;
   private final BlockRepository blockRepository;
-  private final MangoRepository mangoRepository; // 내가 좋아요 누른 사람 ID 조회용
+  private final MangoRepository mangoRepository; // 내가 좋아요 누른 사람 ID 조회용\
+  private final UserPhotoRepository userPhotoRepository;
   private final JwtProvider jwtProvider;
 
   // TODO 페이징 처리 필요
@@ -89,13 +91,19 @@ public class MatchService {
           String mockFood = "한식";
           // ------------------------
 
+          List<String> profileImageUrls = userPhotoRepository.findByUserOrderByPhotoOrderAsc(user)
+              .stream()
+              .map(photo -> photo.getPhotoUrl())
+              .toList();
+
           return UserSwipeResponse.from(
               user,
               theyLiked,
               distanceKmInt,
               mockMainType,
               mockKeywords,
-              mockFood
+              mockFood,
+              profileImageUrls
           );
         })
         // category 필터 적용: category가 지정된 경우 mockMainType과 일치하는 것만 남김
