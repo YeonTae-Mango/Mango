@@ -1,19 +1,15 @@
-
 package com.mango.backend.domain.admin.service;
 
+import com.mango.backend.domain.consumptionpattern.service.ConsumptionPatternService;
+import com.mango.backend.domain.paymenthistory.entity.PaymentHistory;
+import com.mango.backend.domain.paymenthistory.service.PaymentHistoryService;
 import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.domain.user.repository.UserRepository;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,10 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DummyDataService {
 
     private final UserRepository userRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    @Value("${server.port:8080}")
-    private String serverPort;
+    private final PaymentHistoryService paymentHistoryService;
+    private final ConsumptionPatternService consumptionPatternService;
 
     // 진행 상황을 저장할 Map (실제로는 Redis 등을 사용하는 것이 좋음)
     private final Map<String, DummyDataProgress> progressMap = new ConcurrentHashMap<>();
@@ -85,11 +79,6 @@ public class DummyDataService {
     }
 
     private void processUsersAsync(List<User> users, DummyDataProgress progress) {
-        String baseUrl = "http://localhost:" + serverPort;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
         AtomicInteger processedCount = new AtomicInteger(0);
 
         for (User user : users) {
@@ -104,37 +93,33 @@ public class DummyDataService {
                 boolean consumptionSuccess = false;
 
                 try {
-                    // 1. 결제 내역 생성
-                    String paymentUrl = baseUrl + "/api/v1/payment-history/fetch-external/" + userId;
-                    ResponseEntity<String> paymentResponse = restTemplate.exchange(
-                            paymentUrl, HttpMethod.POST, entity, String.class);
+                    // 1. 결제 내역 생성 - 서비스 직접 호출
+                    ServiceResult<List<PaymentHistory>> paymentResult = paymentHistoryService.fetchAndSaveExternalPaymentData(userId);
+                    paymentSuccess = paymentResult.success();
 
-                    paymentSuccess = paymentResponse.getStatusCode().is2xxSuccessful();
                     if (paymentSuccess) {
                         log.debug("✓ User {}: 결제 내역 생성 완료", userId);
                     } else {
-                        log.warn("✗ User {}: 결제 내역 생성 실패", userId);
+                        log.warn("✗ User {}: 결제 내역 생성 실패 - {}", userId, paymentResult.errorCode());
                         progress.paymentFailures.add(userId);
                     }
 
                     // 짧은 대기
-                    Thread.sleep(50);
+                    Thread.sleep(10);
 
-                    // 2. 소비 패턴 생성
-                    String consumptionUrl = baseUrl + "/api/v1/consumption-pattern/fetch-external/" + userId;
-                    ResponseEntity<String> consumptionResponse = restTemplate.exchange(
-                            consumptionUrl, HttpMethod.POST, entity, String.class);
+                    // 2. 소비 패턴 생성 - 서비스 직접 호출
+                    ServiceResult<Void> consumptionResult = consumptionPatternService.analysisPaymentData(userId);
+                    consumptionSuccess = consumptionResult.success();
 
-                    consumptionSuccess = consumptionResponse.getStatusCode().is2xxSuccessful();
                     if (consumptionSuccess) {
                         log.debug("✓ User {}: 소비 패턴 생성 완료", userId);
                     } else {
-                        log.warn("✗ User {}: 소비 패턴 생성 실패", userId);
+                        log.warn("✗ User {}: 소비 패턴 생성 실패 - {}", userId, consumptionResult.errorCode());
                         progress.consumptionFailures.add(userId);
                     }
 
                 } catch (Exception e) {
-                    log.error("User {} API 호출 실패: {}", userId, e.getMessage());
+                    log.error("User {} 서비스 호출 실패: {}", userId, e.getMessage());
                     progress.errors.add("User " + userId + ": " + e.getMessage());
                 }
 
@@ -156,8 +141,8 @@ public class DummyDataService {
                             (double) processed / users.size() * 100);
                 }
 
-                // API 부하 방지
-                Thread.sleep(50);
+                // 다음 유저 처리 전 대기
+                Thread.sleep(10);
 
             } catch (InterruptedException e) {
                 log.warn("처리가 중단되었습니다.");
@@ -166,6 +151,7 @@ public class DummyDataService {
             } catch (Exception e) {
                 log.error("User {} 처리 중 예외: {}", userId, e.getMessage(), e);
                 progress.failCount.incrementAndGet();
+                progress.processedCount.incrementAndGet();
                 progress.errors.add("User " + userId + ": " + e.getMessage());
             }
         }
