@@ -27,6 +27,17 @@ public class ChatMessageService {
     private final ChatRoomRepository chatRoomRepository;
 
     /**
+     * 채팅방 ID로 채팅방 조회
+     * 알림 전송 시 상대방 ID를 찾기 위해 사용
+     *
+     * @param chatRoomId 채팅방 ID
+     * @return ChatRoom 엔티티, 없으면 null
+     */
+    public ChatRoom findChatRoomById(Long chatRoomId) {
+        return chatRoomRepository.findById(chatRoomId).orElse(null);
+    }
+
+    /**
      * 텍스트 메시지 저장
      * 
      * === 처리 과정 ===
