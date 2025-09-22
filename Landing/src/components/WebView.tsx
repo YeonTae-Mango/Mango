@@ -9,6 +9,7 @@ function WebView() {
     { name: 'myKeywordChart', displayName: '키워드 차트', path: '/myKeywordChart' },
     { name: 'myMonthlyChart', displayName: '월별 차트', path: '/myMonthlyChart' },
     { name: 'myThisMonthChart', displayName: '이번 달 차트', path: '/myThisMonthChart' },
+    { name: 'myTimeChart', displayName: '내 시간대 차트', path: '/myTimeChart' },
     { name: 'twoTimeChart', displayName: '시간대별 차트', path: '/twoTimeChart' },
     { name: 'twoTypeChart', displayName: '타입별 차트', path: '/twoTypeChart' }
   ];

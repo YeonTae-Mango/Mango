@@ -31,7 +31,7 @@ function TwoTimeChart() {
         data: myData,
         backgroundColor: "rgba(255, 99, 132, 0.8)",
         borderColor: "rgba(255, 99, 132, 1)",
-        borderWidth: 1,
+        borderWidth: 2,
         borderRadius: {
           topLeft: 4,
           topRight: 4,
