@@ -28,6 +28,7 @@ import java.util.List;
  * === API 경로 설계 ===
  * - GET /api/v1/chat/rooms: 내 채팅방 목록
  * - POST /api/v1/chat/rooms: 채팅방 생성/조회
+ * - GET /api/v1/chat/rooms/{roomId} : 채팅방 입장
  * - GET /api/v1/chat/rooms/{roomId}/messages: 메시지 히스토리
  */
 @Slf4j
