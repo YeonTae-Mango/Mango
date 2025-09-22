@@ -33,16 +33,9 @@ import java.time.LocalDateTime;
  *     INDEX idx_room_sequence (chat_room_id, sequence_number),  -- 채팅방별 메시지 순서 조회용
  *     INDEX idx_room_created (chat_room_id, created_at)         -- 채팅방별 시간순 조회용  
  * );
- * 
- * === 메시지 타입은 sub_code 테이블에서 관리 ===
- * main_code = "MESSAGE_TYPE"
- * - sub_code = "TEXT": 텍스트 메시지
- * - sub_code = "IMAGE": 이미지 메시지
- * - 향후 "FILE", "VIDEO" 등 확장 가능
- * 
+ *
  * === sequence_number를 사용하는 이유 ===
  * - 메시지 순서 보장: 네트워크 지연으로 인한 순서 뒤바뀜 방지
- * - 성능: created_at 보다 숫자 비교가 빠름
  * - 메시지 중복 방지: 동일한 sequence_number 방지
  */
 @Entity
@@ -99,9 +92,7 @@ public class ChatMessage {
     private User sender;
 
     /**
-     * 메시지 타입 (sub_code 참조)
-     * 
-     * === sub_code 예시 ===
+     * 메시지 타입
      * - "TEXT": 텍스트 메시지
      * - "IMAGE": 이미지 메시지
      * 
@@ -115,28 +106,12 @@ public class ChatMessage {
 
     /**
      * 텍스트 메시지 내용
-     * 
-     * === 언제 사용하나요? ===
-     * - messageType이 "TEXT"일 때 필수
-     * - messageType이 "IMAGE"일 때 선택사항 (이미지 설명)
-     * 
-     * === TEXT 타입으로 설정하는 이유 ===
-     * - VARCHAR(255) 제한 없이 긴 메시지 지원
-     * - 이모지, 특수문자 등 유니코드 문자 지원
      */
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
     /**
      * 파일 URL (이미지, 파일 등)
-     * 
-     * === 언제 사용하나요? ===
-     * - messageType이 "IMAGE"일 때 필수
-     * - 향후 "FILE", "VIDEO" 타입에서도 사용
-     * 
-     * === URL 형태 예시 ===
-     * - "/uploads/chat/images/2024/03/uuid-filename.jpg"
-     * - "https://cdn.example.com/chat/images/uuid-filename.jpg"
      */
     @Column(name = "file_url", length = 500)
     private String fileUrl;
@@ -158,12 +133,6 @@ public class ChatMessage {
 
     /**
      * 읽음 상태
-     * 
-     * === 간단한 읽음 처리 방식 ===
-     * - 1:1 채팅이므로 단순한 boolean으로 처리
-     * - true: 상대방이 읽음
-     * - false: 상대방이 아직 안 읽음
-     * 
      * === 읽음 처리 시점 ===
      * - 상대방이 채팅방에 입장할 때
      * - 상대방이 해당 메시지가 화면에 표시될 때
