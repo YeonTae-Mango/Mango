@@ -6,11 +6,12 @@ public record SignUpResponse(
     Long userId,
     String email,
     String nickname,
+    String token,
     LocalDateTime createdAt
 ) {
 
-  public static SignUpResponse of(Long userId, String email, String nickname,
+  public static SignUpResponse of(Long userId, String email, String nickname, String token,
       LocalDateTime createdAt) {
-    return new SignUpResponse(userId, email, nickname, createdAt);
+    return new SignUpResponse(userId, email, nickname, token, createdAt);
   }
 }

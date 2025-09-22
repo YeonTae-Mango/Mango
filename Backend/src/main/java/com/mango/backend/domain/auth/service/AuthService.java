@@ -62,7 +62,7 @@ public class AuthService {
 
     GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     Point location = geometryFactory.createPoint(
-            new Coordinate(longitude, latitude) // (lon, lat) 순서
+        new Coordinate(longitude, latitude) // (lon, lat) 순서
     );
 
     User user = User.builder()
@@ -78,11 +78,16 @@ public class AuthService {
         .build();
 
     authRepository.save(user);
-
+    String token = jwtProvider.generateToken(user.getId());
+    Duration expire = Duration.ofMillis(
+        jwtProvider.getExpiration(token).getTime() - System.currentTimeMillis());
+    redisTemplate.opsForValue().set("JWT:" + user.getId(), token, expire);
+    log.info("JWT token stored in Redis for userId {}: {}", user.getId(), token);
     SignUpResponse response = SignUpResponse.of(
         user.getId(),
         user.getEmail(),
         user.getNickname(),
+        token,
         now()
     );
 
