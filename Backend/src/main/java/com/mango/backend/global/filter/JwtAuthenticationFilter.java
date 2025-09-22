@@ -58,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return;
       }
     } else {
-      log.info("No Authorization header or it does not start with Bearer");
+//      log.info("No Authorization header or it does not start with Bearer");
     }
 
     filterChain.doFilter(request, response);
