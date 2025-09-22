@@ -2,18 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
-
-interface User {
-  id: number;
-  name: string;
-  age: number;
-  image: string;
-  distance: string;
-  category: string;
-}
+import { MangoUser } from '../../types/mango';
 
 interface MangoCardProps {
-  user: User;
+  user: MangoUser;
   onPress: (userName: string) => void;
 }
 
@@ -22,12 +14,14 @@ export default function MangoCard({ user, onPress }: MangoCardProps) {
     <TouchableOpacity
       className="w-[48%] mb-4 bg-white rounded-2xl overflow-hidden"
       style={{ aspectRatio: 0.65 }}
-      onPress={() => onPress(user.name)}
+      onPress={() => onPress(user.nickname)}
     >
       <View className="flex-1 relative">
         {/* 프로필 이미지 영역 */}
         <Image
-          source={{ uri: user.image }}
+          source={{
+            uri: user.profileUrl,
+          }}
           className="w-full h-full"
           resizeMode="cover"
         />
@@ -44,7 +38,7 @@ export default function MangoCard({ user, onPress }: MangoCardProps) {
           <View className="bg-black/30 rounded-full px-3 py-1.5 flex-row items-center">
             <Ionicons name="location-outline" size={14} color="white" />
             <Text className="text-white text-body-small-regular ml-1">
-              {user.distance}
+              {user.sigungu}
             </Text>
           </View>
         </View>
@@ -54,7 +48,7 @@ export default function MangoCard({ user, onPress }: MangoCardProps) {
           {/* 이름과 나이 */}
           <View className="flex-row items-center mb-2">
             <Text className="text-white text-subheading-bold">
-              {user.name}{' '}
+              {user.nickname}{' '}
               <Text className="text-subheading-bold">{user.age}</Text>
             </Text>
           </View>
@@ -64,7 +58,7 @@ export default function MangoCard({ user, onPress }: MangoCardProps) {
             <View className="bg-mango-red/80 rounded-full px-3 py-1.5 flex-row items-center">
               <Ionicons name="flame-outline" size={16} color="white" />
               <Text className="text-body-medium-semibold text-white ml-1">
-                {user.category}
+                {user.mainType || '일반'}
               </Text>
             </View>
           </View>
