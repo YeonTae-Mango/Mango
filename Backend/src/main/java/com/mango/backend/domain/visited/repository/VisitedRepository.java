@@ -10,6 +10,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface VisitedRepository extends JpaRepository<Visited, Long> {
 
+  // 특정 from -> to 방문 기록 존재 여부
+  boolean existsByFromAndTo(User from, User to);
+
   List<Visited> findAllByFrom(User from);
 
   // userId가 방문한(to_id) 사용자들의 ID 목록
