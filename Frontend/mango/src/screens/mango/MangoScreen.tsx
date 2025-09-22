@@ -1,11 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import Layout from '../../components/common/Layout';
 import MangoCard from '../../components/mango/MangoCard';
 import MangoTab from '../../components/mango/MangoTab';
 import { useMangoFollowers, useMangoFollowing } from '../../hooks/useMango';
+import { useAuthStore } from '../../store/authStore';
 import type { MangoUser } from '../../types/mango';
 
 interface MangoScreenProps {
@@ -29,7 +29,7 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
     setCurrentPage(0); // 탭 변경 시 페이지 초기화
 
     // 탭 변경 시 해당 탭의 최신 데이터 새로고침
-    if (currentUserId > 0) {
+    if (currentUserId) {
       if (tab === 'sent') {
         refetchFollowing();
       } else {
@@ -38,23 +38,9 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
     }
   };
 
-  // 현재 로그인된 사용자 ID - 홈에서와 동일하게 AsyncStorage에서 직접 가져오기
-  const [currentUserId, setCurrentUserId] = useState<number>(0);
-  useEffect(() => {
-    const loadUserId = async () => {
-      try {
-        const userId = await AsyncStorage.getItem('userId');
-        const parsedUserId = userId ? parseInt(userId) : 109; // 기본값은 테스트용 109
-        setCurrentUserId(parsedUserId);
-        console.log('로그인된 사용자 ID:', parsedUserId);
-      } catch (error) {
-        console.error('사용자 ID 로딩 실패:', error);
-        setCurrentUserId(109); // 에러 시 테스트용 기본값
-      }
-    };
-
-    loadUserId();
-  }, []);
+  // 현재 로그인된 사용자 정보 (새로운 인증 시스템 사용)
+  const { user } = useAuthStore();
+  const currentUserId = user?.id || 0;
 
   // 내가 망고한 사람들 목록 조회 (sent 탭)
   const {
@@ -62,8 +48,8 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
     isLoading: isFollowingLoading,
     error: followingError,
     refetch: refetchFollowing,
-  } = useMangoFollowing(currentUserId, currentPage, {
-    enabled: activeTab === 'sent' && currentUserId > 0,
+  } = useMangoFollowing(currentPage, {
+    enabled: activeTab === 'sent',
   });
 
   // 나를 망고한 사람들 목록 조회 (received 탭)
@@ -72,8 +58,8 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
     isLoading: isFollowersLoading,
     error: followersError,
     refetch: refetchFollowers,
-  } = useMangoFollowers(currentUserId, currentPage, {
-    enabled: activeTab === 'received' && currentUserId > 0,
+  } = useMangoFollowers(currentPage, {
+    enabled: activeTab === 'received',
   });
 
   // 현재 활성 탭에 따른 데이터 및 상태 처리
@@ -90,7 +76,7 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
   // 화면에 포커스될 때마다 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
-      if (currentUserId > 0) {
+      if (currentUserId) {
         // 현재 활성 탭에 따라 해당 데이터를 새로고침
         if (activeTab === 'sent') {
           refetchFollowing();
@@ -108,7 +94,7 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
         <MangoTab activeTab={activeTab} onTabChange={handleTabChange} />
 
         {/* 스크롤 가능한 카드 목록 */}
-        {currentUserId === 0 ? (
+        {!currentUserId ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#ff6b6b" />
             <Text className="mt-2 text-gray-600">

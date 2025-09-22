@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 // import { getCurrentUserId } from '../../api/auth'; // 실제 로그인 구현 시 사용
-import { setTestCredentials } from '../../api/auth'; // 테스트용
 import Layout from '../../components/common/Layout';
 import ActionButtons from '../../components/home/ActionButtons';
 import NoMoreProfilesModal from '../../components/home/NoMoreProfilesModal';
@@ -47,7 +46,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDkiLCJpYXQiOjE3NTg1MTUzNDksImV4cCI6MTc1ODYwMTc0OX0.bFGTsYG1KE4LI4rOU4MWt5MN2gErk5V0rR-sSSCKp2Y';
         const testUserId = 109;
 
-        await setTestCredentials(testToken, testUserId);
+        // await setTestCredentials(testToken, testUserId);
         setUserId(testUserId);
         console.log('테스트 자격증명 설정 완료');
       } catch (error) {
