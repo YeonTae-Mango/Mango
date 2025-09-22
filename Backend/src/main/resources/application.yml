@@ -1,4 +1,4 @@
-0spring:
+spring:
   application:
     name: Backend
   profiles:
