@@ -18,7 +18,7 @@ public class MatchController extends BaseController {
 
 
   @Operation(
-          summary = "유저 목록 조회 (임시 목데이터 사용중)",
+          summary = "유저 목록 조회",
           description = "주어진 기준으로 가까운 순으로 유저 목록을 조회합니다. " +
                   "카테고리를 선택하면 해당 유형만 필터링하며, 검색 결과가 없으면 빈 리스트를 반환합니다."
   )
@@ -35,5 +35,21 @@ public class MatchController extends BaseController {
             "근처 사용자 목록 조회에 성공하였습니다."
     );
   }
-
+    @Operation(
+            summary = "유저 목록 조회 (Auth 토큰 확인 안하는 버전으로 테스트용입니다. prod 에서는 사용하지 않는것 권장)",
+            description = "주어진 기준으로 가까운 순으로 유저 목록을 조회합니다. " +
+                          "카테고리를 선택하면 해당 유형만 필터링하며, 검색 결과가 없으면 빈 리스트를 반환합니다."
+    )
+  @GetMapping("/swipe-test")
+  public ResponseEntity<BaseResponse> getNearbyUsers2(
+          @Parameter(description = "조회할 유저 ID", required = true)
+          @RequestParam Long userId,
+          @Parameter(description = "선택 카테고리 (optional)")
+          @RequestParam(required = false) String category
+  ) {
+    return toResponseEntity(
+            matchService.getSwipeList2( userId, category),
+            "근처 사용자 목록 조회에 성공하였습니다."
+    );
+  }
 }
