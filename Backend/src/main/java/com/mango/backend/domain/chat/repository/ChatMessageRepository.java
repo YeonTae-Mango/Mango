@@ -21,41 +21,28 @@ import java.util.Optional;
  * 3. 읽음 상태 관리
  * 4. 최신 메시지 조회 (채팅방 목록에서 미리보기용)
  * 
- * === 성능 최적화 고려사항 ===
- * 1. 인덱스 활용: (chat_room_id, sequence_number), (chat_room_id, created_at)
- * 2. 페이징으로 대량 메시지 처리
- * 3. 읽음 상태 일괄 업데이트
  */
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
     /**
      * 채팅방의 메시지를 순서대로 페이징 조회
-     * 
-     * === 순서 보장 ===
-     * sequence_number 기준으로 정렬하여 메시지 순서를 보장합니다.
-     * created_at 보다 sequence_number가 더 정확한 순서를 제공합니다.
+     * sequence_number 기준으로 정렬하여 메시지 순서를 보장함
      * 
      * === 페이징 사용법 ===
      * Pageable pageable = PageRequest.of(0, 20, Sort.by("sequenceNumber").ascending());
      * Page<ChatMessage> messages = repository.findByChatRoomIdOrderBySequenceNumberAsc(roomId, pageable);
-     * 
-     * === 왜 Page 반환? ===
-     * - 전체 메시지 개수 제공 (totalElements)
-     * - 페이지 정보 제공 (totalPages, hasNext, hasPrevious)
-     * - 클라이언트에서 무한 스크롤 구현 시 유용
      * 
      * @param chatRoomId 채팅방 ID
      * @param pageable 페이징 정보 (페이지 번호, 크기, 정렬)
      * @return 페이징된 메시지 목록
      */
     Page<ChatMessage> findByChatRoomIdOrderBySequenceNumberAsc(Long chatRoomId, Pageable pageable);
-
-
+    
     /**
      * 채팅방의 최신 메시지 조회
      * 
-     * === 언제 사용하나요? ===
+     * === 사용시기 ===
      * - 채팅방 목록에서 마지막 메시지 미리보기
      * - 새 메시지 알림 표시
      * - 채팅방 정렬 기준 (최신 메시지 시간)
