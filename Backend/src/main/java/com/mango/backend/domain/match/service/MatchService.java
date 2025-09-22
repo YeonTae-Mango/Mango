@@ -32,7 +32,8 @@ public class MatchService {
   //      로케이션 변경 시 재계산 필요
   //      찾고 싶은 범위 수정 시에도 재계산 필요
   //      모두 계산을 해놓고, 유저에 대한 리스트는 레디스에 저장 -> 레디스에 없다면 다시 계산 필요
-  public ServiceResult<List<UserSwipeResponse>> getSwipeList(String token, Long requestId, String category) {
+  public ServiceResult<List<UserSwipeResponse>> getSwipeList(String token, Long requestId,
+      String category) {
     Long userId = jwtProvider.getUserIdFromToken(token);
     if (!userId.equals(requestId)) {
       return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
@@ -47,7 +48,8 @@ public class MatchService {
     List<User> nearbyUsers = userRepository.findNearbyUsers(
         me.getLocation().getY(), // latitude
         me.getLocation().getX(), // longitude
-        me.getDistance()
+        me.getDistance(),
+        me.getGender()
     );
 
     Set<Long> visitedIds = visitedRepository.findVisitedUserIdsByUserId(userId);

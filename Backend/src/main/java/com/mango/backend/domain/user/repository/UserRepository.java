@@ -32,24 +32,24 @@ public interface UserRepository extends JpaRepository<User, Long> {
       @Param("targetId") Long targetId);
 
   @Query(value = """
-    SELECT u.*
-    FROM users u
-    WHERE u.location IS NOT NULL
-    AND u.gender != :gender
-    AND ST_Distance_Sphere(
-          u.location,
-          ST_GeomFromText(CONCAT('POINT(', :longitude, ' ', :latitude, ')'), 4326)
-        ) <= :distance * 1000
-    ORDER BY ST_Distance_Sphere(
-          u.location,
-          ST_GeomFromText(CONCAT('POINT(', :longitude, ' ', :latitude, ')'), 4326)
-        )
-    """,
-          nativeQuery = true)
+      SELECT u.*
+      FROM users u
+      WHERE u.location IS NOT NULL
+      AND u.gender = CASE WHEN :gender = 'M' THEN 'F' ELSE 'M' END
+      AND ST_Distance_Sphere(
+            u.location,
+            ST_GeomFromText(CONCAT('POINT(', :longitude, ' ', :latitude, ')'), 4326)
+          ) <= :distance * 1000
+      ORDER BY ST_Distance_Sphere(
+            u.location,
+            ST_GeomFromText(CONCAT('POINT(', :longitude, ' ', :latitude, ')'), 4326)
+          )
+      """,
+      nativeQuery = true)
   List<User> findNearbyUsers(
-          @Param("longitude") Double longitude,
-          @Param("latitude") Double latitude,
-          @Param("distance") Integer distance);
-
+      @Param("longitude") Double longitude,
+      @Param("latitude") Double latitude,
+      @Param("distance") Integer distance,
+      @Param("gender") String gender);
 }
 
