@@ -79,14 +79,15 @@ public class AuthService {
 
     authRepository.save(user);
 
-    eventPublisher.publishEvent(UserSignUpEvent.from(user));
-
     SignUpResponse response = SignUpResponse.of(
         user.getId(),
         user.getEmail(),
         user.getNickname(),
         now()
     );
+
+    eventPublisher.publishEvent(UserSignUpEvent.from(user));
+
     return ServiceResult.success(response);
   }
 
