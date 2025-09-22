@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +45,7 @@ public class UserPhotoController extends BaseController {
       @ApiResponse(responseCode = "200", description = "업로드 성공"),
       @ApiResponse(responseCode = "400", description = "파일 업로드 실패")
   })
-  @PostMapping("/{userId}")
+  @PostMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<BaseResponse> uploadPhoto(
       @PathVariable Long userId,
       @Parameter(description = "업로드할 이미지 파일", required = true)
