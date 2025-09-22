@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-// import { getCurrentUserId } from '../../api/auth'; // 실제 로그인 구현 시 사용
 import Layout from '../../components/common/Layout';
 import ActionButtons from '../../components/home/ActionButtons';
 import NoMoreProfilesModal from '../../components/home/NoMoreProfilesModal';
 import ProfileCard, { ProfileCardRef } from '../../components/home/ProfileCard';
 import { useSwipe } from '../../hooks/useSwipe';
+import { useAuthStore } from '../../store/authStore';
 
 interface HomeScreenProps {
   onLogout?: () => void;
@@ -13,15 +13,16 @@ interface HomeScreenProps {
 
 export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const profileCardRef = useRef<ProfileCardRef>(null); // ProfileCard 참조
-  const [userId, setUserId] = useState<number | null>(null); // 현재 로그인된 사용자 ID
+
+  // 현재 로그인된 사용자 정보 (새로운 인증 시스템 사용)
+  const { user } = useAuthStore();
+  const userId = user?.id || 0;
 
   // useSwipe 훅 사용
   const {
-    profiles,
     currentProfile,
     isLoading,
     isError,
-    error,
     hasMoreProfiles,
     likeProfile,
     dislikeProfile,
@@ -30,44 +31,12 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     completeSwipe,
     refreshProfiles,
     hasProfiles,
-  } = useSwipe(userId || 0, {
+  } = useSwipe(userId, {
     onSwipeSuccess: (direction: 'left' | 'right') => {
       // API 성공 시 애니메이션 트리거 (버튼 클릭용)
       profileCardRef.current?.triggerSwipe(direction);
     },
-  }); // userId가 null이면 0으로 대체
-
-  // ===== 테스트용 자격증명 설정 =====
-  useEffect(() => {
-    const setTestAuth = async () => {
-      try {
-        // 테스트용 토큰과 사용자 ID 설정
-        const testToken =
-          'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDkiLCJpYXQiOjE3NTg1MTUzNDksImV4cCI6MTc1ODYwMTc0OX0.bFGTsYG1KE4LI4rOU4MWt5MN2gErk5V0rR-sSSCKp2Y';
-        const testUserId = 109;
-
-        // await setTestCredentials(testToken, testUserId);
-        setUserId(testUserId);
-        console.log('테스트 자격증명 설정 완료');
-      } catch (error) {
-        console.error('테스트 자격증명 설정 실패:', error);
-      }
-    };
-    setTestAuth();
-  }, []);
-
-  // ===== 실제 로그인 구현 시 사용할 코드 (현재 주석 처리) =====
-  // useEffect(() => {
-  //   const fetchUserId = async () => {
-  //     try {
-  //       const id = await getCurrentUserId();
-  //       setUserId(id);
-  //     } catch (error) {
-  //       console.error('사용자 ID 가져오기 실패:', error);
-  //     }
-  //   };
-  //   fetchUserId();
-  // }, []);
+  });
 
   // 모든 프로필을 다 조회한 경우 NoMoreProfilesModal 자동 표시
   useEffect(() => {
@@ -154,6 +123,19 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     refreshProfiles();
     setShowNoMoreProfilesModal(false);
   };
+
+  // 인증 상태 처리
+  if (!user) {
+    return (
+      <Layout onLogout={onLogout} showBottomSafeArea={false}>
+        <View className="flex-1 bg-white justify-center items-center">
+          <Text className="text-lg text-gray-600">
+            사용자 정보를 불러오는 중...
+          </Text>
+        </View>
+      </Layout>
+    );
+  }
 
   // 로딩 상태 처리
   if (isLoading) {
