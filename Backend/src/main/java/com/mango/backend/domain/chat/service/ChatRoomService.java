@@ -5,6 +5,8 @@ import com.mango.backend.domain.chat.entity.ChatMessage;
 import com.mango.backend.domain.chat.entity.ChatRoom;
 import com.mango.backend.domain.chat.repository.ChatMessageRepository;
 import com.mango.backend.domain.chat.repository.ChatRoomRepository;
+import com.mango.backend.domain.user.entity.User;
+import com.mango.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,6 +37,7 @@ public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final UserRepository userRepository;
 
     /**
      * 채팅방 생성 또는 기존 채팅방 조회
@@ -77,9 +80,15 @@ public class ChatRoomService {
         // 4. DTO 변환 및 추가 정보 설정
         ChatRoomResponse response = ChatRoomResponse.from(chatRoom, currentUserId);
         
-        // TODO: User 서비스 연동하여 상대방 정보 설정
-        String otherUserNickname = "User" + response.getOtherUserId();
-        String otherUserProfileImage = "/images/default-profile.png";
+        // User 서비스 연동하여 상대방 정보 설정
+        User otherUser = userRepository.findById(response.getOtherUserId())
+                .orElse(null);
+
+        String otherUserNickname = otherUser != null ? otherUser.getNickname() : "탈퇴한 사용자";
+        String otherUserProfileImage = (otherUser != null && otherUser.getProfilePhoto() != null)
+                ? otherUser.getProfilePhoto().getPhotoUrl()
+                : "/images/default-profile.png";
+
         response = response.withOtherUserInfo(otherUserNickname, otherUserProfileImage);
         
         // 5. 마지막 메시지 정보 설정
@@ -115,9 +124,15 @@ public class ChatRoomService {
                     log.debug("응답 DTO 생성 - 채팅방ID: {}, otherUserId: {}",
                              response.getId(), response.getOtherUserId());
 
-                    // TODO: User 서비스 연동하여 상대방 정보 설정
-                    String otherUserNickname = "User" + response.getOtherUserId();
-                    String otherUserProfileImage = "/images/default-profile.png";
+                    // User 서비스 연동하여 상대방 정보 설정
+                    User otherUser = userRepository.findById(response.getOtherUserId())
+                            .orElse(null);
+
+                    String otherUserNickname = otherUser != null ? otherUser.getNickname() : "탈퇴한 사용자";
+                    String otherUserProfileImage = (otherUser != null && otherUser.getProfilePhoto() != null)
+                            ? otherUser.getProfilePhoto().getPhotoUrl()
+                            : "/images/default-profile.png";
+
                     response = response.withOtherUserInfo(otherUserNickname, otherUserProfileImage);
                     
                     // 마지막 메시지 정보 설정
