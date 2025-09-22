@@ -73,4 +73,33 @@ public class JwtProvider {
 
     return claims.getPayload().getExpiration();
   }
+
+  public boolean isTokenExpired(String token) {
+    try {
+      String parsed = token;
+      if (parsed.startsWith("Bearer ")) {
+        token = parsed.substring(7).trim();
+      }
+
+      Jws<Claims> claims = Jwts.parser()
+          .verifyWith(key)
+          .build()
+          .parseSignedClaims(token);
+
+      Date expiration = claims.getPayload().getExpiration();
+      if (expiration == null) {
+        log.warn("Token has no expiration date");
+        return true; // 만료 처리
+      }
+
+      boolean expired = expiration.before(new Date());
+      log.info("Token expiration: {}, now: {}, expired: {}", expiration, new Date(), expired);
+      return expired;
+
+    } catch (Exception e) {
+      log.error("Failed to parse token for expiration check", e);
+      return true; // 파싱 실패하면 만료로 처리
+    }
+  }
+
 }

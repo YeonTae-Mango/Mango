@@ -54,11 +54,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
       } else {
         log.warn("Invalid JWT Token. Unauthorized access.");
+        // 추가 디버그
+        try {
+          boolean isExpired = jwtProvider.isTokenExpired(token);  // 토큰 만료 여부 체크
+          log.warn("Token expired: {}", isExpired);
+        } catch (Exception e) {
+          log.error("Token validation threw exception", e);
+        }
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         return;
       }
     } else {
-//      log.info("No Authorization header or it does not start with Bearer");
+      log.info("No Authorization header or it does not start with Bearer");
     }
 
     filterChain.doFilter(request, response);
