@@ -47,19 +47,15 @@ public class UserPhotoService {
   }
 
   @Transactional
-  public ServiceResult<List<String>> uploadPhoto(String token, Long requestId,
+  public ServiceResult<List<String>> uploadPhoto(Long requestId,
       List<MultipartFile> files) {
-    Long userId = jwtProvider.getUserIdFromToken(token);
-    if (!requestId.equals(userId)) {
-      return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
-    }
     if (files.size() > 4) {
       return ServiceResult.failure(ErrorCode.FILE_TOO_MANY);
     }
     if (files.isEmpty()) {
       return ServiceResult.failure(ErrorCode.FILE_TOO_LITTLE);
     }
-    return userRepository.findById(userId)
+    return userRepository.findById(requestId)
         .map(user -> {
           List<UserPhoto> photosToSave = new ArrayList<>();
           List<String> uploadedUrls = new ArrayList<>();

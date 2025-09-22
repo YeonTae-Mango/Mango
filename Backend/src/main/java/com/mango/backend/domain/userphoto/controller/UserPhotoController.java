@@ -46,12 +46,11 @@ public class UserPhotoController extends BaseController {
   })
   @PostMapping("/{userId}")
   public ResponseEntity<BaseResponse> uploadPhoto(
-      @RequestHeader("Authorization") String token,
       @PathVariable Long userId,
       @Parameter(description = "업로드할 이미지 파일", required = true)
       @RequestPart("files") List<MultipartFile> files
   ) {
-    return toResponseEntity(userPhotoService.uploadPhoto(token, userId, files),
+    return toResponseEntity(userPhotoService.uploadPhoto(userId, files),
         "이미지 업로드가 완료되었습니다.");
   }
 
