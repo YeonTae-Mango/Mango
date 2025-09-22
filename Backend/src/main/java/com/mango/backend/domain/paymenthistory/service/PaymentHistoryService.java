@@ -1,5 +1,6 @@
 package com.mango.backend.domain.paymenthistory.service;
 
+import com.mango.backend.domain.event.PaymentHistoryReadyEvent;
 import com.mango.backend.domain.event.UserSignUpEvent;
 import com.mango.backend.domain.paymenthistory.dto.PaymentHistoryDto;
 import com.mango.backend.domain.paymenthistory.dto.response.PaymentApiResponse;
@@ -9,11 +10,14 @@ import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.domain.user.repository.UserRepository;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,7 @@ public class PaymentHistoryService {
 
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${external.api.base-url}")
     private String externalApiBaseUrl;
@@ -39,6 +44,7 @@ public class PaymentHistoryService {
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }
+
     @Transactional
     public PaymentHistory savePaymentFromDto(PaymentHistoryDto dto) {
         PaymentHistory payment = PaymentHistory.from(dto);
@@ -49,28 +55,30 @@ public class PaymentHistoryService {
     @Transactional
     @Async
     public void handleUserSignUp(UserSignUpEvent event) {
+        log.info("🔥 현재 스레드: {}", Thread.currentThread().getName());
         try {
             log.info("회원가입 이벤트 수신 - 사용자 ID: {}, 성별: {}, 생년월일: {}",
                     event.userId(), event.gender(), event.birthDate());
 
-            // 외부 API 호출
-            List<PaymentHistoryDto> apiResponse = callPaymentApi(event);
 
-            // 받은 데이터를 savePaymentFromDto로 저장
-            List<PaymentHistory> savedPayments = apiResponse.stream()
-                    .map(dto->{
+            List<PaymentHistoryDto> apiResponse = callPaymentApi(event);
+            List<PaymentHistory> payments = apiResponse.stream()
+                    .map(dto -> {
                         dto.setUserId(event.userId());
-                        return savePaymentFromDto(dto);
+                        return PaymentHistory.from(dto);
                     })
                     .toList();
+            List<PaymentHistory> savedPayments = paymentHistoryRepository.saveAll(payments);
 
             log.info("회원가입 후처리 완료 - 사용자 ID: {}, 저장된 결제 데이터: {}개",
                     event.userId(), savedPayments.size());
+            eventPublisher.publishEvent(new PaymentHistoryReadyEvent(event.userId()));
 
         } catch (Exception e) {
             log.error("회원가입 후처리 실패 - 사용자 ID: {}", event.userId(), e);
         }
     }
+
     @Transactional
     public ServiceResult<List<PaymentHistory>> fetchAndSaveExternalPaymentData(Long userId) {
         try {
@@ -117,7 +125,7 @@ public class PaymentHistoryService {
                     .toUriString();
 
             log.info("외부 API 호출: {}", uri);
-            log.info("restClient : {}",restClient);
+            log.info("restClient : {}", restClient);
 
             PaymentApiResponse response = restClient.post()
                     .uri(uri)

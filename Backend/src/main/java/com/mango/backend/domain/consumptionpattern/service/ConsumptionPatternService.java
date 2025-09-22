@@ -7,6 +7,7 @@ import com.mango.backend.domain.consumptionpattern.entity.FoodItem;
 import com.mango.backend.domain.consumptionpattern.entity.KeywordItem;
 import com.mango.backend.domain.consumptionpattern.entity.TypeItem;
 import com.mango.backend.domain.consumptionpattern.repository.ConsumptionPatternRepository;
+import com.mango.backend.domain.event.PaymentHistoryReadyEvent;
 import com.mango.backend.domain.paymenthistory.dto.PaymentHistoryDto;
 import com.mango.backend.domain.paymenthistory.entity.PaymentHistory;
 import com.mango.backend.domain.paymenthistory.repository.PaymentHistoryRepository;
@@ -17,6 +18,8 @@ import com.mango.backend.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -45,14 +48,25 @@ public class ConsumptionPatternService {
                 .build();
     }
 
+    @EventListener
+    @Async
+    public void handlePaymentHistoryReadyEvent(PaymentHistoryReadyEvent event) {
+        try {
+            ServiceResult<Void> result = analysisPaymentData(event.userId());
+            if (result.errorCode() == ErrorCode.NO_PAYMENT_DATA) {
+                log.error("결제내역이 없습니다.: {}", event.userId());
+            }
+        } catch (Exception e) {
+            log.warn("소비패턴 분석 중 예외 발생 - 사용자 ID: {}", event.userId(), e);
+        }
+    }
+
     @Transactional
     public ServiceResult<Void> analysisPaymentData(Long userId) {
         try {
             log.info("분석 시작  - 사용자 ID: {}", userId);
 
             // 사용자 정보 조회
-
-
             userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
 
@@ -76,7 +90,7 @@ public class ConsumptionPatternService {
                     .max(LocalDateTime::compareTo)
                     .orElse(LocalDateTime.now());
 
-            for(PaymentHistory paymentHistory : paymentHistories) {
+            for (PaymentHistory paymentHistory : paymentHistories) {
                 payments.add(PaymentHistoryDto.from(paymentHistory));
             }
             // 외부 API 호출
@@ -113,8 +127,8 @@ public class ConsumptionPatternService {
                 throw new RuntimeException("외부 API 응답이 null입니다");
             }
             if (response.getMainType() != null ||
-                response.getKeyword() != null ||
-                response.getFoods() != null) {
+                    response.getKeyword() != null ||
+                    response.getFoods() != null) {
                 log.info("외부 API 응답 수신 - main_type 개수: {}, keyword 개수: {}, foods 개수: {}",
                         response.getMainType().size(),
                         response.getKeyword().size(),
@@ -125,6 +139,7 @@ public class ConsumptionPatternService {
             throw new RuntimeException("외부 API 호출 실패", e);
         }
     }
+
     private ConsumptionPattern convertToEntity(ConsumptionPatternApiResponse apiResponse,
                                                Long userId,
                                                LocalDateTime startDate,
