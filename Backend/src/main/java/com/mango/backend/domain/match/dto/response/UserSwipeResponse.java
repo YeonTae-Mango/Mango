@@ -12,7 +12,7 @@ public record UserSwipeResponse(
     List<String> profileImageUrls,
     String sigungu,
     int age,
-    double distance,
+    int distance,
     boolean theyLiked,
     String mainType,
     List<String> keywords,
@@ -20,7 +20,7 @@ public record UserSwipeResponse(
 
 ) {
 
-  public static UserSwipeResponse from(User user, boolean theyLiked, double distanceKm,
+  public static UserSwipeResponse from(User user, boolean theyLiked, int distanceKm,
       String mainType, List<String> keywords, String food, List<String> profileImageUrls) {
 
     // 사진이 없으면 빈 리스트로 처리

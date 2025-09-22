@@ -15,6 +15,7 @@ import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.domain.user.repository.UserRepository;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
+import com.mango.backend.global.util.FinAnalysisApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,16 +38,7 @@ public class ConsumptionPatternService {
     private final ConsumptionPatternRepository consumptionPatternRepository;
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final UserRepository userRepository;
-
-    @Value("${external.api.base-url}")
-    private String externalApiBaseUrl;
-
-    private RestClient createRestClient() {
-        return RestClient.builder()
-                .baseUrl(externalApiBaseUrl)
-                .defaultHeader("Content-Type", "application/json")
-                .build();
-    }
+    private final FinAnalysisApiClient  finAnalysisApiClient;
 
     @EventListener
     @Async
@@ -111,7 +103,7 @@ public class ConsumptionPatternService {
 
     private ConsumptionPatternApiResponse callExternalAnalysisPaymentApi(List<PaymentHistoryDto> payments) {
         try {
-            RestClient restClient = createRestClient();
+            RestClient restClient = finAnalysisApiClient.createRestClient();
             String uri = UriComponentsBuilder.fromPath("/ai-api/v1/profile/cosine")
                     .toUriString();
 
