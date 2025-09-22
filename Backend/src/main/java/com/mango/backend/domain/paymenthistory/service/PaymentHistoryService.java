@@ -14,6 +14,7 @@ import com.mango.backend.global.error.ErrorCode;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mango.backend.global.util.FinAnalysisApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,16 +35,7 @@ public class PaymentHistoryService {
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
-
-    @Value("${external.api.base-url}")
-    private String externalApiBaseUrl;
-
-    private RestClient createRestClient() {
-        return RestClient.builder()
-                .baseUrl(externalApiBaseUrl)
-                .defaultHeader("Content-Type", "application/json")
-                .build();
-    }
+    private final FinAnalysisApiClient finAnalysisApiClient;
 
     @Transactional
     public PaymentHistory savePaymentFromDto(PaymentHistoryDto dto) {
@@ -116,7 +108,7 @@ public class PaymentHistoryService {
 
     private List<PaymentHistoryDto> callExternalPaymentApi(Long userId, String gender, String birthDate, int months) {
         try {
-            RestClient restClient = createRestClient();
+            RestClient restClient = finAnalysisApiClient.createRestClient();
             String uri = UriComponentsBuilder.fromPath("/ai-api/v1/payments")
                     .queryParam("gender", gender)
                     .queryParam("user_id", userId)
@@ -147,7 +139,7 @@ public class PaymentHistoryService {
 
     private List<PaymentHistoryDto> callPaymentApi(UserSignUpEvent event) {
         try {
-            RestClient restClient = createRestClient();
+            RestClient restClient = finAnalysisApiClient.createRestClient();
 
             String uri = UriComponentsBuilder.fromPath("/ai-api/v1/payments")
                     .queryParam("gender", event.gender())
