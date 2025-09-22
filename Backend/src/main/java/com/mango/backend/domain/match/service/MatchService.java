@@ -93,7 +93,7 @@ public class MatchService {
 
         MatchUserRequest matchUserRequest = new MatchUserRequest(myMatchUserDto, candidateMatchUsers);
         RestClient restClient = finAnalysisApiClient.createRestClient();
-        String uri = UriComponentsBuilder.fromPath("/ai-api/v1/match/user").toUriString();
+        String uri = UriComponentsBuilder.fromPath("/ai-api/v1/match/users").toUriString();
         List<MatchUserResponse> matchUserResponse = restClient.post()
                 .uri(uri)
                 .body(matchUserRequest)
@@ -109,7 +109,7 @@ public class MatchService {
         Set<Long> theyLikedIds = mangoRepository.findUsersWhoLikedMeIds(userId);
 
 
-        filteredUsers.stream().filter(user -> matchResultMap.containsKey(user.getId()))
+        List<UserSwipeResponse> result = filteredUsers.stream().filter(user -> matchResultMap.containsKey(user.getId()))
                 .map(user -> {
                     int distanceKm = (int) me.distanceInKm(
                             me.getLocation().getY(), me.getLocation().getX(),
@@ -134,65 +134,111 @@ public class MatchService {
                             food,
                             profileImageUrls
                     );
-                });
+                })
+                .sorted(Comparator.comparing(resp ->
+                        matchResultMap.get(resp.id()).matchingRank()))
+                .filter(resp -> category == null || category.equals(resp.mainType()))
+                .toList();
+        return ServiceResult.success(result);
+    }
+
+    public ServiceResult<List<UserSwipeResponse>> getSwipeList2(Long requestId,
+                                                                String category) {
+        Long userId = requestId;
+        User me = userRepository.findById(userId).orElse(null);
+        if (me == null) {
+            return ServiceResult.failure(ErrorCode.USER_NOT_FOUND);
+        }
+
+        log.info("latitude = {}, longitude = {}", me.getLocation().getY(), me.getLocation().getX());
+
+        List<User> nearbyUsers = userRepository.findNearbyUsers(
+                me.getLocation().getY(), // latitude
+                me.getLocation().getX(), // longitude
+                me.getDistance(),
+                me.getGender()
+        );
+        log.info("nearbyUsers = {}", nearbyUsers);
+
+        ConsumptionPattern myConsumptionPattern = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(me.getId());
+        MyMatchUserDto myMatchUserDto = MyMatchUserDto.from(myConsumptionPattern);
+
+        Set<Long> excludeIds = new HashSet<>();
+        excludeIds.addAll(visitedRepository.findVisitedUserIdsByUserId(userId));
+        excludeIds.addAll(blockRepository.findBlockedUserIdsByUserId(userId));
+        excludeIds.addAll(matchRepository.findMatchedUserIdsByUserId(userId));
+        excludeIds.addAll(mangoRepository.findILikedUserIds(userId));
+
+        List<User> filteredUsers = nearbyUsers.stream()
+                .filter(u -> !excludeIds.contains(u.getId()))
+                .toList();
+        Map<Long, ConsumptionPattern> consumptionPatternMap = new HashMap<>();
+        List<CandidateMatchUserDto> candidateMatchUsers = new ArrayList<>();
+        for (User u : filteredUsers) {
+            ConsumptionPattern pattern = consumptionPatternRepository
+                    .findFirstByUserIdOrderByEndDateDesc(u.getId());
+            consumptionPatternMap.put(u.getId(), pattern); // 저장해둠
+            candidateMatchUsers.add(CandidateMatchUserDto.from(pattern));
+        }
+
+        MatchUserRequest matchUserRequest = new MatchUserRequest(myMatchUserDto, candidateMatchUsers);
+        RestClient restClient = finAnalysisApiClient.createRestClient();
+        String uri = UriComponentsBuilder.fromPath("/ai-api/v1/match/users").toUriString();
+        log.info("필터링된 유저 수: {}", filteredUsers.size());
+        log.info("후보 매칭 유저 수: {}", candidateMatchUsers.size());
+        log.info("요청 URI: {}", uri);
+        List<MatchUserResponse> matchUserResponse = new ArrayList<>();
+        try {
+            matchUserResponse = restClient.post()
+                    .uri(uri)
+                    .body(matchUserRequest)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<List<MatchUserResponse>>() {
+                    });
+
+            log.info("매칭 응답: {}", matchUserResponse);
+            log.info("응답 크기: {}", matchUserResponse != null ? matchUserResponse.size() : "null");
+
+        } catch (Exception e) {
+            log.error("외부 API 호출 실패", e);
+            return ServiceResult.failure(ErrorCode.EXTERNAL_ERROR);
+        }
+        Map<Long, MatchUserResponse> matchResultMap = matchUserResponse.stream()
+                .collect(Collectors.toMap(MatchUserResponse::userId, Function.identity()));
+
+        Set<Long> theyLikedIds = mangoRepository.findUsersWhoLikedMeIds(userId);
 
 
-        List<UserSwipeResponse> result = new ArrayList<>();
-//        List<UserSwipeResponse> result = nearbyUsers.stream()
-//                .filter(u -> !u.getId().equals(userId))          // 자기 자신 제외
-//                .filter(u -> !visitedIds.contains(u.getId()))    // 방문 제외
-//                .filter(u -> !blockedIds.contains(u.getId()))    // 차단 제외
-//                .filter(u -> !matchedIds.contains(u.getId()))    // 매칭 제외
-//                .filter(u -> !iLikedIds.contains(u.getId()))     // 이미 좋아요 누른 사람 제외
-//                .map(user -> {
-//                    double distanceKm = me.distanceInKm(
-//                            me.getLocation().getY(), me.getLocation().getX(),
-//                            user.getLocation().getY(), user.getLocation().getX()
-//                    );
-//
-//                    int distanceKmInt = (int) Math.round(distanceKm); // 정수 km로 변환
-//                    boolean theyLiked = theyLikedIds.contains(user.getId());
-//
-//
-//                    consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(user.getId());
-//                    // id + 대분류(8개짜리) + 키워드(수량 제한 없음)를 AI 서버로 보내줘서
-//                    // 궁합 검사를 한 값을 기준으로 재정렬 한다.
-//                    // TODO : AI 서버와 연동 필요
-//                    // ------------------------
-//                    // 🔹 목데이터 (1개, 3개, 1개만)
-//                    // ------------------------
-//
-//
-//                    String mockMainType = "뷰티형";
-//
-//                    List<String> mockKeywords = List.of(
-//                            "일반스포츠",
-//                            "카페/디저트",
-//                            "미용서비스"
-//                    );
-//
-//                    String mockFood = "한식";
-//                    // ------------------------
-//
-//                    List<String> profileImageUrls = userPhotoRepository.findByUserOrderByPhotoOrderAsc(user)
-//                            .stream()
-//                            .map(photo -> photo.getPhotoUrl())
-//                            .toList();
-//
-//                    return UserSwipeResponse.from(
-//                            user,
-//                            theyLiked,
-//                            distanceKmInt,
-//                            mockMainType,
-//                            mockKeywords,
-//                            mockFood,
-//                            profileImageUrls
-//                    );
-//                })
-//                // category 필터 적용: category가 지정된 경우 mockMainType과 일치하는 것만 남김
-//                .filter(resp -> category == null || category.equals(resp.mainType()))
-//                .toList();
-
+        List<UserSwipeResponse> result = filteredUsers.stream().filter(user -> matchResultMap.containsKey(user.getId()))
+                .map(user -> {
+                    int distanceKm = (int) me.distanceInKm(
+                            me.getLocation().getY(), me.getLocation().getX(),
+                            user.getLocation().getY(), user.getLocation().getX()
+                    );
+                    boolean theyLiked = theyLikedIds.contains(user.getId());
+                    ConsumptionPattern userPattern = consumptionPatternMap.get(user.getId());
+                    String mainType = extractMainType(userPattern);
+                    List<String> keywords = extractKeywords(userPattern);
+                    String food = extractFood(userPattern);
+                    List<String> profileImageUrls = userPhotoRepository
+                            .findByUserOrderByPhotoOrderAsc(user)
+                            .stream()
+                            .map(photo -> photo.getPhotoUrl())
+                            .toList();
+                    return UserSwipeResponse.from(
+                            user,
+                            theyLiked,
+                            distanceKm,
+                            mainType,
+                            keywords,
+                            food,
+                            profileImageUrls
+                    );
+                })
+                .sorted(Comparator.comparing(resp ->
+                        matchResultMap.get(resp.id()).matchingRank()))
+                .filter(resp -> category == null || category.equals(resp.mainType()))
+                .toList();
         return ServiceResult.success(result);
     }
 
