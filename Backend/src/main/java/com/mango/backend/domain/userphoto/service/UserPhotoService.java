@@ -4,7 +4,6 @@ import com.mango.backend.domain.user.repository.UserRepository;
 import com.mango.backend.domain.userphoto.dto.response.UploadPhotoResponse;
 import com.mango.backend.domain.userphoto.dto.response.UserPhotoResponse;
 import com.mango.backend.domain.userphoto.entity.UserPhoto;
-import com.mango.backend.domain.userphoto.repository.UserPhotoRepository;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
 import com.mango.backend.global.util.FileUtil;
@@ -27,19 +26,18 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserPhotoService {
 
     private final UserRepository userRepository;
-    private final UserPhotoRepository userPhotoRepository;
     private final JwtProvider jwtProvider;
     private final FileUtil fileUtil;
 
     @Transactional(readOnly = true)
     public ServiceResult<List<UserPhotoResponse>> getUserPhotos(Long userId) {
-        return userRepository.findById(userId)
+        return userRepository.findByIdWithPhotos(userId)
                 .map(user -> {
-                    List<UserPhotoResponse> photos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(user)
+                    List<UserPhotoResponse> photos = user.getPhotos()
                             .stream()
                             .map(photo -> new UserPhotoResponse(
                                     photo.getId(),
-                                    photo.getPhotoUrl(), // 실제 URL 변환 로직 필요하면 추가
+                                    photo.getPhotoUrl(),
                                     photo.getPhotoOrder()
                             ))
                             .collect(Collectors.toList());
@@ -57,7 +55,7 @@ public class UserPhotoService {
         if (files.isEmpty()) {
             return ServiceResult.failure(ErrorCode.FILE_TOO_LITTLE);
         }
-        return userRepository.findById(requestId)
+        return userRepository.findByIdWithPhotos(requestId)
                 .map(user -> {
 
                     if (user.getPhotoCount() + files.size() > 4) {
@@ -89,17 +87,22 @@ public class UserPhotoService {
             return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
         }
 
-        return userPhotoRepository.findById(photoId)
-                .map(photo -> {
-                    if (!photo.getUser().getId().equals(requestId)) {
-                        return ServiceResult.<Map<String, Long>>failure(ErrorCode.AUTH_FORBIDDEN);
+        return userRepository.findByIdWithPhotos(requestId)  // 변경
+                .map(user -> {
+                    UserPhoto photoToDelete = user.getPhotos()
+                            .stream()
+                            .filter(photo -> photo.getId().equals(photoId))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (photoToDelete == null) {
+                        return ServiceResult.<Map<String, Long>>failure(ErrorCode.FILE_NOT_FOUND);
                     }
 
-                    userPhotoRepository.delete(photo);
+                    user.removePhoto(photoToDelete);
 
-                    Map<String, Long> result = Map.of("deletedPhotoId", photo.getId());
-                    return ServiceResult.success(result);
+                    return ServiceResult.success(Map.of("deletedPhotoId", photoId));
                 })
-                .orElse(ServiceResult.failure(ErrorCode.FILE_NOT_FOUND));
+                .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
     }
 }
