@@ -37,23 +37,60 @@ export default function ProfileDetailScreen() {
     mutationFn: createOrGetChatRoom,
     onSuccess: chatRoomData => {
       console.log('🎉 채팅방 생성 성공:', chatRoomData);
+      console.log(
+        '🔍 chatRoomData 상세:',
+        JSON.stringify(chatRoomData, null, 2)
+      );
       setIsMangoLoading(false);
+
+      // API 응답에서 상대방 정보 추출
+      const roomData = chatRoomData as any;
+      const otherUserName = roomData.otherUser?.nickname || userName;
+      const otherUserId =
+        roomData.otherUser?.userId ||
+        (roomData.user1Id === currentUserId
+          ? roomData.user2Id
+          : roomData.user1Id);
+
+      console.log('🔍 추출된 정보:', {
+        otherUserName,
+        otherUserId,
+        roomId: roomData.id,
+        currentUserId,
+        user1Id: roomData.user1Id,
+        user2Id: roomData.user2Id,
+      });
 
       // 매치 성공 알림 후 채팅방으로 이동
       Alert.alert(
         '🎉 매치 성공!',
-        `${(chatRoomData as any).otherUser?.nickname || userName}님과 매치되었습니다! 채팅을 시작해보세요.`,
+        `${otherUserName}님과 매치되었습니다! 채팅을 시작해보세요.`,
         [
           {
             text: '나중에',
-            style: 'cancel',
+            style: 'default',
+            onPress: () => {
+              // 채팅방은 이미 생성되었으므로 뒤로가기만
+              console.log(
+                '🎉 매치 성공! 채팅방 생성됨 - 나중에 채팅 목록에서 접근 가능'
+              );
+              navigation.goBack();
+            },
           },
           {
             text: '채팅하기',
             onPress: () => {
+              console.log('🚀 채팅방으로 이동:', {
+                chatRoomId: roomData.id.toString(),
+                userName: otherUserName,
+                userId: otherUserId,
+                profileImageUrl: roomData.otherUserProfileImage,
+              });
               navigation.navigate('ChatRoom', {
-                chatRoomId: (chatRoomData as any).id.toString(),
-                userName: (chatRoomData as any).otherUser?.nickname || userName,
+                chatRoomId: roomData.id.toString(),
+                userName: otherUserName,
+                userId: otherUserId,
+                profileImageUrl: roomData.otherUserProfileImage,
               });
             },
           },

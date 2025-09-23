@@ -18,6 +18,7 @@ export interface ChatRoom {
   lastMessageTime: string;
   unreadCount: number;
   createdAt: string;
+  isBlocked?: boolean; // 차단/신고 상태
 }
 
 // 채팅 메시지 인터페이스

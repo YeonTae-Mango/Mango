@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getUserById } from '../../api/auth';
+import { blockUser } from '../../api/block';
 import { getChatMessages, getChatRoom } from '../../api/chat';
 import ChatDateSeparator from '../../components/chat/ChatDateSeparator';
 import ChatHeader from '../../components/chat/ChatHeader';
@@ -36,10 +38,53 @@ export default function ChatRoomScreen() {
   const route = useRoute();
   const { user } = useAuthStore();
 
-  const { userName, chatRoomId } = route.params as {
+  const { userName, chatRoomId, userId, profileImageUrl } = route.params as {
     userName: string;
     chatRoomId: string;
+    userId?: number;
+    profileImageUrl?: string;
   };
+
+  // 디버깅 로그 추가
+  console.log('🔍 ChatRoomScreen 파라미터:', { userName, chatRoomId, userId });
+  console.log('🔍 현재 사용자:', user);
+
+  // 차단 상태 관리
+  const [isBlocked, setIsBlocked] = useState(false);
+
+  // 사용자 정보 조회 (메인 타입을 위해)
+  const { data: userInfo } = useQuery({
+    queryKey: ['userInfo', userId],
+    queryFn: () => getUserById(userId!),
+    enabled: !!userId,
+  });
+
+  // 사용자 정보 디버깅
+  useEffect(() => {
+    if (userInfo) {
+      console.log('🔍 사용자 정보 조회 결과:', userInfo);
+      console.log('🔍 메인 타입:', (userInfo as any)?.data?.mainType);
+    }
+  }, [userInfo]);
+
+  // 차단/신고 뮤테이션
+  const blockUserMutation = useMutation({
+    mutationFn: ({
+      requestId,
+      targetUserId,
+    }: {
+      requestId: number;
+      targetUserId: number;
+    }) => blockUser(requestId, targetUserId),
+    onSuccess: () => {
+      console.log('사용자 차단/신고 성공');
+      setIsBlocked(true);
+    },
+    onError: error => {
+      console.error('사용자 차단/신고 실패:', error);
+      Alert.alert('오류', '차단/신고 처리에 실패했습니다.');
+    },
+  });
 
   // 채팅방 정보 조회
   const {
@@ -62,6 +107,13 @@ export default function ChatRoomScreen() {
     queryFn: () => getChatMessages(parseInt(chatRoomId), 0, 50),
     enabled: !!chatRoomId,
   });
+
+  // chatRoomData 로드 로그
+  useEffect(() => {
+    if (chatRoomData) {
+      console.log('🔍 chatRoomData 로드됨:', chatRoomData);
+    }
+  }, [chatRoomData]);
 
   // 메뉴 모달 상태
   const [showMenuModal, setShowMenuModal] = useState(false);
@@ -131,8 +183,42 @@ export default function ChatRoomScreen() {
         text: '차단',
         style: 'destructive',
         onPress: () => {
-          // 차단 로직
-          Alert.alert('알림', '사용자가 차단되었습니다.');
+          // 디버깅 로그 추가
+          console.log('🔍 차단 시도 - userId:', userId);
+          console.log('🔍 차단 시도 - user?.id:', user?.id);
+          console.log('🔍 차단 시도 - chatRoomData:', chatRoomData);
+          
+          // userId가 있으면 그대로 사용, 없으면 chatRoomData에서 가져오기
+          let targetUserId = userId;
+          if (!targetUserId && chatRoomData) {
+            // chatRoomData에서 현재 사용자가 아닌 다른 사용자의 ID 찾기
+            const roomData = chatRoomData as any;
+            console.log('🔍 roomData:', roomData);
+            console.log('🔍 roomData.user1Id:', roomData.user1Id);
+            console.log('🔍 roomData.user2Id:', roomData.user2Id);
+            targetUserId =
+              roomData.user1Id === user?.id
+                ? roomData.user2Id
+                : roomData.user1Id;
+          }
+          
+          console.log('🔍 최종 targetUserId:', targetUserId);
+          
+          if (user?.id && targetUserId) {
+            console.log('✅ 차단 API 호출:', {
+              requestId: user.id,
+              targetUserId,
+            });
+            blockUserMutation.mutate({
+              requestId: user.id,
+              targetUserId: targetUserId,
+            });
+            Alert.alert('알림', '사용자가 차단되었습니다.');
+            navigation.goBack();
+          } else {
+            console.log('❌ 차단 실패 - 필요한 정보가 없음');
+            Alert.alert('오류', '사용자 정보를 불러올 수 없습니다.');
+          }
         },
       },
     ]);
@@ -244,8 +330,40 @@ export default function ChatRoomScreen() {
       {
         text: '신고',
         onPress: () => {
-          // 신고 로직
-          Alert.alert('알림', '신고가 접수되었습니다.');
+          // 디버깅 로그 추가
+          console.log('🔍 신고 시도 - userId:', userId);
+          console.log('🔍 신고 시도 - user?.id:', user?.id);
+          console.log('🔍 신고 시도 - chatRoomData:', chatRoomData);
+          
+          // userId가 있으면 그대로 사용, 없으면 chatRoomData에서 가져오기
+          let targetUserId = userId;
+          if (!targetUserId && chatRoomData) {
+            // chatRoomData에서 현재 사용자가 아닌 다른 사용자의 ID 찾기
+            const roomData = chatRoomData as any;
+            console.log('🔍 roomData:', roomData);
+            targetUserId =
+              roomData.user1Id === user?.id
+                ? roomData.user2Id
+                : roomData.user1Id;
+          }
+
+          console.log('🔍 최종 targetUserId:', targetUserId);
+
+          if (user?.id && targetUserId) {
+            console.log('✅ 신고 API 호출:', {
+              requestId: user.id,
+              targetUserId,
+            });
+            blockUserMutation.mutate({
+              requestId: user.id,
+              targetUserId: targetUserId,
+            });
+            Alert.alert('알림', '신고가 접수되었습니다.');
+            navigation.goBack();
+          } else {
+            console.log('❌ 신고 실패 - 필요한 정보가 없음');
+            Alert.alert('오류', '사용자 정보를 불러올 수 없습니다.');
+          }
         },
       },
     ]);
@@ -298,11 +416,13 @@ export default function ChatRoomScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className={`flex-1 ${isBlocked ? 'bg-gray-100' : 'bg-white'}`}>
       <ChatHeader
-        userName={(chatRoomData as any)?.otherUser?.nickname || userName}
+        userName={userName}
+        profileImageUrl={profileImageUrl}
+        mainType={(userInfo as any)?.data?.mainType}
         showUserInfo={true}
-        showMenu={true}
+        showMenu={!isBlocked}
         onBackPress={() => navigation.goBack()}
         onProfilePress={handleProfilePress}
         onMenuPress={handleMenuPress}
@@ -313,20 +433,30 @@ export default function ChatRoomScreen() {
         behavior="padding"
         keyboardVerticalOffset={0}
       >
-        <FlatList
-          ref={flatListRef}
-          data={allMessages}
-          renderItem={renderMessage}
-          keyExtractor={item => item.id}
-          // contentContainerStyle={{ paddingVertical: 16 }}
-          showsVerticalScrollIndicator={false}
-          inverted={false}
-        />
+        <View className={`flex-1 ${isBlocked ? 'opacity-50' : ''}`}>
+          <FlatList
+            ref={flatListRef}
+            data={allMessages}
+            renderItem={renderMessage}
+            keyExtractor={item => item.id}
+            // contentContainerStyle={{ paddingVertical: 16 }}
+            showsVerticalScrollIndicator={false}
+            inverted={false}
+          />
+        </View>
 
-        <ChatInputPanel
-          onSendMessage={handleSendMessage}
-          placeholder="메시지 보내기..."
-        />
+        {isBlocked ? (
+          <View className="bg-gray-200 py-4 px-6 border-t border-gray-300">
+            <Text className="text-center text-gray-600">
+              메시지를 보낼 수 없습니다.
+            </Text>
+          </View>
+        ) : (
+          <ChatInputPanel
+            onSendMessage={handleSendMessage}
+            placeholder="메시지 보내기..."
+          />
+        )}
       </KeyboardAvoidingView>
 
       <ChatMenuModal

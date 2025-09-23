@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ChatHeaderProps {
   userName?: string;
   title?: string;
+  profileImageUrl?: string;
+  mainType?: string;
   showUserInfo?: boolean;
   showMenu?: boolean;
   onBackPress: () => void;
@@ -16,6 +18,8 @@ interface ChatHeaderProps {
 export default function ChatHeader({
   userName,
   title,
+  profileImageUrl,
+  mainType,
   showUserInfo = false,
   showMenu = false,
   onBackPress,
@@ -40,17 +44,25 @@ export default function ChatHeader({
             className="flex-1 flex-row items-center"
             onPress={onProfilePress}
           >
-            <View className="w-12 h-12 rounded-full bg-mango-red justify-center items-center mr-2">
-              <Text className="text-white text-subheading-bold">
-                {userName[0]}
-              </Text>
-            </View>
+            {profileImageUrl ? (
+              <Image
+                source={{ uri: profileImageUrl }}
+                className="w-12 h-12 rounded-full mr-2"
+                resizeMode="cover"
+              />
+            ) : (
+              <View className="w-12 h-12 rounded-full bg-mango-red justify-center items-center mr-2">
+                <Text className="text-white text-subheading-bold">
+                  {userName[0]}
+                </Text>
+              </View>
+            )}
             <View className="flex-1">
               <Text className="text-body-medium-semibold text-dark mb-0.5">
                 {userName}
               </Text>
               <Text className="text-caption-regular text-text-primary">
-                핫플헌터
+                {mainType || '메인타입'}
               </Text>
             </View>
           </TouchableOpacity>

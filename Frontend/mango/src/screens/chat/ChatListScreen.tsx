@@ -17,26 +17,39 @@ import { useAuthStore } from '../../store/authStore';
 interface ChatRoom {
   chatRoomId: string;
   userName: string;
+  userId?: number;
+  profileImageUrl?: string;
   lastMessage: string;
   time: string;
   unreadCount?: number;
+  isBlocked?: boolean;
 }
 
 // API에서 받은 채팅방 데이터를 화면용 데이터로 변환
 const transformChatRoomData = (apiData: any[]): ChatRoom[] => {
-  return apiData.map(room => ({
-    chatRoomId: room.id.toString(),
-    userName: room.otherUser?.nickname || '알 수 없는 사용자',
-    lastMessage: room.lastMessage || '메시지가 없습니다.',
-    time: room.lastMessageTime
-      ? new Date(room.lastMessageTime).toLocaleTimeString('ko-KR', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        })
-      : '',
-    unreadCount: room.unreadCount || 0,
-  }));
+  return apiData.map(room => {
+    console.log('🔍 채팅방 데이터 변환:', room);
+    return {
+      chatRoomId: room.id.toString(),
+      userName:
+        room.otherUserNickname ||
+        room.otherUser?.nickname ||
+        '알 수 없는 사용자',
+      userId: room.otherUserId || room.otherUser?.userId,
+      profileImageUrl:
+        room.otherUserProfileImage || room.otherUser?.profilePhotoUrl,
+      lastMessage: room.lastMessage || '메시지가 없습니다.',
+      time: room.lastMessageTime
+        ? new Date(room.lastMessageTime).toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          })
+        : '',
+      unreadCount: room.unreadCount || 0,
+      isBlocked: room.isBlocked || false,
+    };
+  });
 };
 
 interface ChatListScreenProps {
@@ -147,10 +160,23 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
     ? transformChatRoomData(chatRoomsData)
     : fallbackChatRooms;
 
-  const handleChatPress = (chatRoomId: string, userName: string) => {
+  const handleChatPress = (
+    chatRoomId: string,
+    userName: string,
+    userId?: number,
+    profileImageUrl?: string
+  ) => {
+    console.log('🚀 ChatListScreen에서 채팅방으로 이동:', {
+      chatRoomId,
+      userName,
+      userId,
+      profileImageUrl,
+    });
     navigation.navigate('ChatRoom', {
       chatRoomId,
       userName,
+      userId,
+      profileImageUrl,
     });
   };
 
@@ -163,10 +189,14 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
     <ChatItem
       chatRoomId={item.chatRoomId}
       userName={item.userName}
+      profileImageUrl={item.profileImageUrl}
       lastMessage={item.lastMessage}
       time={item.time}
       unreadCount={item.unreadCount}
-      onPress={handleChatPress}
+      isBlocked={item.isBlocked}
+      onPress={(chatRoomId, userName) =>
+        handleChatPress(chatRoomId, userName, item.userId, item.profileImageUrl)
+      }
     />
   );
 

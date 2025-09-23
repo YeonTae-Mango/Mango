@@ -22,6 +22,9 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const { user } = useAuthStore();
   const userId = user?.id || 0;
 
+  // 매치된 프로필 정보 저장
+  const [matchedProfile, setMatchedProfile] = useState<any>(null);
+
   // 채팅방 생성 뮤테이션
   const createChatRoomMutation = useMutation({
     mutationFn: createOrGetChatRoom,
@@ -40,9 +43,18 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           {
             text: '채팅하기',
             onPress: () => {
+              const roomData = chatRoomData as any;
+              console.log('🚀 HomeScreen에서 채팅방으로 이동:', {
+                chatRoomId: roomData.id.toString(),
+                userName: roomData.otherUserNickname,
+                userId: roomData.otherUserId,
+                profileImageUrl: roomData.otherUserProfileImage,
+              });
               navigation.navigate('ChatRoom', {
-                chatRoomId: (chatRoomData as any).id.toString(),
-                userName: (chatRoomData as any).otherUser?.nickname || '상대방',
+                chatRoomId: roomData.id.toString(),
+                userName: roomData.otherUserNickname || '상대방',
+                userId: roomData.otherUserId,
+                profileImageUrl: roomData.otherUserProfileImage,
               });
             },
           },
