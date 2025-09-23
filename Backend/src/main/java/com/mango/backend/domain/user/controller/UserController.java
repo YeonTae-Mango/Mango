@@ -1,6 +1,7 @@
 package com.mango.backend.domain.user.controller;
 
 
+import com.mango.backend.domain.user.dto.request.UpdateDistanceRequest;
 import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
 import com.mango.backend.domain.user.dto.response.MyInfoResponse;
 import com.mango.backend.domain.user.dto.response.UserInfoResponse;
@@ -16,12 +17,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -115,5 +118,41 @@ public class UserController extends BaseController {
     UserUpdateRequest req = UserUpdateRequest.of(request, files);
     return toResponseEntity(userService.updateUser(userId, token, req),
         "사용자 정보가 수정 되었습니다.");
+  }
+
+  @Operation(
+      summary = "매칭 거리 설정 수정",
+      description = "JWT 토큰을 이용해 본인 계정의 매칭 거리 설정값을 수정합니다.",
+      requestBody = @RequestBody(
+          description = "수정할 거리 설정값",
+          required = true,
+          content = @Content(schema = @Schema(implementation = UpdateDistanceRequest.class))
+      ),
+      responses = {
+          @ApiResponse(
+              responseCode = "200",
+              description = "거리 설정 수정 성공",
+              content = @Content(schema = @Schema(implementation = UserUpdateResponse.class))
+          ),
+          @ApiResponse(
+              responseCode = "403",
+              description = "본인 계정만 수정 가능",
+              content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+          ),
+          @ApiResponse(
+              responseCode = "404",
+              description = "사용자를 찾을 수 없음",
+              content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+          )
+      }
+  )
+  @PatchMapping("/{userId}/distance")
+  public ResponseEntity<BaseResponse> updateDistance(
+      @PathVariable Long userId,
+      @RequestHeader("Authorization") String token,
+      @Valid @org.springframework.web.bind.annotation.RequestBody UpdateDistanceRequest request
+  ) {
+    return toResponseEntity(userService.updateDistance(userId, token, request),
+        "매칭 거리 설정이 수정되었습니다.");
   }
 }
