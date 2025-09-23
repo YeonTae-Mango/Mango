@@ -15,7 +15,7 @@ public interface MangoRepository extends JpaRepository<Mango, Long> {
   @Query("""
           SELECT u FROM Mango m
           JOIN m.to u
-          LEFT JOIN FETCH u.profilePhoto
+          LEFT JOIN FETCH u.photos
           WHERE m.from.id = :userId
       """)
   Page<User> findUsersILikedWithProfile(@Param("userId")Long userId, Pageable pageable);
@@ -24,7 +24,7 @@ public interface MangoRepository extends JpaRepository<Mango, Long> {
   @Query("""
           SELECT u FROM Mango m
           JOIN m.from u
-          LEFT JOIN FETCH u.profilePhoto
+          LEFT JOIN FETCH u.photos
           WHERE m.to.id = :userId
       """)
   Page<User> findUsersWhoLikedMeWithProfile(@Param("userId")Long userId, Pageable pageable);
