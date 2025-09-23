@@ -117,6 +117,20 @@ export default function ChatRoomScreen() {
     enabled: !!chatRoomId,
   });
 
+  // 채팅방 진입 지연 상태 (WebSocket 메시지 처리 시간 확보)
+  const [isRoomReady, setIsRoomReady] = useState(false);
+
+  // 채팅방 진입 시 약간의 지연 후 메시지 조회 시작
+  useEffect(() => {
+    if (chatRoomId) {
+      // 500ms 지연 후 메시지 조회 시작 (WebSocket 메시지 처리 시간 확보)
+      const timer = setTimeout(() => {
+        setIsRoomReady(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [chatRoomId]);
+
   // 채팅 메시지 조회 (임시로 1000개 설정)
   const {
     data: messagesData,
@@ -126,7 +140,7 @@ export default function ChatRoomScreen() {
   } = useQuery({
     queryKey: ['chatMessages', chatRoomId],
     queryFn: () => getChatMessages(parseInt(chatRoomId), 0, 1000),
-    enabled: !!chatRoomId,
+    enabled: !!chatRoomId && isRoomReady, // 채팅방 준비 완료 후에만 실행
     staleTime: 0, // 항상 fresh 데이터로 취급
     refetchOnWindowFocus: true,
   });
@@ -148,20 +162,20 @@ export default function ChatRoomScreen() {
   // API에서 받은 메시지 데이터를 화면용 데이터로 변환
   const transformMessagesData = useCallback(
     (apiMessages: any[]): Message[] => {
-      console.log('🔄 메시지 데이터 변환 시작:', apiMessages);
+      // console.log('🔄 메시지 데이터 변환 시작:', apiMessages);
       if (!apiMessages || !user) {
         console.log('❌ 메시지 또는 사용자 정보 없음:', { apiMessages, user });
         return [];
       }
 
       const transformedMessages = apiMessages.map(msg => {
-        console.log('📝 메시지 변환:', {
-          id: msg.id,
-          content: msg.content,
-          senderId: msg.senderId,
-          createdAt: msg.createdAt,
-          currentUserId: user.id,
-        });
+        // console.log('📝 메시지 변환:', {
+        //   id: msg.id,
+        //   content: msg.content,
+        //   senderId: msg.senderId,
+        //   createdAt: msg.createdAt,
+        //   currentUserId: user.id,
+        // });
 
         const messageDate = new Date(msg.createdAt);
         return {
@@ -178,7 +192,7 @@ export default function ChatRoomScreen() {
         };
       });
 
-      console.log('✅ 변환된 메시지들:', transformedMessages);
+      // console.log('✅ 변환된 메시지들:', transformedMessages);
       return transformedMessages;
     },
     [user]

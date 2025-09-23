@@ -18,7 +18,7 @@ export default function ChatItem({
   profileImageUrl,
   lastMessage,
   time,
-  unreadCount = 2,
+  unreadCount = 0,
   isBlocked = false,
   onPress,
 }: ChatItemProps) {
@@ -66,13 +66,13 @@ export default function ChatItem({
         >
           {time}
         </Text>
-        {!isBlocked && unreadCount > 0 && (
+        {/* {!isBlocked && unreadCount > 0 && (
           <View className="bg-mango-red rounded-full min-w-[20px] h-5 justify-center items-center px-1">
             <Text className="text-caption-semibold text-white">
               {unreadCount > 99 ? '99+' : unreadCount}
             </Text>
           </View>
-        )}
+        )} */}
       </View>
     </TouchableOpacity>
   );

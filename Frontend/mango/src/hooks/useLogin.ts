@@ -1,8 +1,8 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
+  LoginRequest,
   loginUser,
   validateLoginData,
-  LoginRequest,
 } from '../api/login/loginApi';
 import { useAuthStore } from '../store/authStore';
 
@@ -164,10 +164,10 @@ export const transformFormDataToLoginRequest = (formData: {
     fcmToken: formData.fcmToken,
   };
 
-  console.log(
-    '🔄 변환된 API 요청 데이터:',
-    JSON.stringify(loginRequest, null, 2)
-  );
+  // console.log(
+  //   '🔄 변환된 API 요청 데이터:',
+  //   JSON.stringify(loginRequest, null, 2)
+  // );
 
   return loginRequest;
 };

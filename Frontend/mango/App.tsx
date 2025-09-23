@@ -58,9 +58,8 @@ export default function App() {
               chatService.subscribeToPersonalNotifications(
                 user.id!,
                 (notification: ChatNotificationDTO) => {
-                  console.log('🔔 개인 알림 수신:', notification);
-                  // 여기서 채팅방 목록 실시간 업데이트나 푸시 알림 처리 가능
-                  // 추후 ChatListScreen에서 콜백을 등록하여 실시간 업데이트 구현
+                  console.log('� App.tsx - 기본 개인 알림 수신');
+                  // ChatListScreen에서 상세 로그 처리
                 }
               );
             } catch (subscribeError) {
