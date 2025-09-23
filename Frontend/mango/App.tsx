@@ -18,13 +18,19 @@ const queryClient = new QueryClient({
       gcTime: 30 * 60 * 1000, // 30분
       refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 리페치 비활성화
       refetchOnMount: false, // 마운트 시 자동 리페치 비활성화 (캐시된 데이터 사용)
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // 지수 백오프
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // 지수 백오프
     },
   },
 });
 
 export default function App() {
-  const { isAuthenticated, isLoading, restoreAuth, clearAuth } = useAuthStore();
+  const {
+    isAuthenticated,
+    isLoading,
+    isSignupInProgress,
+    restoreAuth,
+    clearAuth,
+  } = useAuthStore();
 
   // 앱 시작 시 저장된 인증 정보 복원
   useEffect(() => {
@@ -63,7 +69,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <NavigationContainer>
-          {isAuthenticated ? (
+          {isAuthenticated && !isSignupInProgress ? (
             <MainStack onLogout={handleLogout} />
           ) : (
             <AuthStack onLoginSuccess={handleLoginSuccess} />

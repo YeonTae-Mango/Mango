@@ -78,15 +78,20 @@ export const signupUser = async (
       // Zustand 스토어의 setAuth 함수 사용
       const { setAuth } = useAuthStore.getState();
 
-      // 토큰이 있으면 인증 정보로 저장, 없으면 사용자 정보만 저장
-      if (userData?.accessToken) {
-        console.log(' 토큰 포함 - 인증 정보 저장');
-        await setAuth(user, userData.accessToken, userData.refreshToken);
-        console.log('✅ 자동 로그인 완료');
+      // 회원가입 시 토큰을 저장하되 회원가입 진행 상태로 설정
+      if (userData?.token) {
+        console.log('🔐 회원가입 완료 - 토큰 저장 및 회원가입 진행 상태 설정');
+        await setAuth(user, userData.token);
+
+        // 회원가입 진행 상태로 설정 (isAuthenticated는 true이지만 회원가입 진행 중)
+        const { setSignupInProgress } = useAuthStore.getState();
+        setSignupInProgress(true);
+
+        console.log(
+          '✅ 회원가입 성공 - 토큰 저장 완료, 회원가입 진행 상태 설정'
+        );
       } else {
-        console.log(' 토큰 없음 - 사용자 정보만 저장');
-        await setAuth(user, '', ''); // 빈 토큰으로 사용자 정보만 저장
-        console.log('✅ 사용자 정보 저장 완료 (토큰 없음)');
+        console.log('⚠️ 토큰이 없습니다');
       }
     }
 
