@@ -1,15 +1,12 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Text, View } from 'react-native';
+import { WebView } from 'react-native-webview';
+import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
+import { CategoryChartData, HistoryChartData } from '../../types/chart';
 
 interface HistoryTabContentProps {
-  categoryData: Array<{
-    name: string;
-    percentage: number;
-    amount: number;
-    color: string;
-  }>;
+  categoryData: CategoryChartData | null;
+  historyApiData: HistoryChartData | null;
   formatAmount: (amount: number) => string;
   historyData: {
     totalAmount: number;
@@ -17,54 +14,197 @@ interface HistoryTabContentProps {
   };
 }
 
-export default function HistoryTabContent({ categoryData, formatAmount, historyData }: HistoryTabContentProps) {
-  const navigation = useNavigation<any>();
+export default function HistoryTabContent({ categoryData, historyApiData, formatAmount, historyData }: HistoryTabContentProps) {
+  const baseUrl = EXPO_PUBLIC_WEBVIEW_BASE_URL || 'http://70.12.246.220:5173';
+  const webviewRef = useRef<WebView | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const postMessage = (message: any) => {
+    if (!webviewRef.current) return;
+    webviewRef.current.postMessage(JSON.stringify(message));
+  };
+
+  const handleWebViewError = (syntheticEvent: any) => {
+    const { nativeEvent } = syntheticEvent;
+    console.error('WebView error:', nativeEvent);
+    setError(nativeEvent.description || 'WebView 로딩 중 오류가 발생했습니다.');
+    setLoading(false);
+  };
+
+  const handleWebViewLoad = () => {
+    console.log('History WebView loaded successfully');
+    setLoading(false);
+    setError(null);
+    // 기본 지연 (WebView에서 준비 완료 신호를 받지 못할 경우를 대비)
+    setTimeout(() => {
+      if (historyApiData) {
+        console.log('Sending history data (fallback):', historyApiData);
+        postMessage({ type: 'history', data: historyApiData });
+      }
+    }, 10);
+  };
+
+  const handleWebViewLoadEnd = () => {
+    setLoading(false);
+  };
+
+  const handleMessage = (event: any) => {
+    try {
+      const message = JSON.parse(event.nativeEvent.data);
+      if (message.type === 'chartReady') {
+        console.log('Chart ready, sending history data');
+        if (historyApiData) {
+          console.log('Sending history data to chart:', historyApiData);
+          postMessage({ type: 'history', data: historyApiData });
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing WebView message:', error);
+    }
+  };
+
+  // API 데이터가 없으면 기본 데이터 사용
+  const displayData = categoryData || {
+    labels: ['식비', '소매/유통', '여가/오락', '미디어/통신', '학문/교육', '공연/전시', '생활서비스'],
+    data: [232130, 232130, 232130, 232130, 232130, 232130, 232130],
+    weight: [20, 20, 20, 20, 10, 5, 5],
+    total: '1232130',
+    highest: {}
+  };
+
+  // 총 누적 소비액 계산 (카테고리 데이터의 total 사용)
+  const getTotalAmount = () => {
+    if (categoryData && categoryData.total) {
+      return parseInt(categoryData.total);
+    }
+    // API 데이터가 없으면 기본값 사용
+    return parseInt(displayData.total) || historyData.totalAmount;
+  };
+
+  // 전월 대비 증감률 계산
+  const getIncreaseRate = () => {
+    if (historyApiData && historyApiData.lastMonth && historyApiData.thisMonthRaw && historyApiData.todayIndex !== undefined) {
+      const lastMonthValue = historyApiData.lastMonth[historyApiData.todayIndex];
+      const thisMonthValue = historyApiData.thisMonthRaw[historyApiData.todayIndex];
+      
+      if (lastMonthValue !== null && lastMonthValue !== undefined && 
+          thisMonthValue !== null && thisMonthValue !== undefined) {
+        const increaseRate = ((thisMonthValue - lastMonthValue) / lastMonthValue) * 100;
+        return {
+          rate: Math.abs(increaseRate),
+          isIncrease: increaseRate >= 0
+        };
+      }
+    }
+    // API 데이터가 없으면 기본값 사용
+    return {
+      rate: historyData.increaseRate,
+      isIncrease: true
+    };
+  };
+
+  const colors = ['bg-orange-500', 'bg-pink-500', 'bg-yellow-500', 'bg-teal-500', 'bg-blue-500', 'bg-gray', 'bg-purple-500'];
+
+  // 탭별 내용 렌더링 함수
+  const renderTabContent = () => {
+    return (
+      <View className="px-4 pb-8">
+        {/* 총 누적 소비액 */}
+        <View className="bg-gray rounded-2xl p-4 mb-6">
+          <Text className="text-body-large-semibold text-text-primary mb-2 text-center">
+            총 누적 소비액
+          </Text>
+          <Text className="text-heading-bold text-text-primary mb-2 text-center">
+            {formatAmount(getTotalAmount())}
+          </Text>
+          {(() => {
+            const increaseData = getIncreaseRate();
+            return (
+              <Text className={`text-body-medium-semibold text-center ${
+                increaseData.isIncrease ? 'text-green-500' : 'text-red-500'
+              }`}>
+                {increaseData.isIncrease ? '+' : '-'} 전월 대비 {increaseData.rate.toFixed(1)}% {increaseData.isIncrease ? '증가' : '감소'}
+              </Text>
+            );
+          })()}
+        </View>
+
+        {/* 내역 목록 */}
+        <View className="space-y-3">
+          {displayData.labels.map((label, index) => (
+            <View 
+              key={index} 
+              className="flex-row items-center justify-between mb-2 py-2"
+            >
+              <View className="flex-row items-center">
+                <View className={`w-4 h-4 rounded-full ${colors[index % colors.length]} mr-3`} />
+                <Text className="text-body-large-regular text-text-primary" style={{ fontWeight: '700' }}>
+                  {label}
+                </Text>
+                <Text className="text-body-large-regular text-text-secondary ml-3">
+                  {displayData.weight[index]}%
+                </Text>
+              </View>
+              <View className="flex-row items-center">
+                <Text className="text-body-large-regular text-text-primary" style={{ fontWeight: '700' }}>
+                  {formatAmount(displayData.data[index])}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  // 추가사항 렌더링 함수 (내역 탭은 추가사항 없음)
+  const renderAdditionalInfo = () => {
+    return null; // 내역 탭은 추가사항 없음
+  };
 
   return (
-    <View className="px-4 pb-8">
-      {/* 총 누적 소비액 */}
-      <View className="bg-gray rounded-2xl p-4 mb-6">
-        <Text className="text-body-large-semibold text-text-primary mb-2 text-center">
-          총 누적 소비액
-        </Text>
-        <Text className="text-heading-bold text-text-primary mb-2 text-center">
-          {formatAmount(historyData.totalAmount)}
-        </Text>
-        <Text className="text-body-medium-semibold text-green-500 text-center">
-          + 전월 대비 {historyData.increaseRate}% 증가
-        </Text>
+    <View>
+      {/* 내역 전용 웹뷰 차트 영역 */}
+      <View className="px-4 mt-6">
+        <View className="relative">
+          <WebView
+            ref={webviewRef}
+            source={{ uri: `${baseUrl}/myThisMonthChart` }}
+            style={{ height: 400, borderRadius: 12 }}
+            onLoad={handleWebViewLoad}
+            onLoadEnd={handleWebViewLoadEnd}
+            onError={handleWebViewError}
+            onHttpError={handleWebViewError}
+            onMessage={handleMessage}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            scalesPageToFit={true}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            onShouldStartLoadWithRequest={() => true}
+          />
+        
+        {loading && (
+          <View className="absolute inset-0 justify-center items-center bg-white rounded-lg">
+            <Text className="text-body-medium-regular text-text-secondary">차트를 불러오는 중...</Text>
+          </View>
+        )}
+        
+        {error && (
+          <View className="absolute inset-0 justify-center items-center bg-white rounded-lg">
+            <Text className="text-body-medium-regular text-red-500 text-center px-4">{error}</Text>
+          </View>
+        )}
+        </View>
       </View>
 
-      {/* 내역 목록 */}
-      <View className="space-y-3">
-        {categoryData.map((category, index) => (
-          <TouchableOpacity 
-            key={index} 
-            className="flex-row items-center justify-between mb-2 py-2"
-            onPress={() => navigation.navigate('CategoryDetail', {
-              categoryName: category.name,
-              totalAmount: category.amount,
-              percentage: category.percentage
-            })}
-          >
-            <View className="flex-row items-center">
-              <View className={`w-4 h-4 rounded-full ${category.color} mr-3`} />
-              <Text className="text-body-large-regular text-text-primary" style={{ fontWeight: '700' }}>
-                {category.name}
-              </Text>
-              <Text className="text-body-large-regular text-text-secondary ml-3">
-                {category.percentage}%
-              </Text>
-            </View>
-            <View className="flex-row items-center">
-              <Text className="text-body-large-regular text-text-primary" style={{ fontWeight: '700' }}>
-                {formatAmount(category.amount)}
-              </Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" className="ml-2" />
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* 탭별 내용 */}
+      {renderTabContent()}
+      
+      {/* 추가사항 */}
+      {renderAdditionalInfo()}
     </View>
   );
 }
