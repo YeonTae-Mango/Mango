@@ -1,17 +1,11 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import { getChatRooms } from '../../api/chat';
 import ChatItem from '../../components/chat/ChatItem';
 import Layout from '../../components/common/Layout';
-import chatService from '../../services/chatService';
+
 import { useAuthStore } from '../../store/authStore';
 
 interface ChatRoom {
@@ -96,44 +90,15 @@ const generateMockData = (page: number): ChatRoom[] => {
 export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
   const navigation = useNavigation<any>();
   const { user, isAuthenticated } = useAuthStore();
-  const [connectionStatus, setConnectionStatus] = useState({
-    connected: false,
-    connecting: false,
-  });
 
-  // 화면 포커스시 WebSocket 연결 시도
+  // 화면 포커스시 WebSocket 연결 상태만 확인
   useFocusEffect(
     useCallback(() => {
-      console.log('📱 채팅 화면 진입 - WebSocket 연결 시도');
-
-      // 연결 상태 콜백 등록
-      const handleConnectionChange = (isConnected: boolean) => {
-        setConnectionStatus({
-          connected: isConnected,
-          connecting: false,
-        });
-      };
-
-      chatService.onConnectionStatusChange(handleConnectionChange);
-
-      // 연결되지 않았다면 연결 시도
-      if (!chatService.isConnected && !chatService.isConnecting) {
-        setConnectionStatus({ connected: false, connecting: true });
-        chatService.connect().catch(error => {
-          console.error('❌ WebSocket 연결 실패:', error);
-          setConnectionStatus({ connected: false, connecting: false });
-        });
-      } else {
-        // 이미 연결된 상태라면 상태 업데이트
-        setConnectionStatus({
-          connected: chatService.isConnected,
-          connecting: chatService.isConnecting,
-        });
-      }
+      console.log('📱 채팅 화면 진입 - WebSocket 연결 상태 확인');
 
       return () => {
         console.log('📱 채팅 화면 벗어남');
-        // 연결은 유지하고 콜백만 정리 (필요시 연결 해제도 가능)
+        // 연결은 유지하고 콜백만 정리
       };
     }, [])
   );
@@ -143,7 +108,6 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
     data: chatRoomsData,
     isLoading,
     error,
-    refetch: refetchChatRooms,
   } = useQuery({
     queryKey: ['chatRooms', user?.id],
     queryFn: getChatRooms,
@@ -238,89 +202,6 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
 
   return (
     <Layout onLogout={onLogout} showBottomSafeArea={false}>
-      {/* WebSocket 연결 상태 표시 */}
-      {connectionStatus.connecting && (
-        <View className="bg-yellow-100 px-4 py-2 border-l-4 border-yellow-400">
-          <Text className="text-yellow-800 text-sm">
-            🔌 실시간 채팅 연결 중...
-          </Text>
-        </View>
-      )}
-
-      {!connectionStatus.connected && !connectionStatus.connecting && (
-        <View className="bg-red-100 px-4 py-2 border-l-4 border-red-400">
-          <Text className="text-red-800 text-sm">
-            ❌ 실시간 채팅 연결 끊김 - 메시지가 실시간으로 업데이트되지 않을 수
-            있습니다
-          </Text>
-        </View>
-      )}
-
-      {connectionStatus.connected && (
-        <View className="bg-green-100 px-4 py-2 border-l-4 border-green-400">
-          <Text className="text-green-800 text-sm">✅ 실시간 채팅 연결됨</Text>
-
-          {/* 테스트용 버튼들 */}
-          <View className="flex-row mt-2 space-x-2">
-            <TouchableOpacity
-              onPress={() => {
-                console.log('🧪 채팅방 구독 테스트 시작');
-                try {
-                  chatService.subscribeToRoom(
-                    999, // 테스트용 채팅방 ID
-                    (message: any) => {
-                      console.log('📩 테스트 메시지 수신:', message);
-                    },
-                    (readStatus: any) => {
-                      console.log('👀 테스트 읽음상태:', readStatus);
-                    }
-                  );
-                } catch (error) {
-                  console.error('❌ 구독 테스트 실패:', error);
-                }
-              }}
-              className="bg-blue-500 px-3 py-1 rounded"
-            >
-              <Text className="text-white text-xs">구독 테스트</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                console.log('🧪 메시지 전송 테스트 시작');
-                try {
-                  chatService.sendMessage(
-                    999,
-                    '테스트 메시지입니다',
-                    'TEXT',
-                    (result: any) => {
-                      console.log('✅ 전송 성공 콜백:', result);
-                    },
-                    (error: any) => {
-                      console.log('❌ 전송 실패 콜백:', error);
-                    }
-                  );
-                } catch (error) {
-                  console.error('❌ 전송 테스트 실패:', error);
-                }
-              }}
-              className="bg-orange-500 px-3 py-1 rounded"
-            >
-              <Text className="text-white text-xs">전송 테스트</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                console.log('🧪 구독 해제 테스트');
-                chatService.unsubscribeFromRoom(999);
-              }}
-              className="bg-red-500 px-3 py-1 rounded"
-            >
-              <Text className="text-white text-xs">구독 해제</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
       <FlatList
         data={chatRooms}
         renderItem={renderChatItem}

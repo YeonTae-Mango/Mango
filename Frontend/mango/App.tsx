@@ -7,6 +7,7 @@ import './global.css';
 
 import AuthStack from './src/navigation/AuthStack';
 import MainStack from './src/navigation/MainStack';
+import chatService from './src/services/chatService';
 import { useAuthStore } from './src/store/authStore';
 
 // React Query 클라이언트 생성
@@ -18,7 +19,7 @@ const queryClient = new QueryClient({
       gcTime: 30 * 60 * 1000, // 30분
       refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 리페치 비활성화
       refetchOnMount: false, // 마운트 시 자동 리페치 비활성화 (캐시된 데이터 사용)
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // 지수 백오프
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // 지수 백오프
     },
   },
 });
@@ -30,6 +31,22 @@ export default function App() {
   useEffect(() => {
     restoreAuth();
   }, [restoreAuth]);
+
+  // 사용자가 로그인된 상태일 때 자동으로 WebSocket 연결
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('🔌 사용자 로그인됨 - WebSocket 자동 연결 시도');
+      chatService.connect().catch(error => {
+        console.error('❌ 앱 시작 시 WebSocket 연결 실패:', error);
+      });
+    } else {
+      // 로그아웃 시 WebSocket 연결 해제
+      if (chatService.isConnected) {
+        console.log('🔌 사용자 로그아웃됨 - WebSocket 연결 해제');
+        chatService.disconnect();
+      }
+    }
+  }, [isAuthenticated]);
 
   const handleLogout = async () => {
     await clearAuth();
