@@ -43,22 +43,22 @@ apiClient.interceptors.request.use(
 // 응답 인터셉터 추가 (토큰 만료 처리 + 디버깅)
 apiClient.interceptors.response.use(
   response => {
-    console.log('📥 API 응답 성공:', {
-      status: response.status,
-      statusText: response.statusText,
-      url: response.config?.url,
-      data: response.data,
-    });
+    // console.log('📥 API 응답 성공:', {
+    //   status: response.status,
+    //   statusText: response.statusText,
+    //   url: response.config?.url,
+    //   data: response.data,
+    // });
     return response;
   },
   error => {
-    console.error('📥 API 응답 오류:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      url: error.config?.url,
-      message: error.message,
-    });
+    // console.error('📥 API 응답 오류:', {
+    //   status: error.response?.status,
+    //   statusText: error.response?.statusText,
+    //   data: error.response?.data,
+    //   url: error.config?.url,
+    //   message: error.message,
+    // });
 
     // 401 에러 (토큰 만료) 처리
     if (error.response?.status === 401) {

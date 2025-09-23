@@ -92,15 +92,22 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
   const navigation = useNavigation<any>();
   const { user, isAuthenticated } = useAuthStore();
 
+  console.log('🏠 ChatListScreen 컴포넌트 렌더링됨');
+
   // 채팅방 목록 실시간 업데이트를 위한 상태
   const [realTimeChatRooms, setRealTimeChatRooms] = useState<ChatRoom[]>([]);
 
   // 개인 알림 콜백 함수 - 채팅방 목록 실시간 업데이트
   const handlePersonalNotification = useCallback(
     (notification: ChatNotificationDTO) => {
-      console.log('🔔 채팅 목록에서 개인 알림 처리:', notification);
+      console.log('\n�🚨🚨 CHATLIST - 백엔드 unreadCount 확인 🚨🚨🚨');
+      console.log('📊 unreadCount 값:', notification.unreadCount);
+      console.log('🔍 전체 notification:', notification);
+      console.log('🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n');
 
-      const { chatRoomId, content, messageType, createdAt } = notification;
+      // 알림 데이터에서 필요한 필드 추출
+      const { chatRoomId, lastMessage, messageType, timestamp, unreadCount } =
+        notification;
 
       // 채팅방 목록에서 해당 채팅방 업데이트
       setRealTimeChatRooms(prevRooms => {
@@ -113,10 +120,21 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
           // 기존 채팅방 업데이트
           const updatedRoom = {
             ...updatedRooms[roomIndex],
-            lastMessage: messageType === 'IMAGE' ? '📷 사진' : content,
-            time: formatTime(createdAt),
-            unreadCount: (updatedRooms[roomIndex].unreadCount || 0) + 1,
+            lastMessage: messageType === 'IMAGE' ? '📷 사진' : lastMessage,
+            time: formatTime(timestamp),
+            // 🎯 백엔드에서 unreadCount를 주면 사용, 아니면 기존 방식 (+1)
+            unreadCount:
+              unreadCount !== undefined
+                ? unreadCount // ✅ 서버의 정확한 값 사용
+                : (updatedRooms[roomIndex].unreadCount || 0) + 1, // 🔴 임시 방식
           };
+
+          console.log('✅ unreadCount 처리 결과:', {
+            서버값: unreadCount,
+            사용된값: updatedRoom.unreadCount,
+            처리방식:
+              unreadCount !== undefined ? '서버값 사용' : '클라이언트 +1',
+          });
 
           // 업데이트된 채팅방을 맨 위로 이동
           updatedRooms.splice(roomIndex, 1);
@@ -161,26 +179,30 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
   // 화면 포커스시 개인 알림 콜백 등록
   useFocusEffect(
     useCallback(() => {
-      console.log('📱 채팅 화면 진입 - 개인 알림 콜백 등록');
+      console.log('\n� 채팅 화면 진입 - 개인 알림 콜백 등록 🚨');
+      console.log('👤 사용자 ID:', user?.id);
+      console.log('🔗 chatService 연결상태:', chatService.isConnected);
 
       if (user?.id && chatService.isConnected) {
         // 개인 알림 콜백 업데이트 (이미 구독되어 있다면 콜백만 교체)
         try {
+          console.log('✅ 개인 알림 콜백 등록 시도...');
           chatService.subscribeToPersonalNotifications(
             user.id,
             handlePersonalNotification
           );
+          console.log('✅ 개인 알림 콜백 등록 완료!');
         } catch (error) {
-          console.log('개인 알림 구독은 이미 되어 있음:', error);
+          console.log('⚠️ 개인 알림 구독은 이미 되어 있음:', error);
         }
+      } else {
+        console.log('❌ 콜백 등록 실패 - 사용자ID나 연결상태 확인필요');
       }
 
       return () => {
         console.log('📱 채팅 화면 벗어남');
-        // 개인 알림 구독은 유지하고, 콜백만 null로 설정
-        if (chatService.personalNotificationCallback) {
-          chatService.personalNotificationCallback = null;
-        }
+        // 개인 알림 구독과 콜백은 유지 (다른 화면에서도 알림이 필요함)
+        // chatService.personalNotificationCallback = null; // 제거!
       };
     }, [user?.id, handlePersonalNotification])
   );
@@ -288,6 +310,30 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
           </Text>
           <Text className="text-gray-600 text-center mb-4">
             {error?.message || '알 수 없는 오류가 발생했습니다.'}
+          </Text>
+        </View>
+      </Layout>
+    );
+  }
+
+  // 채팅방이 없을 때
+  if (chatRooms.length === 0) {
+    return (
+      <Layout onLogout={onLogout} showBottomSafeArea={false}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text className="text-subheading-bold text-center">
+            <Text className="text-subheading-bold text-center text-mango-red">
+              망
+            </Text>
+            설이지 말
+            <Text className="text-subheading-bold text-center text-mango-red">
+              고
+            </Text>
+            , 지금 당장{' '}
+            <Text className="text-subheading-bold text-center text-mango-red">
+              망고
+            </Text>
+            하세요! 🥭✨
           </Text>
         </View>
       </Layout>

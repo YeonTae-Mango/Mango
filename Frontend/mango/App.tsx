@@ -9,6 +9,7 @@ import AuthStack from './src/navigation/AuthStack';
 import MainStack from './src/navigation/MainStack';
 import chatService from './src/services/chatService';
 import { useAuthStore } from './src/store/authStore';
+import { ChatNotificationDTO } from './src/types/chat';
 
 // React Query 클라이언트 생성
 const queryClient = new QueryClient({
@@ -50,17 +51,20 @@ export default function App() {
           .then(() => {
             console.log('✅ WebSocket 연결 완료');
 
-            // WebSocket 연결 성공 후 개인 알림 구독
-            console.log('🔔 개인 알림 구독 시작 - 사용자 ID:', user.id);
+            // WebSocket 연결 완료 후 즉시 개인 알림 구독
+            try {
+              console.log('🔔 개인 알림 구독 시작 - 사용자 ID:', user.id);
 
-            chatService.subscribeToPersonalNotifications(
-              user.id!,
-              notification => {
-                console.log('🔔 개인 알림 수신:', notification);
-                // 여기서 채팅방 목록 실시간 업데이트나 푸시 알림 처리 가능
-                // 추후 ChatListScreen에서 콜백을 등록하여 실시간 업데이트 구현
-              }
-            );
+              chatService.subscribeToPersonalNotifications(
+                user.id!,
+                (notification: ChatNotificationDTO) => {
+                  console.log('� App.tsx - 기본 개인 알림 수신');
+                  // ChatListScreen에서 상세 로그 처리
+                }
+              );
+            } catch (subscribeError) {
+              console.error('❌ 개인 알림 구독 실패:', subscribeError);
+            }
           })
           .catch(error => {
             console.error('❌ 앱 시작 시 WebSocket 연결 실패:', error);
