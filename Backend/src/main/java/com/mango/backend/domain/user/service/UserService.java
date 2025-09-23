@@ -1,5 +1,8 @@
 package com.mango.backend.domain.user.service;
 
+import com.mango.backend.domain.consumptionpattern.entity.ConsumptionPattern;
+import com.mango.backend.domain.consumptionpattern.repository.ConsumptionPatternRepository;
+import com.mango.backend.domain.mango.repository.MangoRepository;
 import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
 import com.mango.backend.domain.user.dto.response.MyInfoResponse;
 import com.mango.backend.domain.user.dto.response.UserInfoResponse;
@@ -13,7 +16,10 @@ import com.mango.backend.global.error.ErrorCode;
 import com.mango.backend.global.util.FileUtil;
 import com.mango.backend.global.util.JwtProvider;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -29,6 +35,8 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final UserPhotoRepository userPhotoRepository;
+  private final ConsumptionPatternRepository consumptionPatternRepository;
+  private final MangoRepository mangoRepository;
   private final FileUtil fileUtil;
   private final RedisTemplate<String, String> redisTemplate;
   private final JwtProvider jwtProvider;
@@ -51,47 +59,38 @@ public class UserService {
   }
 
   public ServiceResult<?> getUserById(Long userId, String token) {
-    Long requestId = jwtProvider.getUserIdFromToken(token);
+    Long myId = jwtProvider.getUserIdFromToken(token);
 
-    if (userId.equals(requestId)) {
-      log.info("내 정보 조회 : {}", userId);
+    User me = userRepository.findById(myId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
+    User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
+    ConsumptionPattern consumptionPattern = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(userId);
 
-      return userRepository.findById(userId)
-          .map(user -> {
-              // TODO : AI 서버와 연동 필요
-              // ------------------------
-              // 🔹 목데이터 (1개, 3개, 1개만)
-              // ------------------------
-              String mockMainType = "뷰티형";
-
-              List<String> mockKeywords = List.of(
-                      "일반스포츠",
-                      "카페/디저트",
-                      "미용서비스"
-              );
-
-              String mockFood = "한식";
-              // ------------------------
-                  return ServiceResult.success(MyInfoResponse.of(user, mockMainType, mockKeywords, mockFood));
-              }
-          )
-          .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
-    } else {
-      log.info("타인 정보 조회 : {}", requestId);
-
-      return userRepository.findUserWithMangoStatus(requestId, userId)
-          .map(userWithMango -> {
-            User me = userWithMango.getMe();
-            User target = userWithMango.getTarget();
-            int distance = calculateDistance(me, target);
-            String mangoStatus = userWithMango.getMangoStatus();
-
-            UserInfoResponse response = UserInfoResponse.fromEntity(target, distance, mangoStatus);
-            return ServiceResult.success(response);
-          })
-          .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
+    if(consumptionPattern==null){
+        return ServiceResult.failure(ErrorCode.NO_CONSUMPTION_PATTERNS);
     }
-  }
+
+    String mainType = consumptionPattern.getMainType().getFirst().getName();
+    List<String> keywords = new ArrayList<>();
+    for(int i=0; i<3; i++){
+      keywords.add(consumptionPattern.getKeyword().get(i).getName());
+    }
+    String food = consumptionPattern.getFood().getFirst().getName();
+
+    List<String> profileImageUrls = userPhotoRepository
+            .findByUserOrderByPhotoOrderAsc(user)
+            .stream()
+            .map(photo -> photo.getPhotoUrl())
+            .toList();
+    boolean theyLiked = mangoRepository.existsByFromAndTo(user, me);
+    int distanceBetweenMe =0;
+    if(me.getId().equals(userId)){
+      distanceBetweenMe = calculateDistance(me, user);
+
+    }
+
+    UserInfoResponse response = UserInfoResponse.of(user,distanceBetweenMe,mainType,keywords,food,profileImageUrls, theyLiked);
+    return ServiceResult.success(response);
+    }
 
   @Transactional
   public ServiceResult<UserUpdateResponse> updateUser(Long requestId, String token,
