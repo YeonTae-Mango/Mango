@@ -5,7 +5,6 @@ import ComparisonCard from '../../components/pattern/ComparisonCard';
 import CustomHeader from '../../components/common/CustomHeader';
 import Layout from '../../components/common/Layout';
 import MatchingPatternTab from '../../components/pattern/MatchingPatternTab';
-import PatternWebView from '../../components/pattern/PatternWebView';
 
 export default function MatchingpatternScreen() {
   const navigation = useNavigation<any>();
@@ -38,8 +37,7 @@ export default function MatchingpatternScreen() {
         />
 
 
-        {/* 웹뷰 영역 (회색 상자) */}
-        <PatternWebView activeTab={activeTab} />
+        {/* 웹뷰 영역 (회색 상자) - PatternWebView 제거됨 */}
 
         {/* 유형 비교 카드 */}
         <ComparisonCard
