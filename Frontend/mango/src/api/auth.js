@@ -27,3 +27,28 @@ export const getCurrentUserId = async () => {
     return null;
   }
 };
+
+/**
+ * 특정 사용자의 정보를 조회합니다.
+ * @param {number} userId - 조회할 사용자 ID
+ * @returns {Promise<Object>} 사용자 정보
+ */
+export const getUserById = async userId => {
+  try {
+    // apiClient import 추가 필요
+    const apiClient = (await import('./client')).default;
+    const token = await getAuthToken();
+
+    const response = await apiClient.get(`/users/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log('사용자 정보 조회 성공:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('사용자 정보 조회 실패:', error);
+    throw error;
+  }
+};
