@@ -32,13 +32,34 @@ export default function App() {
     restoreAuth();
   }, [restoreAuth]);
 
-  // 사용자가 로그인된 상태일 때 자동으로 WebSocket 연결
+  // 사용자가 로그인된 상태일 때 자동으로 WebSocket 연결 및 개인 알림 구독
   useEffect(() => {
     if (isAuthenticated) {
-      console.log('🔌 사용자 로그인됨 - WebSocket 자동 연결 시도');
-      chatService.connect().catch(error => {
-        console.error('❌ 앱 시작 시 WebSocket 연결 실패:', error);
-      });
+      const { user } = useAuthStore.getState();
+      if (user?.id) {
+        console.log('🔌 사용자 로그인됨 - WebSocket 자동 연결 시도');
+
+        chatService
+          .connect()
+          .then(() => {
+            console.log('✅ WebSocket 연결 완료');
+
+            // WebSocket 연결 성공 후 개인 알림 구독
+            console.log('🔔 개인 알림 구독 시작 - 사용자 ID:', user.id);
+
+            chatService.subscribeToPersonalNotifications(
+              user.id!,
+              notification => {
+                console.log('🔔 개인 알림 수신:', notification);
+                // 여기서 채팅방 목록 실시간 업데이트나 푸시 알림 처리 가능
+                // 추후 ChatListScreen에서 콜백을 등록하여 실시간 업데이트 구현
+              }
+            );
+          })
+          .catch(error => {
+            console.error('❌ 앱 시작 시 WebSocket 연결 실패:', error);
+          });
+      }
     } else {
       // 로그아웃 시 WebSocket 연결 해제
       if (chatService.isConnected) {

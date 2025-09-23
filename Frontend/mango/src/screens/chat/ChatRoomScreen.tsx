@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, {
   useCallback,
   useEffect,
@@ -44,6 +44,7 @@ export default function ChatRoomScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute();
   const { user } = useAuthStore();
+  const queryClient = useQueryClient();
 
   const { userName, chatRoomId, userId, profileImageUrl, mainType } =
     route.params as {
@@ -406,6 +407,12 @@ export default function ChatRoomScreen() {
           setTimeout(() => {
             refetchMessages();
           }, 100);
+
+          // 🚀 채팅방 목록 캐시 무효화 (즉시 업데이트를 위해)
+          console.log('🔄 채팅방 목록 캐시 무효화 - 즉시 업데이트');
+          queryClient.invalidateQueries({
+            queryKey: ['chatRooms', user?.id],
+          });
         },
         (error: any) => {
           console.error('❌ 메시지 전송 실패:', error);

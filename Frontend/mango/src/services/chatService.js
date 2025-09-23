@@ -10,6 +10,11 @@ class ChatService {
     this.connectionCallbacks = []; // 연결상태 변경 콜백
     this.messageId = 0; // STOMP 메시지 ID
     this.sendMessageCallbacks = new Map(); // 메시지 전송 결과 콜백
+
+    // 개인 알림 구독 관련
+    this.personalNotificationCallback = null; // 개인 알림 콜백
+    this.personalSubscriptionId = null; // 개인 알림 구독 ID
+    this.currentUserId = null; // 현재 사용자 ID
   }
 
   /**
@@ -291,6 +296,29 @@ class ChatService {
     const destination = frame.headers.destination;
     console.log(`📬 STOMP 메시지 수신 - 목적지: ${destination}`);
 
+    // 개인 알림 메시지 처리
+    const notificationMatch = destination.match(
+      /\/topic\/notification\/(\d+)$/
+    );
+    if (notificationMatch) {
+      const userId = parseInt(notificationMatch[1]);
+      console.log(`🔔 사용자 ${userId}의 개인 알림 수신`);
+
+      if (this.personalNotificationCallback) {
+        try {
+          const notification = JSON.parse(frame.body);
+          console.log(`📩 개인 알림 내용:`, notification);
+          this.personalNotificationCallback(notification);
+        } catch (error) {
+          console.error('❌ 개인 알림 파싱 오류:', error);
+          console.error('📄 원본 알림 body:', frame.body);
+        }
+      } else {
+        console.log(`⚠️ 개인 알림에 대한 콜백이 없습니다`);
+      }
+      return;
+    }
+
     // 채팅방 메시지 처리
     const chatRoomMatch = destination.match(/\/topic\/chat\/(\d+)$/);
     if (chatRoomMatch) {
@@ -353,6 +381,11 @@ class ChatService {
       this.messageCallbacks.clear();
       this.readStatusCallbacks.clear();
 
+      // 개인 알림 구독도 해제
+      this.personalSubscriptionId = null;
+      this.personalNotificationCallback = null;
+      this.currentUserId = null;
+
       // DISCONNECT 프레임 전송 (연결된 경우에만)
       if (this.isConnected) {
         this._sendFrame('DISCONNECT');
@@ -362,6 +395,70 @@ class ChatService {
       this.socket = null;
       this.isConnected = false;
       this.isConnecting = false;
+    }
+  }
+
+  /**
+   * 개인 알림에 구독합니다 (채팅방 목록 실시간 업데이트용)
+   * @param {number} userId - 사용자 ID
+   * @param {function} onNotification - 알림 수신 콜백
+   */
+  subscribeToPersonalNotifications(userId, onNotification) {
+    if (!this.isConnected) {
+      console.error('❌ WebSocket이 연결되지 않았습니다 - 개인 알림 구독 실패');
+      throw new Error('WebSocket이 연결되지 않았습니다');
+    }
+
+    // 이미 구독중인지 확인
+    if (this.personalSubscriptionId && this.currentUserId === userId) {
+      console.log(`📱 사용자 ${userId}의 개인 알림은 이미 구독중입니다`);
+      // 기존 콜백 업데이트
+      this.personalNotificationCallback = onNotification;
+      return;
+    }
+
+    try {
+      console.log(`🔔 사용자 ${userId}의 개인 알림 구독 시작`);
+      console.log(`🔗 구독 목적지: /topic/notification/${userId}`);
+
+      // 개인 알림 구독 - STOMP SUBSCRIBE 프레임 전송
+      const subscriptionId = `sub-notification-${userId}-${Date.now()}`;
+
+      console.log(`📤 개인 알림 SUBSCRIBE 프레임 전송 - ID: ${subscriptionId}`);
+      this._sendFrame('SUBSCRIBE', {
+        id: subscriptionId,
+        destination: `/topic/notification/${userId}`,
+      });
+
+      // 구독 정보 저장
+      this.personalSubscriptionId = subscriptionId;
+      this.personalNotificationCallback = onNotification;
+      this.currentUserId = userId;
+
+      console.log(`✅ 사용자 ${userId}의 개인 알림 구독 완료`);
+    } catch (error) {
+      console.error(`❌ 사용자 ${userId}의 개인 알림 구독 실패:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 개인 알림 구독을 해제합니다
+   */
+  unsubscribeFromPersonalNotifications() {
+    if (this.personalSubscriptionId) {
+      console.log(`🔔 사용자 ${this.currentUserId}의 개인 알림 구독 해제`);
+
+      // STOMP UNSUBSCRIBE 프레임 전송
+      this._sendFrame('UNSUBSCRIBE', {
+        id: this.personalSubscriptionId,
+      });
+
+      this.personalSubscriptionId = null;
+      this.personalNotificationCallback = null;
+      this.currentUserId = null;
+
+      console.log(`✅ 개인 알림 구독 해제 완료`);
     }
   }
 

@@ -66,3 +66,23 @@ export interface ReadStatusUpdate {
   userId: number;
   sequenceNumber: number;
 }
+
+// 채팅 알림 데이터 인터페이스 (백엔드 ChatNotificationDTO)
+export interface ChatNotificationDTO {
+  chatRoomId: number;
+  content: string; // 메시지 내용
+  senderNickname: string; // 발신자 닉네임
+  senderId: number; // 발신자 ID
+  messageType: 'TEXT' | 'IMAGE'; // 메시지 타입
+  createdAt: string; // 생성 시간
+}
+
+// 채팅방 목록 업데이트용 데이터 인터페이스
+export interface ChatRoomUpdateData {
+  chatRoomId: number;
+  lastMessage: string;
+  lastMessageTime: string;
+  senderName: string;
+  senderId: number;
+  messageType: 'TEXT' | 'IMAGE';
+}
