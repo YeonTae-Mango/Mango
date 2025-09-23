@@ -7,6 +7,7 @@ import SignupProfilePhotoScreen from '../screens/signup/SignupProfilePhotoScreen
 import SignupScreen from '../screens/signup/SignupScreen';
 import BaseScreen from '../screens/start/BaseScreen';
 import TestScreen from '../screens/start/TestScreen';
+import { useAuthStore } from '../store/authStore';
 
 const Stack = createStackNavigator();
 
@@ -15,8 +16,11 @@ interface AuthStackProps {
 }
 
 export default function AuthStack({ onLoginSuccess }: AuthStackProps) {
+  const { isSignupInProgress } = useAuthStore();
+
   return (
     <Stack.Navigator
+      initialRouteName={isSignupInProgress ? 'SignupComplete' : 'Base'}
       screenOptions={{
         headerShown: false, // Layout 컴포넌트에서 헤더 처리
       }}
