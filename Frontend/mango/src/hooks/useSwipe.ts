@@ -13,6 +13,13 @@ export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
   const queryClient = useQueryClient(); // React Query 클라이언트
   const [currentIndex, setCurrentIndex] = useState(0); // 현재 프로필 인덱스 상태 관리
 
+  // 디버깅을 위한 로그
+  console.log('useSwipe Debug:', {
+    userId,
+    category,
+    enabled: !!userId && userId > 0,
+  });
+
   // 프로필 목록을 가져오기 위한 React Query 설정
   const {
     data: profiles = [],
@@ -22,7 +29,12 @@ export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
     refetch,
   } = useQuery({
     queryKey: ['swipeProfiles', userId, category],
-    queryFn: async () => getSwipeProfiles(userId, category),
+    queryFn: async () => {
+      console.log('API 호출:', { userId, category });
+      const result = await getSwipeProfiles(userId, category);
+      console.log('API 응답:', result);
+      return result;
+    },
     enabled: !!userId && userId > 0, // userId가 유효할 때만 쿼리 실행
     staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
     gcTime: 1000 * 60 * 10, // 10분간 가비지 컬렉션 방지
