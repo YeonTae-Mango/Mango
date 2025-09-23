@@ -5,6 +5,7 @@ import com.mango.backend.domain.chat.dto.response.ChatMessageResponse;
 import com.mango.backend.domain.chat.dto.response.ChatNotificationDTO;
 import com.mango.backend.domain.chat.entity.ChatMessage;
 import com.mango.backend.domain.chat.entity.ChatRoom;
+import com.mango.backend.domain.chat.repository.ChatMessageRepository;
 import com.mango.backend.domain.chat.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class ChatController {
 
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatMessageRepository chatMessageRepository;
 
     /**
      * 텍스트/이미지 메시지 처리
@@ -200,15 +202,21 @@ public class ChatController {
                 ? chatRoom.getUser2Id()
                 : chatRoom.getUser1Id();
 
-            // 알림 DTO 생성
-            ChatNotificationDTO notification = ChatNotificationDTO.newMessageNotification(
-                chatRoom.getId(),
-                savedMessage.getContent(),
-                response.getSenderNickname(),
-                senderId,
-                savedMessage.getMessageType(),
-                savedMessage.getCreatedAt()
-            );
+            // 실제 안읽은 메시지 수 계산
+            int unreadCount = (int) chatMessageRepository.countUnreadMessagesByChatRoomIdAndUserId(
+                chatRoom.getId(), receiverId);
+
+            // 알림 DTO 생성 (실제 unreadCount 포함)
+            ChatNotificationDTO notification = ChatNotificationDTO.builder()
+                .chatRoomId(chatRoom.getId())
+                .lastMessage("IMAGE".equals(savedMessage.getMessageType()) ? "사진을 보냈습니다" : savedMessage.getContent())
+                .senderName(response.getSenderNickname())
+                .senderId(senderId)
+                .messageType(savedMessage.getMessageType())
+                .timestamp(savedMessage.getCreatedAt())
+                .notificationType("NEW_MESSAGE")
+                .unreadCount(unreadCount)  // 실제 누적된 안읽은 메시지 수
+                .build();
 
             // 상대방의 개인 채널로 알림 전송
             String notificationDestination = "/topic/notification/" + receiverId;
