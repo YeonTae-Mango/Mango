@@ -38,7 +38,7 @@ export const getUserById = async userId => {
     // apiClient import 추가 필요
     const apiClient = (await import('./client')).default;
     const token = await getAuthToken();
-    
+
     const response = await apiClient.get(`/users/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,

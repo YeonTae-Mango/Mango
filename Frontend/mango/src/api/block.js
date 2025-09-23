@@ -10,7 +10,7 @@ import apiClient from './client';
 export const blockUser = async (requestId, targetUserId) => {
   try {
     const token = await getAuthToken();
-    
+
     const response = await apiClient.post(
       `/block/${requestId}/${targetUserId}`,
       {},
@@ -20,7 +20,7 @@ export const blockUser = async (requestId, targetUserId) => {
         },
       }
     );
-    
+
     console.log('사용자 차단/신고 API 응답:', response.data);
     return response.data;
   } catch (error) {

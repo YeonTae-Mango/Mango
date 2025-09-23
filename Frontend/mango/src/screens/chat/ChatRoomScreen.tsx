@@ -187,7 +187,7 @@ export default function ChatRoomScreen() {
           console.log('🔍 차단 시도 - userId:', userId);
           console.log('🔍 차단 시도 - user?.id:', user?.id);
           console.log('🔍 차단 시도 - chatRoomData:', chatRoomData);
-          
+
           // userId가 있으면 그대로 사용, 없으면 chatRoomData에서 가져오기
           let targetUserId = userId;
           if (!targetUserId && chatRoomData) {
@@ -201,9 +201,9 @@ export default function ChatRoomScreen() {
                 ? roomData.user2Id
                 : roomData.user1Id;
           }
-          
+
           console.log('🔍 최종 targetUserId:', targetUserId);
-          
+
           if (user?.id && targetUserId) {
             console.log('✅ 차단 API 호출:', {
               requestId: user.id,
@@ -334,7 +334,7 @@ export default function ChatRoomScreen() {
           console.log('🔍 신고 시도 - userId:', userId);
           console.log('🔍 신고 시도 - user?.id:', user?.id);
           console.log('🔍 신고 시도 - chatRoomData:', chatRoomData);
-          
+
           // userId가 있으면 그대로 사용, 없으면 chatRoomData에서 가져오기
           let targetUserId = userId;
           if (!targetUserId && chatRoomData) {
