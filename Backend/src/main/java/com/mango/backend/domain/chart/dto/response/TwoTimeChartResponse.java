@@ -4,6 +4,6 @@ public record TwoTimeChartResponse(
         int[] myData,
         int[] yourData,
         String[] timeLabels,
-        String hotTime
+        String[] hotTime
 ) {
 }

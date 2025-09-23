@@ -167,37 +167,38 @@ public class ChartService {
         int[] myData = new int[4];
         int[] yourData = new int[4];
         String[] timeLabels = {"06시", "12시", "18시", "24시"};
-        String hotTime;
+        String[] hotTimes = new String[2];
 
         countPaymentByTime(myPayments, myData);
         countPaymentByTime(otherPayments, yourData);
 
-        int bigIndex = 0;
+        int myBigIndex = 0;
         int bigData = myData[0];
         for (int i = 1; i < 4; i++) {
             if (bigData < myData[i]) {
                 bigData = myData[i];
-                bigIndex = i;
+                myBigIndex = i;
             }
         }
-        if (bigIndex == 0) {
-            hotTime = "자정 ~ 오전 6시";
-        } else if (bigIndex == 1) {
-            hotTime = "오전 6시 ~ 정오";
-        } else if (bigIndex == 2) {
-            hotTime = "정오 ~ 오후 6시";
-        } else {
-            hotTime = "오후 6시 ~ 자정";
-        }
+        hotTimes[0] = getTimeRangeString(myBigIndex);
 
-        TwoTimeChartResponse response = new TwoTimeChartResponse(myData, yourData, timeLabels, hotTime);
+        int otherBigIndex = 0;
+        int otherBigData = yourData[0];
+        for (int i = 1; i < 4; i++) {
+            if (otherBigData < yourData[i]) {
+                otherBigData = yourData[i];
+                otherBigIndex = i;
+            }
+        }
+        hotTimes[1] = getTimeRangeString(otherBigIndex);
+        TwoTimeChartResponse response = new TwoTimeChartResponse(myData, yourData, timeLabels, hotTimes);
         return ServiceResult.success(response);
     }
 
     public ServiceResult<TwoTypeChartResponse> getTwoTypeChart(Long myUserId, Long otherUserId) {
         List<MainCode> mainTypes = mainCodeRepository.findByMainCodeStartingWith("LS_");
-        for(int i=0; i<mainTypes.size(); i++) {
-            if(mainTypes.get(i).getMainCodeName().equals("음식")){
+        for (int i = 0; i < mainTypes.size(); i++) {
+            if (mainTypes.get(i).getMainCodeName().equals("음식")) {
                 mainTypes.remove(i);
                 break;
             }
@@ -241,6 +242,18 @@ public class ChartService {
             } else {
                 data[3]++;
             }
+        }
+    }
+
+    private String getTimeRangeString(int index) {
+        if (index == 0) {
+            return "자정 ~ 오전 6시";
+        } else if (index == 1) {
+            return "오전 6시 ~ 정오";
+        } else if (index == 2) {
+            return "정오 ~ 오후 6시";
+        } else {
+            return "오후 6시 ~ 자정";
         }
     }
 }
