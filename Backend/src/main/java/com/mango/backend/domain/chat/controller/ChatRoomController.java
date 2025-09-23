@@ -2,6 +2,7 @@ package com.mango.backend.domain.chat.controller;
 
 import com.mango.backend.domain.chat.dto.request.CreateChatRoomRequest;
 import com.mango.backend.domain.chat.dto.response.ChatMessageResponse;
+import com.mango.backend.domain.chat.dto.response.ChatNotificationDTO;
 import com.mango.backend.domain.chat.dto.response.ChatRoomResponse;
 import com.mango.backend.domain.chat.entity.ChatMessage;
 import com.mango.backend.domain.chat.entity.ChatRoom;
@@ -14,9 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -42,6 +45,7 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /**
      * 내 채팅방 목록 조회
@@ -218,8 +222,24 @@ public class ChatRoomController {
             // 2. 안 읽은 메시지 읽음 처리
             int readCount = chatMessageService.markMessagesAsRead(roomId, userId);
             log.debug("읽음 처리 완료 - 읽음처리개수: {}", readCount);
-            
-            // 3. 채팅방 응답 DTO 생성
+
+            // 3. 내 채팅방 목록에 읽음 상태 알림 전송 (WebSocket)
+            if (readCount > 0) {
+                ChatNotificationDTO notification = ChatNotificationDTO.builder()
+                    .chatRoomId(roomId)
+                    .unreadCount(0)  // 읽음 처리 후이므로 0
+                    .notificationType("READ_STATUS")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+                messagingTemplate.convertAndSend(
+                    "/topic/notification/" + userId,
+                    notification
+                );
+                log.debug("읽음 상태 알림 전송 - 사용자ID: {}, 채팅방ID: {}", userId, roomId);
+            }
+
+            // 4. 채팅방 응답 DTO 생성
             ChatRoomResponse response = ChatRoomResponse.from(chatRoom, userId);
             // User 서비스 연동하여 상대방 정보 설정
             User otherUser = userRepository.findById(response.getOtherUserId())
