@@ -1,8 +1,16 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import React from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { getCurrentUserId, getUserById } from '../../api/auth';
 import Layout from '../../components/common/Layout';
+import { CATEGORIES, CategoryType } from '../../constants/category';
 
 interface ProfileScreenProps {
   onLogout?: () => void;
@@ -10,6 +18,18 @@ interface ProfileScreenProps {
 
 export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
   const navigation = useNavigation<any>();
+  const [profileData, setProfileData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 메인 타입으로 카테고리 정보 찾기
+  const getCategoryInfo = (mainType: string) => {
+    const categoryKey = Object.keys(CATEGORIES).find(
+      key => CATEGORIES[key as CategoryType].name === mainType
+    ) as CategoryType;
+
+    return categoryKey ? CATEGORIES[categoryKey] : null;
+  };
 
   const handleProfileEdit = () => {
     navigation.navigate('ProfileEdit');
@@ -19,18 +39,91 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
     navigation.navigate('MyPattern');
   };
 
-  const mockProfileData = {
-    name: '나나',
-    age: 28,
-    gender: '여',
-    introduction: '아 싸탈하고 싶다',
-    profileImage:
-      'https://img.news-wa.com//img/upload/2025/01/15/NWC_20250115215332.jpg.webp',
-    consumerType: '핫플레이서',
-    hashtags: ['#카페인중독', '#인터넷쇼핑', '#단발병'],
-    description:
-      '이것은 핫플레이서에 대한 설명으로 사용자에게 핫플레이서가 무엇인지를 정확하고 명확하게 설명해줄 수 있는 텍스트로 구성되어있습니다만 현재 시각이 2시인 관계로 저는 이를 목적적합하게 작이넹 자신이 없어서 이렇게 제 자신에 대한 부끄러움을 글로 옮기는 것으로 이 업무를 마무리하려고 합니다.',
-  };
+  // 사용자 정보 불러오기
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // 현재 로그인된 사용자 ID 가져오기
+        const userId = await getCurrentUserId();
+        if (!userId) {
+          throw new Error('사용자 ID를 찾을 수 없습니다.');
+        }
+
+        // 사용자 정보 조회
+        const userInfo = await getUserById(userId);
+        console.log('받은 사용자 정보:', userInfo);
+        // API 응답 구조에 맞게 데이터 추출
+        setProfileData((userInfo as any).data);
+      } catch (err) {
+        console.error('프로필 정보 로드 실패:', err);
+        setError('프로필 정보를 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  // 로딩 상태 처리
+  if (loading) {
+    return (
+      <Layout onLogout={onLogout} showBottomSafeArea={false}>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#EF4444" />
+          <Text className="text-body-medium-regular text-text-primary mt-4">
+            프로필 정보를 불러오는 중...
+          </Text>
+        </View>
+      </Layout>
+    );
+  }
+
+  // 에러 상태 처리
+  if (error || !profileData) {
+    return (
+      <Layout onLogout={onLogout} showBottomSafeArea={false}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text className="text-body-large-regular text-text-primary text-center mb-4">
+            {error || '프로필 정보를 불러올 수 없습니다.'}
+          </Text>
+          <TouchableOpacity
+            className="bg-red-400 rounded-2xl px-6 py-3"
+            onPress={async () => {
+              const fetchUserProfile = async () => {
+                try {
+                  setLoading(true);
+                  setError(null);
+
+                  const userId = await getCurrentUserId();
+                  if (!userId) {
+                    throw new Error('사용자 ID를 찾을 수 없습니다.');
+                  }
+
+                  const userInfo = await getUserById(userId);
+                  setProfileData((userInfo as any).data);
+                } catch (err) {
+                  console.error('프로필 정보 로드 실패:', err);
+                  setError('프로필 정보를 불러오는데 실패했습니다.');
+                } finally {
+                  setLoading(false);
+                }
+              };
+
+              fetchUserProfile();
+            }}
+          >
+            <Text className="text-white text-body-medium-semibold">
+              다시 시도
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Layout>
+    );
+  }
 
   return (
     <Layout onLogout={onLogout} showBottomSafeArea={false}>
@@ -52,7 +145,11 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
             {/* 프로필 이미지 */}
             <View className="w-24 h-24 rounded-full overflow-hidden mr-6">
               <Image
-                source={{ uri: mockProfileData.profileImage }}
+                source={{
+                  uri:
+                    profileData.profileImageUrls?.[0] ||
+                    'https://via.placeholder.com/150',
+                }}
                 className="w-full h-full"
                 resizeMode="cover"
               />
@@ -61,10 +158,10 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
             {/* 이름, 나이, 성별과 소개글 */}
             <View className="flex-1">
               <Text className="text-subheading-bold text-gray-900 mb-2">
-                {mockProfileData.name} ({mockProfileData.age}){' '}
+                {`${profileData.nickname || '사용자'} (${profileData.age || '?'})`}
               </Text>
               <Text className="text-body-large-regular text-text-primary">
-                {mockProfileData.introduction}
+                {profileData.introduction || '소개글이 없습니다.'}
               </Text>
             </View>
           </View>
@@ -77,35 +174,39 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           </Text>
 
           {/* 소비자 유형 */}
-          <View className="bg-blue-100 rounded-full px-6 py-4 flex-row items-center mb-4">
-            <Ionicons
-              name="location"
-              size={20}
-              color="#EF4444"
-              className="mr-2"
-            />
+          <View className="bg-mango-red/30 rounded-full px-6 py-4 flex-row items-center mb-4">
+            <Text className="text-xl mr-2">
+              {getCategoryInfo(profileData.mainType)?.emoji || '❓'}
+            </Text>
             <Text className="text-body-large-semibold">
-              당신은 {mockProfileData.consumerType} 유형입니다
+              당신은{' '}
+              <Text className="font-bold">
+                {profileData.mainType || '미분류'}
+              </Text>{' '}
+              유형입니다
             </Text>
           </View>
 
           {/* 설명 텍스트 */}
           <Text className="text-text-primary text-body-small-regular px-4 leading-5 mb-4">
-            {mockProfileData.description}
+            {getCategoryInfo(profileData.mainType)?.detailedDescription ||
+              '소비패턴 설명이 없습니다.'}
           </Text>
 
           {/* 해시태그 */}
           <View className="flex-row flex-wrap mb-6 px-4">
-            {mockProfileData.hashtags.map((tag, index) => (
-              <View
-                key={index}
-                className="bg-gray rounded-full px-4 py-2 mr-2 mb-2"
-              >
-                <Text className="text-text-primary text-body-medium-semibold">
-                  {tag}
-                </Text>
-              </View>
-            ))}
+            {(profileData.keywords || []).map(
+              (keyword: string, index: number) => (
+                <View
+                  key={index}
+                  className="bg-gray rounded-full px-4 py-2 mr-2 mb-2"
+                >
+                  <Text className="text-text-primary text-body-medium-semibold">
+                    #{keyword.trim()}
+                  </Text>
+                </View>
+              )
+            )}
           </View>
 
           {/* 소비패턴 분석 버튼 */}

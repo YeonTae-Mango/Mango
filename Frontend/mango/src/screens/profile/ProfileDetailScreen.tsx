@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
@@ -8,11 +7,21 @@ import { sendMangoLike } from '../../api/swipe';
 import CustomHeader from '../../components/common/CustomHeader';
 import Layout from '../../components/common/Layout';
 import ProfileCard from '../../components/profile/ProfileCard';
+import { CATEGORIES, CategoryType } from '../../constants/category';
 import { useAuthStore } from '../../store/authStore';
 
 export default function ProfileDetailScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute();
+
+  // 메인 타입으로 카테고리 정보 찾기
+  const getCategoryInfo = (mainType: string) => {
+    const categoryKey = Object.keys(CATEGORIES).find(
+      key => CATEGORIES[key as CategoryType].name === mainType
+    ) as CategoryType;
+
+    return categoryKey ? CATEGORIES[categoryKey] : null;
+  };
   const {
     userName,
     fromScreen,
@@ -247,16 +256,20 @@ export default function ProfileDetailScreen() {
           {/* 정보 박스 */}
           <View className="bg-gray rounded-2xl p-4 mb-4">
             <View className="flex-row items-center mb-2">
-              <Ionicons name="location-outline" size={24} color="#000000" />
+              <Text className="text-xl mr-2">
+                {getCategoryInfo(profileData.category)?.emoji || '❓'}
+              </Text>
               <Text className="text-body-large-semibold text-dark ml-2">
-                {userName}님은 {profileData.category} 유형입니다
+                {userName}님은{' '}
+                <Text className="font-bold text-mango-red">
+                  {profileData.category}
+                </Text>{' '}
+                유형입니다
               </Text>
             </View>
             <Text className="text-medium-regular text-text-primary leading-5 px-2">
-              이것은 핫플헌터에 대한 설명으로 사용자에게 핫플헌터 무엇인지 알려
-              정확하고 명확하게 설명해줄 수 있는 텍스트로 구성되어있음. 이것은
-              핫플헌터에 대한 설명으로 사용자에게 핫플헌터 무엇인지 알려
-              정확하고 명확하게 설명해줄 수 있는 텍스트로 구성되어있음.
+              {getCategoryInfo(profileData.category)?.detailedDescription ||
+                '소비패턴 설명이 없습니다.'}
             </Text>
           </View>
 
