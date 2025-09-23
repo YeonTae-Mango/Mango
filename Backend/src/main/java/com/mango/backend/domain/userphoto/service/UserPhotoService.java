@@ -1,6 +1,7 @@
 package com.mango.backend.domain.userphoto.service;
 
 import com.mango.backend.domain.user.repository.UserRepository;
+import com.mango.backend.domain.userphoto.dto.response.UploadPhotoResponse;
 import com.mango.backend.domain.userphoto.dto.response.UserPhotoResponse;
 import com.mango.backend.domain.userphoto.entity.UserPhoto;
 import com.mango.backend.domain.userphoto.repository.UserPhotoRepository;
@@ -47,46 +48,44 @@ public class UserPhotoService {
   }
 
   @Transactional
-  public ServiceResult<List<String>> uploadPhoto(Long requestId,
-      List<MultipartFile> files) {
+  public ServiceResult<List<UploadPhotoResponse>> uploadPhoto(Long requestId, List<MultipartFile> files) {
     if (files.size() > 4) {
       return ServiceResult.failure(ErrorCode.FILE_TOO_MANY);
     }
     if (files.isEmpty()) {
       return ServiceResult.failure(ErrorCode.FILE_TOO_LITTLE);
     }
-    return userRepository.findById(requestId)
-        .map(user -> {
-          List<UserPhoto> photosToSave = new ArrayList<>();
-          List<String> uploadedUrls = new ArrayList<>();
-          byte order = 1;
+      return userRepository.findById(requestId)
+              .map(user -> {
+                  List<UserPhoto> photosToSave = new ArrayList<>();
+                  byte order = 1;
 
-          for (MultipartFile file : files) {
-            String url;
-            try {
-              url = fileUtil.saveFile(file, "profile");
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
+                  for (MultipartFile file : files) {
+                      String url;
+                      try {
+                          url = fileUtil.saveFile(file, "profile");
+                      } catch (IOException e) {
+                          throw new RuntimeException(e);
+                      }
 
-            UserPhoto photo = UserPhoto.builder()
-                .user(user)
-                .photoUrl(url)
-                .photoOrder(order++)
-                .build();
+                      UserPhoto photo = UserPhoto.builder()
+                              .user(user)
+                              .photoUrl(url)
+                              .photoOrder(order++)
+                              .build();
 
-            if (order == 2) { // 첫 번째 사진이면 대표 사진
-              user.updateProfilePhoto(photo);
-            }
+                      if (order == 2) { // 첫 번째 사진이면 대표 사진
+                          user.updateProfilePhoto(photo);
+                      }
 
-            photosToSave.add(photo);
-            uploadedUrls.add(url);
-          }
-
-          userPhotoRepository.saveAll(photosToSave);
-          return ServiceResult.success(uploadedUrls);
-        })
-        .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
+                      photosToSave.add(photo);
+                  }
+                  List<UserPhoto> savedPhotos = userPhotoRepository.saveAll(photosToSave);
+                  List<UploadPhotoResponse> responses = savedPhotos.stream()
+                          .map(UploadPhotoResponse::from)
+                          .toList();
+                  return ServiceResult.success(responses);
+              }).orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
   }
 
   @Transactional
