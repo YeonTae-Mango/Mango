@@ -10,6 +10,8 @@ import MyThisMonthChart from "./components/MyThisMonthChart";
 import MyTimeChart from "./components/MyTimeChart";
 import TwoTimeChart from "./components/TwoTimeChart";
 import TwoTypeChart from "./components/TwoTypeChart";
+import TwoKeywordChart from "./components/TwoKeywordChart";
+import TwoCategoryChart from "./components/TwoCategoryChart";
 
 // React Native 메시지 핸들러를 사용하는 내부 컴포넌트
 function AppContent() {
@@ -29,6 +31,8 @@ function AppContent() {
         <Route path="/myTimeChart" element={<MyTimeChart />} />
         <Route path="/twoTimeChart" element={<TwoTimeChart />} />
         <Route path="/twoTypeChart" element={<TwoTypeChart />} />
+        <Route path="/twoKeywordChart" element={<TwoKeywordChart />} />
+        <Route path="/twoCategoryChart" element={<TwoCategoryChart />} />
       </Routes>
     </div>
   );
