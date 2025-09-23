@@ -6,6 +6,7 @@ import com.mango.backend.domain.chat.dto.response.ChatNotificationDTO;
 import com.mango.backend.domain.chat.dto.response.ChatRoomResponse;
 import com.mango.backend.domain.chat.entity.ChatMessage;
 import com.mango.backend.domain.chat.entity.ChatRoom;
+import com.mango.backend.domain.chat.repository.ChatMessageRepository;
 import com.mango.backend.domain.chat.service.ChatMessageService;
 import com.mango.backend.domain.chat.service.ChatRoomService;
 import com.mango.backend.domain.user.entity.User;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 채팅방 관리 REST API 컨트롤러
@@ -44,6 +46,7 @@ public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
     private final ChatMessageService chatMessageService;
+    private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -223,37 +226,39 @@ public class ChatRoomController {
             int readCount = chatMessageService.markMessagesAsRead(roomId, userId);
             log.debug("읽음 처리 완료 - 읽음처리개수: {}", readCount);
 
-            // 3. 내 채팅방 목록에 읽음 상태 알림 전송 (WebSocket)
-            if (readCount > 0) {
-                ChatNotificationDTO notification = ChatNotificationDTO.builder()
-                    .chatRoomId(roomId)
-                    .unreadCount(0)  // 읽음 처리 후이므로 0
-                    .notificationType("READ_STATUS")
-                    .timestamp(LocalDateTime.now())
-                    .build();
-
-                messagingTemplate.convertAndSend(
-                    "/topic/notification/" + userId,
-                    notification
-                );
-                log.debug("읽음 상태 알림 전송 - 사용자ID: {}, 채팅방ID: {}", userId, roomId);
-            }
+            // 3. WebSocket 알림 제거 (프론트엔드가 직접 상태 관리)
+            // 기존 WebSocket 알림 코드 제거함
 
             // 4. 채팅방 응답 DTO 생성
             ChatRoomResponse response = ChatRoomResponse.from(chatRoom, userId);
-            // User 서비스 연동하여 상대방 정보 설정
+
+            // 5. 상대방 사용자 정보 설정
             User otherUser = userRepository.findById(response.getOtherUserId())
                     .orElse(null);
-            // 4. 상대방 사용자 정보 설정 (User 연관관계 활용)
-            // ChatRoom에서 User 정보를 가져와서 상대방 정보 설정 가능
             String otherUserNickname = otherUser != null ? otherUser.getNickname() : "탈퇴한 사용자";
             String otherUserProfileImage = (otherUser != null && otherUser.getProfilePhoto() != null)
                     ? otherUser.getProfilePhoto().getPhotoUrl()
                     : "/images/default-profile.png";
             response = response.withOtherUserInfo(otherUserNickname, otherUserProfileImage);
-            
-            // 5. 읽음 처리 후이므로 안 읽은 메시지는 0개
-            response = response.withLastMessageInfo(null, null, 0L);
+
+            // 6. 마지막 메시지 정보 조회
+            Optional<ChatMessage> lastMessage = chatMessageRepository.findLatestMessageByChatRoomId(roomId);
+            String lastMessageContent = null;
+            LocalDateTime lastMessageTime = null;
+
+            if (lastMessage.isPresent()) {
+                ChatMessage msg = lastMessage.get();
+                // 메시지 타입에 따른 표시 내용 설정
+                if ("IMAGE".equals(msg.getMessageType())) {
+                    lastMessageContent = "사진을 보냈습니다";
+                } else {
+                    lastMessageContent = msg.getContent();
+                }
+                lastMessageTime = msg.getCreatedAt();
+            }
+
+            // 7. 읽음 처리 완료 후이므로 unreadCount는 항상 0
+            response = response.withLastMessageInfo(lastMessageContent, lastMessageTime, 0L);
             
             log.debug("채팅방 입장 완료 - 채팅방ID: {}, 사용자ID: {}, 상대방ID: {}", 
                      roomId, userId, response.getOtherUserId());
