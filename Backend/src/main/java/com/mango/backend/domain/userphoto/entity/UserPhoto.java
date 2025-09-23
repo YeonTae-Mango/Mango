@@ -39,7 +39,7 @@ public class UserPhoto {
   @Column(name = "photo_order")
   private Byte photoOrder;
 
-  public void updatePhotoUrl(String photoUrl) {
-    this.photoUrl = photoUrl;
+  public void updatePhotoOrder(Byte photoOrder) {
+    this.photoOrder = photoOrder;
   }
 }

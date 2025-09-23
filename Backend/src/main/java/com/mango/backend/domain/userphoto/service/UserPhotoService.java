@@ -57,8 +57,11 @@ public class UserPhotoService {
     }
       return userRepository.findById(requestId)
               .map(user -> {
+
+                  if (user.getPhotoCount() + files.size() > 4) {
+                      return ServiceResult.<List<UploadPhotoResponse>>failure(ErrorCode.FILE_TOO_MANY);
+                  }
                   List<UserPhoto> photosToSave = new ArrayList<>();
-                  byte order = 1;
 
                   for (MultipartFile file : files) {
                       String url;
@@ -67,21 +70,10 @@ public class UserPhotoService {
                       } catch (IOException e) {
                           throw new RuntimeException(e);
                       }
-
-                      UserPhoto photo = UserPhoto.builder()
-                              .user(user)
-                              .photoUrl(url)
-                              .photoOrder(order++)
-                              .build();
-
-                      if (order == 2) { // 첫 번째 사진이면 대표 사진
-                          user.updateProfilePhoto(photo);
-                      }
-
-                      photosToSave.add(photo);
+                      user.addPhoto(url);
+                      photosToSave.add(user.getPhotos().getLast());
                   }
-                  List<UserPhoto> savedPhotos = userPhotoRepository.saveAll(photosToSave);
-                  List<UploadPhotoResponse> responses = savedPhotos.stream()
+                  List<UploadPhotoResponse> responses = photosToSave.stream()
                           .map(UploadPhotoResponse::from)
                           .toList();
                   return ServiceResult.success(responses);
