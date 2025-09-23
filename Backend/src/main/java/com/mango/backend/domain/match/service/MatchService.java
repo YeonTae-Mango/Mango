@@ -12,7 +12,7 @@ import com.mango.backend.domain.match.dto.response.UserSwipeResponse;
 import com.mango.backend.domain.match.repository.MatchRepository;
 import com.mango.backend.domain.user.entity.User;
 import com.mango.backend.domain.user.repository.UserRepository;
-import com.mango.backend.domain.userphoto.repository.UserPhotoRepository;
+import com.mango.backend.domain.userphoto.entity.UserPhoto;
 import com.mango.backend.domain.visited.repository.VisitedRepository;
 import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
@@ -44,8 +44,7 @@ public class MatchService {
   private final UserRepository userRepository;
   private final VisitedRepository visitedRepository;
   private final BlockRepository blockRepository;
-  private final MangoRepository mangoRepository; // 내가 좋아요 누른 사람 ID 조회용\
-  private final UserPhotoRepository userPhotoRepository;
+  private final MangoRepository mangoRepository;
   private final JwtProvider jwtProvider;
   private final ConsumptionPatternRepository consumptionPatternRepository;
   private final FinAnalysisApiClient finAnalysisApiClient;
@@ -91,6 +90,10 @@ public class MatchService {
     List<User> filteredUsers = nearbyUsers.stream()
         .filter(u -> !excludeIds.contains(u.getId()))
         .toList();
+    List<Long> filteredUserIds = filteredUsers.stream()
+            .map(User::getId)
+            .toList();
+    List<User> usersWithPhotos = userRepository.findUsersWithPhotos(filteredUserIds);
     Map<Long, ConsumptionPattern> consumptionPatternMap = new HashMap<>();
     List<CandidateMatchUserDto> candidateMatchUsers = new ArrayList<>();
     for (User u : filteredUsers) {
@@ -127,7 +130,7 @@ public class MatchService {
 
     Set<Long> theyLikedIds = mangoRepository.findUsersWhoLikedMeIds(userId);
 
-    List<UserSwipeResponse> result = filteredUsers.stream()
+    List<UserSwipeResponse> result = usersWithPhotos.stream()
         .filter(user -> matchResultMap.containsKey(user.getId()))
         .map(user -> {
           int distanceKm = (int) me.distanceInKm(
@@ -139,11 +142,11 @@ public class MatchService {
           String mainType = extractMainType(userPattern);
           List<String> keywords = extractKeywords(userPattern);
           String food = extractFood(userPattern);
-          List<String> profileImageUrls = userPhotoRepository
-              .findByUserOrderByPhotoOrderAsc(user)
-              .stream()
-              .map(photo -> photo.getPhotoUrl())
-              .toList();
+          List<String> profileImageUrls = user.getPhotos()
+                  .stream()
+                  .map(UserPhoto::getPhotoUrl)
+                  .toList();
+
           return UserSwipeResponse.from(
               user,
               theyLiked,
@@ -195,6 +198,10 @@ public class MatchService {
     List<User> filteredUsers = nearbyUsers.stream()
         .filter(u -> !excludeIds.contains(u.getId()))
         .toList();
+    List<Long> filteredUserIds = filteredUsers.stream()
+            .map(User::getId)
+            .toList();
+    List<User> usersWithPhotos = userRepository.findUsersWithPhotos(filteredUserIds);
     Map<Long, ConsumptionPattern> consumptionPatternMap = new HashMap<>();
     List<CandidateMatchUserDto> candidateMatchUsers = new ArrayList<>();
     for (User u : filteredUsers) {
@@ -231,7 +238,7 @@ public class MatchService {
 
     Set<Long> theyLikedIds = mangoRepository.findUsersWhoLikedMeIds(userId);
 
-    List<UserSwipeResponse> result = filteredUsers.stream()
+    List<UserSwipeResponse> result = usersWithPhotos.stream()
         .filter(user -> matchResultMap.containsKey(user.getId()))
         .map(user -> {
           int distanceKm = (int) me.distanceInKm(
@@ -243,11 +250,11 @@ public class MatchService {
           String mainType = extractMainType(userPattern);
           List<String> keywords = extractKeywords(userPattern);
           String food = extractFood(userPattern);
-          List<String> profileImageUrls = userPhotoRepository
-              .findByUserOrderByPhotoOrderAsc(user)
-              .stream()
-              .map(photo -> photo.getPhotoUrl())
-              .toList();
+          List<String> profileImageUrls = user.getPhotos()
+                  .stream()
+                  .map(UserPhoto::getPhotoUrl)
+                  .toList();
+
           return UserSwipeResponse.from(
               user,
               theyLiked,

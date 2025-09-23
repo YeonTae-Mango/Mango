@@ -39,7 +39,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Redis 체크: 로그아웃 된 토큰이면 인증 실패
         String storedToken = redisTemplate.opsForValue().get("JWT:" + userId);
-        log.info("Token in Redis for user {}: {}", userId, storedToken.substring(0, 10));
+
+        if (storedToken != null) {
+          log.info("Token in Redis for user {}: {}", userId, storedToken.substring(0, Math.min(10, storedToken.length())));
+        } else {
+          log.info("No token found in Redis for user {}", userId);
+        }
 
         if (storedToken != null && storedToken.equals(token)) {
           // Spring Security 인증 객체 세팅
