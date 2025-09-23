@@ -70,11 +70,13 @@ export interface ReadStatusUpdate {
 // 채팅 알림 데이터 인터페이스 (백엔드 ChatNotificationDTO)
 export interface ChatNotificationDTO {
   chatRoomId: number;
-  content: string; // 메시지 내용
-  senderNickname: string; // 발신자 닉네임
+  lastMessage: string; // 마지막 메시지 내용
+  senderName: string; // 발신자 이름
   senderId: number; // 발신자 ID
   messageType: 'TEXT' | 'IMAGE'; // 메시지 타입
-  createdAt: string; // 생성 시간
+  timestamp: string; // 생성 시간
+  unreadCount: number; // 읽지 않은 메시지 수
+  notificationType: 'NEW_MESSAGE'; // 알림 타입
 }
 
 // 채팅방 목록 업데이트용 데이터 인터페이스
