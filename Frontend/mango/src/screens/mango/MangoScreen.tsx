@@ -16,6 +16,9 @@ interface MangoScreenProps {
 }
 
 export default function MangoScreen({ onLogout }: MangoScreenProps) {
+  // 탭 상태에 따른 API 호출
+  const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received');
+
   // 망고 카드 클릭 핸들러
   const navigation = useNavigation<any>();
   const handleProfilePress = useCallback(
@@ -24,13 +27,11 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
         userName,
         userId,
         fromScreen: 'Mango',
+        activeTab, // 현재 활성 탭 정보 추가
       });
     },
-    [navigation]
+    [navigation, activeTab]
   );
-
-  // 탭 상태에 따른 API 호출
-  const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received');
   // 탭 변경 핸들러
   const handleTabChange = (tab: 'received' | 'sent') => {
     setActiveTab(tab);
