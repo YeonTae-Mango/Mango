@@ -77,11 +77,14 @@ public class UserService {
     }
     String food = consumptionPattern.getFood().getFirst().getName();
 
-    List<String> profileImageUrls = userPhotoRepository
-            .findByUserOrderByPhotoOrderAsc(user)
-            .stream()
-            .map(photo -> photo.getPhotoUrl())
-            .toList();
+    List<String> profileImageUrls = new ArrayList<>();
+    List<String> profileImageUrlsId = new ArrayList<>();
+    List<UserPhoto> userPhotos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(user);
+    for (UserPhoto photo : userPhotos) {
+      profileImageUrls.add(photo.getPhotoUrl());
+      profileImageUrlsId.add(photo.getId().toString()); // 또는 String.valueOf(photo.getId())
+    }
+
     boolean theyLiked = mangoRepository.existsByFromAndTo(user, me);
     int distanceBetweenMe =0;
     if(me.getId().equals(userId)){
@@ -89,7 +92,7 @@ public class UserService {
 
     }
 
-    UserInfoResponse response = UserInfoResponse.of(user,distanceBetweenMe,mainType,keywords,food,profileImageUrls, theyLiked);
+    UserInfoResponse response = UserInfoResponse.of(user,distanceBetweenMe,mainType,keywords,food,profileImageUrls,profileImageUrlsId, theyLiked);
     return ServiceResult.success(response);
     }
 
