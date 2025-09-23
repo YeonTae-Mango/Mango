@@ -5,21 +5,31 @@ interface SignupButtonProps {
   isActive: boolean;
   onPress: () => void;
   text: string;
+  disabled?: boolean;
 }
 
-export default function SignupButton({ isActive, onPress, text }: SignupButtonProps) {
+export default function SignupButton({
+  isActive,
+  onPress,
+  text,
+  disabled = false,
+}: SignupButtonProps) {
+  const isDisabled = !isActive || disabled;
+
   return (
     <View className="pb-40">
       <TouchableOpacity
         className={`h-14 rounded-xl justify-center items-center ${
-          isActive ? 'bg-mango-red' : 'bg-stroke'
+          isDisabled ? 'bg-stroke' : 'bg-mango-red'
         }`}
         onPress={onPress}
-        disabled={!isActive}
+        disabled={isDisabled}
       >
-        <Text className={`text-base font-semibold ${
-          isActive ? 'text-white' : 'text-secondary'
-        }`}>
+        <Text
+          className={`text-base font-semibold ${
+            isDisabled ? 'text-secondary' : 'text-white'
+          }`}
+        >
           {text}
         </Text>
       </TouchableOpacity>

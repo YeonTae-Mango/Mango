@@ -1,11 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import Layout from '../../components/common/Layout';
 import MangoCard from '../../components/mango/MangoCard';
 import MangoTab from '../../components/mango/MangoTab';
 import { useMangoFollowers, useMangoFollowing } from '../../hooks/useMango';
+import { useAuthStore } from '../../store/authStore';
 import type { MangoUser } from '../../types/mango';
 
 interface MangoScreenProps {
@@ -27,45 +27,20 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
   const handleTabChange = (tab: 'received' | 'sent') => {
     setActiveTab(tab);
     setCurrentPage(0); // 탭 변경 시 페이지 초기화
+
+    // 탭 변경 시 해당 탭의 최신 데이터 새로고침
+    if (currentUserId) {
+      if (tab === 'sent') {
+        refetchFollowing();
+      } else {
+        refetchFollowers();
+      }
+    }
   };
 
-  // 테스트용 사용자 ID 및 토큰
-  const currentUserId = 107;
-  const testToken =
-    'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDciLCJpYXQiOjE3NTg1MDAyNzYsImV4cCI6MTc1ODU4NjY3Nn0.C-CmqoRu60abusYZxQMH5BoTINnYSa7orrjDzjnVK5Q';
-
-  // TODO: 로그인 기능 구현 후 아래 코드로 교체
-  // const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-
-  // useEffect(() => {
-  //   const loadUserId = async () => {
-  //     try {
-  //       const userId = await getCurrentUserId();
-  //       setCurrentUserId(userId);
-  //       console.log('로그인된 사용자 ID:', userId);
-  //     } catch (error) {
-  //       console.error('사용자 ID 로딩 실패:', error);
-  //       // 로그인 페이지로 리다이렉트 또는 에러 처리
-  //     }
-  //   };
-
-  //   loadUserId();
-  // }, []);
-
-  // 컴포넌트 마운트 시 테스트 자격증명 설정
-  useEffect(() => {
-    const setTestCredentials = async () => {
-      try {
-        await AsyncStorage.setItem('authToken', testToken);
-        await AsyncStorage.setItem('userId', currentUserId.toString());
-        console.log('테스트 자격증명 설정 완료');
-      } catch (error) {
-        console.error('테스트 자격증명 설정 실패:', error);
-      }
-    };
-
-    setTestCredentials();
-  }, []);
+  // 현재 로그인된 사용자 정보 (새로운 인증 시스템 사용)
+  const { user } = useAuthStore();
+  const currentUserId = user?.id || 0;
 
   // 내가 망고한 사람들 목록 조회 (sent 탭)
   const {
@@ -73,14 +48,9 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
     isLoading: isFollowingLoading,
     error: followingError,
     refetch: refetchFollowing,
-  } = useMangoFollowing(currentUserId, currentPage, {
+  } = useMangoFollowing(currentPage, {
     enabled: activeTab === 'sent',
   });
-
-  // TODO: 로그인 기능 구현 후 아래 코드로 교체
-  // } = useMangoFollowing(currentUserId, currentPage, {
-  //   enabled: activeTab === 'sent' && !!currentUserId,
-  // });
 
   // 나를 망고한 사람들 목록 조회 (received 탭)
   const {
@@ -88,14 +58,9 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
     isLoading: isFollowersLoading,
     error: followersError,
     refetch: refetchFollowers,
-  } = useMangoFollowers(currentUserId, currentPage, {
+  } = useMangoFollowers(currentPage, {
     enabled: activeTab === 'received',
   });
-
-  // TODO: 로그인 기능 구현 후 아래 코드로 교체
-  // } = useMangoFollowers(currentUserId, currentPage, {
-  //   enabled: activeTab === 'received' && !!currentUserId,
-  // });
 
   // 현재 활성 탭에 따른 데이터 및 상태 처리
   const currentData =
@@ -108,6 +73,20 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
   // 탭에 따른 데이터 처리
   const users: MangoUser[] = (currentData as any)?.data || [];
 
+  // 화면에 포커스될 때마다 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      if (currentUserId) {
+        // 현재 활성 탭에 따라 해당 데이터를 새로고침
+        if (activeTab === 'sent') {
+          refetchFollowing();
+        } else {
+          refetchFollowers();
+        }
+      }
+    }, [currentUserId, activeTab, refetchFollowing, refetchFollowers])
+  );
+
   return (
     <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <View className="flex-1 bg-white">
@@ -115,14 +94,14 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
         <MangoTab activeTab={activeTab} onTabChange={handleTabChange} />
 
         {/* 스크롤 가능한 카드 목록 */}
-        {/* TODO: 로그인 기능 구현 후 아래 코드 주석 해제 */}
-        {/* !currentUserId ? (
+        {!currentUserId ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#ff6b6b" />
-            <Text className="mt-2 text-gray-600">사용자 정보를 불러오는 중...</Text>
+            <Text className="mt-2 text-gray-600">
+              사용자 정보를 불러오는 중...
+            </Text>
           </View>
-        ) : */}
-        {isLoading ? (
+        ) : isLoading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#ff6b6b" />
             <Text className="mt-2 text-gray-600">
