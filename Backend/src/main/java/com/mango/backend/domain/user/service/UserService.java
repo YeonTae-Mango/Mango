@@ -16,7 +16,6 @@ import com.mango.backend.global.common.ServiceResult;
 import com.mango.backend.global.error.ErrorCode;
 import com.mango.backend.global.util.FileUtil;
 import com.mango.backend.global.util.JwtProvider;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -63,7 +61,7 @@ public class UserService {
     Long myId = jwtProvider.getUserIdFromToken(token);
 
     User me = userRepository.findById(myId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
-    User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
+    User user = userRepository.findByIdWithPhotos(userId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
     ConsumptionPattern consumptionPattern = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(userId);
 
     if(consumptionPattern==null){
@@ -79,7 +77,7 @@ public class UserService {
 
     List<String> profileImageUrls = new ArrayList<>();
     List<Long> profileImageUrlsId = new ArrayList<>();
-    List<UserPhoto> userPhotos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(user);
+    List<UserPhoto> userPhotos = user.getPhotos();
     for (UserPhoto photo : userPhotos) {
       profileImageUrls.add(photo.getPhotoUrl());
       profileImageUrlsId.add(photo.getId());

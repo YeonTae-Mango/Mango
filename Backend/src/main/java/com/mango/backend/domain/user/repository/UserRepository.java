@@ -51,5 +51,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
       @Param("latitude") Double latitude,
       @Param("distance") Integer distance,
       @Param("gender") String gender);
+
+  @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.photos WHERE u.id IN :userIds")
+  List<User> findUsersWithPhotos(@Param("userIds") List<Long> userIds);
+
+  @Query("SELECT u FROM User u LEFT JOIN FETCH u.photos WHERE u.id = :userId")
+  Optional<User> findByIdWithPhotos(@Param("userId") Long userId);
 }
 
