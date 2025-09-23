@@ -1,6 +1,5 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
-import CategorySwipeScreen from '../screens/category/CategorySwipeScreen';
 import ChatRoomScreen from '../screens/chat/ChatRoomScreen';
 import NotificationScreen from '../screens/notification/NotificationScreen';
 import MatchingpatternScreen from '../screens/pattern/MatchingpatternScreen';
@@ -35,7 +34,6 @@ export default function MainStack({ onLogout }: MainStackProps) {
       <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
       <Stack.Screen name="MyPattern" component={MyPatternScreen} />
       <Stack.Screen name="MatchingPattern" component={MatchingpatternScreen} />
-      <Stack.Screen name="CategorySwipe" component={CategorySwipeScreen} />
       <Stack.Screen name="CategoryDetail" component={CategoryDetailScreen} />
     </Stack.Navigator>
   );
