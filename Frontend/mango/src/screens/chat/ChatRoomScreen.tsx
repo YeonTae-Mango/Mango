@@ -1,12 +1,23 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useRef, useState } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, View } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getChatMessages, getChatRoom } from '../../api/chat';
 import ChatDateSeparator from '../../components/chat/ChatDateSeparator';
 import ChatHeader from '../../components/chat/ChatHeader';
 import ChatInputPanel from '../../components/chat/ChatInputPanel';
 import ChatMenuModal from '../../components/chat/ChatMenuModal';
 import ChatMessage from '../../components/chat/ChatMessage';
+import chatService from '../../services/chatService';
+import { useAuthStore } from '../../store/authStore';
 
 // 메시지 타입 정의
 interface Message {
@@ -23,62 +34,73 @@ export default function ChatRoomScreen() {
   // 네비게이션 및 라우트 훅
   const navigation = useNavigation<any>();
   const route = useRoute();
-  const { userName } = route.params as {
+  const { user } = useAuthStore();
+
+  const { userName, chatRoomId } = route.params as {
     userName: string;
     chatRoomId: string;
   };
+
+  // 채팅방 정보 조회
+  const {
+    data: chatRoomData,
+    isLoading: roomLoading,
+    error: roomError,
+  } = useQuery({
+    queryKey: ['chatRoom', chatRoomId],
+    queryFn: () => getChatRoom(parseInt(chatRoomId)),
+    enabled: !!chatRoomId,
+  });
+
+  // 채팅 메시지 조회
+  const {
+    data: messagesData,
+    isLoading: messagesLoading,
+    error: messagesError,
+  } = useQuery({
+    queryKey: ['chatMessages', chatRoomId],
+    queryFn: () => getChatMessages(parseInt(chatRoomId), 0, 50),
+    enabled: !!chatRoomId,
+  });
+
   // 메뉴 모달 상태
   const [showMenuModal, setShowMenuModal] = useState(false);
   // FlatList 참조
   const flatListRef = useRef<FlatList>(null);
+  // WebSocket 연결 상태
+  const [isConnected, setIsConnected] = useState(false);
 
-  // 메시지 목록 상태
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'date-1',
-      text: '',
-      isMyMessage: false,
-      time: '',
-      isRead: false,
-      date: '2024년 1월 15일 월요일',
-      isDateSeparator: true,
+  // API에서 받은 메시지 데이터를 화면용 데이터로 변환
+  const transformMessagesData = useCallback(
+    (apiMessages: any[]): Message[] => {
+      if (!apiMessages || !user) return [];
+
+      return apiMessages.map(msg => ({
+        id: msg.id.toString(),
+        text: msg.content || '',
+        isMyMessage: msg.senderId === user.id,
+        time: new Date(msg.createdAt).toLocaleTimeString('ko-KR', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        }),
+        isRead: msg.isRead,
+      }));
     },
-    {
-      id: '1',
-      text: '안녕하세요! 반갑습니다 😊',
-      isMyMessage: false,
-      time: '오후 2:30',
-      isRead: true,
-    },
-    {
-      id: '2',
-      text: '네, 안녕하세요! 저도 반갑습니다',
-      isMyMessage: true,
-      time: '오후 2:31',
-      isRead: true,
-    },
-    {
-      id: '3',
-      text: '오늘 날씨가 정말 좋네요~',
-      isMyMessage: false,
-      time: '오후 2:32',
-      isRead: true,
-    },
-    {
-      id: '4',
-      text: '맞아요! 산책하기 딱 좋은 날씨예요',
-      isMyMessage: true,
-      time: '오후 2:33',
-      isRead: true,
-    },
-    {
-      id: '5',
-      text: '혹시 시간 되실 때 커피 한 잔 어떠세요?',
-      isMyMessage: false,
-      time: '오후 2:35',
-      isRead: false,
-    },
-  ]);
+    [user]
+  );
+
+  // 실제 메시지 데이터 + 로컬 메시지 상태
+  const [localMessages, setLocalMessages] = useState<Message[]>([]);
+
+  // API에서 받은 메시지와 로컬 메시지를 합침
+  const apiMessages =
+    messagesData && (messagesData as any)?.content
+      ? transformMessagesData((messagesData as any).content)
+      : [];
+  const allMessages = [...apiMessages, ...localMessages].sort(
+    (a, b) => parseInt(a.id) - parseInt(b.id)
+  );
 
   const handleProfilePress = () => {
     navigation.navigate('ProfileDetail', { userName });
@@ -116,28 +138,89 @@ export default function ChatRoomScreen() {
     ]);
   };
 
-  const handleSendMessage = (message: string) => {
-    // 새 메시지 추가
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: message,
-      isMyMessage: true,
-      time: new Date().toLocaleTimeString('ko-KR', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      }),
-      isRead: false,
+  // WebSocket 연결 및 메시지 수신 설정
+  useEffect(() => {
+    const setupWebSocket = async () => {
+      try {
+        console.log('🔌 ChatRoom에서 WebSocket 연결 시작...');
+
+        // 현재 연결 상태 확인
+        const currentStatus = chatService.getConnectionStatus();
+        console.log('🔍 현재 WebSocket 상태:', currentStatus);
+
+        // WebSocket 연결
+        await chatService.connect();
+
+        // 연결 후 상태 재확인
+        const afterStatus = chatService.getConnectionStatus();
+        console.log('🔍 연결 후 WebSocket 상태:', afterStatus);
+
+        setIsConnected(afterStatus.connected);
+
+        // 채팅방 구독
+        if (chatRoomId) {
+          chatService.subscribeToRoom(
+            parseInt(chatRoomId),
+            (newMessage: any) => {
+              // 새 메시지 수신 시 로컬 상태에 추가
+              const transformedMessage: Message = {
+                id: newMessage.id.toString(),
+                text: newMessage.content || '',
+                isMyMessage: newMessage.senderId === user?.id,
+                time: new Date(newMessage.createdAt).toLocaleTimeString(
+                  'ko-KR',
+                  {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                  }
+                ),
+                isRead: newMessage.isRead,
+              };
+
+              setLocalMessages(prev => [...prev, transformedMessage]);
+
+              // 새 메시지 수신 후 자동 스크롤
+              setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: true });
+              }, 100);
+            }
+          );
+        }
+      } catch (error) {
+        console.error('WebSocket 연결 실패:', error);
+        setIsConnected(false);
+      }
     };
 
-    setMessages(prevMessages => {
-      const newMessages = [...prevMessages, newMessage];
-      // 새 메시지 추가 후 자동 스크롤
+    setupWebSocket();
+
+    return () => {
+      // 컴포넌트 언마운트 시 구독 해제
+      if (chatRoomId) {
+        chatService.unsubscribeFromRoom(parseInt(chatRoomId));
+      }
+    };
+  }, [chatRoomId, user?.id]);
+
+  const handleSendMessage = async (message: string) => {
+    if (!isConnected || !chatRoomId) {
+      Alert.alert('오류', '채팅 서버에 연결되지 않았습니다.');
+      return;
+    }
+
+    try {
+      // WebSocket으로 메시지 전송
+      chatService.sendMessage(parseInt(chatRoomId), message, 'TEXT');
+
+      // 자동 스크롤
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
-      return newMessages;
-    });
+    } catch (error) {
+      console.error('메시지 전송 실패:', error);
+      Alert.alert('오류', '메시지 전송에 실패했습니다.');
+    }
   };
 
   const renderMessage = ({ item }: { item: Message }) => {
@@ -168,10 +251,56 @@ export default function ChatRoomScreen() {
     ]);
   };
 
+  // 로딩 상태
+  if (roomLoading || messagesLoading) {
+    return (
+      <View className="flex-1 bg-white">
+        <ChatHeader
+          userName={userName || '로딩중...'}
+          showUserInfo={false}
+          showMenu={false}
+          onBackPress={() => navigation.goBack()}
+          onProfilePress={() => {}}
+          onMenuPress={() => {}}
+        />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#FF6B6B" />
+          <Text className="mt-4 text-gray-600">채팅방을 불러오는 중...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // 에러 상태
+  if (roomError || messagesError) {
+    return (
+      <View className="flex-1 bg-white">
+        <ChatHeader
+          userName={userName || '오류'}
+          showUserInfo={false}
+          showMenu={false}
+          onBackPress={() => navigation.goBack()}
+          onProfilePress={() => {}}
+          onMenuPress={() => {}}
+        />
+        <View className="flex-1 justify-center items-center px-4">
+          <Text className="text-red-500 text-center mb-4">
+            채팅방을 불러오는 중 오류가 발생했습니다.
+          </Text>
+          <Text className="text-gray-600 text-center">
+            {roomError?.message ||
+              messagesError?.message ||
+              '알 수 없는 오류가 발생했습니다.'}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-white">
       <ChatHeader
-        userName={userName}
+        userName={(chatRoomData as any)?.otherUser?.nickname || userName}
         showUserInfo={true}
         showMenu={true}
         onBackPress={() => navigation.goBack()}
@@ -186,7 +315,7 @@ export default function ChatRoomScreen() {
       >
         <FlatList
           ref={flatListRef}
-          data={messages}
+          data={allMessages}
           renderItem={renderMessage}
           keyExtractor={item => item.id}
           // contentContainerStyle={{ paddingVertical: 16 }}
