@@ -56,14 +56,26 @@ function MyMonthlyChart() {
     }
   }, [parsedData]);
 
+  // 동적 색상 계산 (React Native 앱과 동일한 색상 시스템)
+  const getChartColors = () => {
+    // Tailwind CSS 색상값과 일치시키기
+    // React Native의 bg-orange-500와 동일한 색상 사용
+    return {
+      border: 'rgb(249, 115, 22)',      // Tailwind orange-500
+      background: 'rgba(249, 115, 22, 0.3)'  // Tailwind orange-500 with transparency
+    };
+  };
+
+  const colors = getChartColors();
+
   // 차트 데이터
   const chartData = {
     labels: chartLabels,
     datasets: [
       {
         data: chartDataValues,
-        borderColor: 'rgb(255,100,25,0.7)',
-        backgroundColor: 'rgb(255,100,25,0.5)',
+        borderColor: colors.border,
+        backgroundColor: colors.background,
         fill: true,
         tension: 0.3,
       },
