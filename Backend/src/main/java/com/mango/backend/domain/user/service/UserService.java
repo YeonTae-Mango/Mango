@@ -3,6 +3,7 @@ package com.mango.backend.domain.user.service;
 import com.mango.backend.domain.consumptionpattern.entity.ConsumptionPattern;
 import com.mango.backend.domain.consumptionpattern.repository.ConsumptionPatternRepository;
 import com.mango.backend.domain.mango.repository.MangoRepository;
+import com.mango.backend.domain.user.dto.request.UpdateDistanceRequest;
 import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
 import com.mango.backend.domain.user.dto.response.MyInfoResponse;
 import com.mango.backend.domain.user.dto.response.UserInfoResponse;
@@ -153,6 +154,30 @@ public class UserService {
               user.updateProfilePhoto(newPhoto);
             }
           }
+
+          return ServiceResult.success(UserUpdateResponse.fromEntity(user));
+        })
+        .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
+  }
+
+  @Transactional
+  public ServiceResult<UserUpdateResponse> updateDistance(Long requestId, String token,
+      UpdateDistanceRequest request) {
+
+    Long userId = jwtProvider.getUserIdFromToken(token);
+
+    // 본인 계정인지 확인
+    if (!requestId.equals(userId)) {
+      return ServiceResult.failure(ErrorCode.AUTH_FORBIDDEN);
+    }
+
+    // 사용자 찾아서 거리 설정 업데이트
+    return userRepository.findById(requestId)
+        .map(user -> {
+          user.updateDistance(request.distance());
+          userRepository.save(user);
+
+          log.info("User {} distance setting updated to {}km", requestId, request.distance());
 
           return ServiceResult.success(UserUpdateResponse.fromEntity(user));
         })
