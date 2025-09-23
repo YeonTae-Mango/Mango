@@ -196,6 +196,12 @@ public class ChartService {
 
     public ServiceResult<TwoTypeChartResponse> getTwoTypeChart(Long myUserId, Long otherUserId) {
         List<MainCode> mainTypes = mainCodeRepository.findByMainCodeStartingWith("LS_");
+        for(int i=0; i<mainTypes.size(); i++) {
+            if(mainTypes.get(i).getMainCodeName().equals("음식")){
+                mainTypes.remove(i);
+                break;
+            }
+        }
         ConsumptionPattern myLatestPattern = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(myUserId);
         ConsumptionPattern otherLatestPattern = consumptionPatternRepository.findFirstByUserIdOrderByEndDateDesc(otherUserId);
         String[] labels = new String[mainTypes.size()];
