@@ -13,11 +13,29 @@ import { useAuthStore } from '../../store/authStore';
 export default function ProfileDetailScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute();
-  const { userName, fromScreen, userId, activeTab } = route.params as {
+  const {
+    userName,
+    fromScreen,
+    userId,
+    activeTab,
+    profileData: receivedProfileData,
+  } = route.params as {
     userName: string;
     fromScreen?: string;
     userId?: number;
     activeTab?: 'received' | 'sent';
+    profileData?: {
+      id: number;
+      nickname: string;
+      age: number;
+      introduction: string;
+      mainType: string;
+      food: string;
+      keywords: string[];
+      profileImageUrls: string[];
+      sigungu: string;
+      distance: number;
+    };
   };
 
   // 현재 로그인된 사용자 정보
@@ -85,12 +103,14 @@ export default function ProfileDetailScreen() {
                 userName: otherUserName,
                 userId: otherUserId,
                 profileImageUrl: roomData.otherUserProfileImage,
+                mainType: receivedProfileData?.mainType,
               });
               navigation.navigate('ChatRoom', {
                 chatRoomId: roomData.id.toString(),
                 userName: otherUserName,
                 userId: otherUserId,
                 profileImageUrl: roomData.otherUserProfileImage,
+                mainType: receivedProfileData?.mainType, // 메인타입 정보 추가
               });
             },
           },
@@ -180,18 +200,28 @@ export default function ProfileDetailScreen() {
     });
   };
 
-  // 더미 프로필 데이터 (실제로는 API에서 가져올 데이터)
-  const profileData = {
-    name: userName,
-    age: 28,
-    distance: '21km',
-    category: '핫플헌터',
-    tags: ['카페인중독', '빵순이', '단발병'],
-    introduction: '아 씨탈하고 싶다',
-    images: [
-      'https://postfiles.pstatic.net/MjAyNDA4MDVfMTcx/MDAxNzIyODMzNDI0MzY5.wuG29NRvdZ6kQc0I6xhLTi-AeKIehY4AMD_rvRo6bBog.Aw-JsI21ibU34Wj-YJj-wXoirkPwbTBIT_KyNyzc4hgg.JPEG/IMG_2048.JPG?type=w966',
-    ],
-  };
+  // 프로필 데이터 구성 (전달받은 데이터가 있으면 사용, 없으면 기본값)
+  const profileData = receivedProfileData
+    ? {
+        name: receivedProfileData.nickname,
+        age: receivedProfileData.age,
+        distance: `${receivedProfileData.distance}km`,
+        category: receivedProfileData.mainType,
+        tags: receivedProfileData.keywords,
+        introduction: receivedProfileData.introduction,
+        images: receivedProfileData.profileImageUrls,
+      }
+    : {
+        name: userName,
+        age: 28,
+        distance: '21km',
+        category: '핫플헌터',
+        tags: ['카페인중독', '빵순이', '단발병'],
+        introduction: '아 씨탈하고 싶다',
+        images: [
+          'https://postfiles.pstatic.net/MjAyNDA4MDVfMTcx/MDAxNzIyODMzNDI0MzY5.wuG29NRvdZ6kQc0I6xhLTi-AeKIehY4AMD_rvRo6bBog.Aw-JsI21ibU34Wj-YJj-wXoirkPwbTBIT_KyNyzc4hgg.JPEG/IMG_2048.JPG?type=w966',
+        ],
+      };
 
   return (
     <Layout showHeader={false}>
@@ -219,7 +249,7 @@ export default function ProfileDetailScreen() {
             <View className="flex-row items-center mb-2">
               <Ionicons name="location-outline" size={24} color="#000000" />
               <Text className="text-body-large-semibold text-dark ml-2">
-                {userName}님은 핫플헌터 유형입니다
+                {userName}님은 {profileData.category} 유형입니다
               </Text>
             </View>
             <Text className="text-medium-regular text-text-primary leading-5 px-2">

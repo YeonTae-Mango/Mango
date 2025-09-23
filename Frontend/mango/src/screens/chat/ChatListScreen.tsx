@@ -38,7 +38,7 @@ const transformChatRoomData = (apiData: any[]): ChatRoom[] => {
       userId: room.otherUserId || room.otherUser?.userId,
       profileImageUrl:
         room.otherUserProfileImage || room.otherUser?.profilePhotoUrl,
-      lastMessage: room.lastMessage || '메시지가 없습니다.',
+      lastMessage: room.lastMessage || '먼저 채팅을 보내보세요!',
       time: room.lastMessageTime
         ? new Date(room.lastMessageTime).toLocaleTimeString('ko-KR', {
             hour: '2-digit',
@@ -143,13 +143,14 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
     data: chatRoomsData,
     isLoading,
     error,
+    refetch: refetchChatRooms,
   } = useQuery({
     queryKey: ['chatRooms', user?.id],
     queryFn: getChatRooms,
     enabled: isAuthenticated && !!user?.id,
-    staleTime: 30 * 1000, // 30초간 캐시 유지
+    staleTime: 0, // 항상 fresh 데이터로 취급
     refetchOnWindowFocus: true,
-    refetchInterval: 60000, // 1분마다 자동 새로고침
+    refetchInterval: 30000, // 30초마다 자동 새로고림 (빈번한 업데이트)
   });
 
   // 임시로 목업 데이터도 유지 (API 없을 경우 대비)

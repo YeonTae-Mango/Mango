@@ -6,7 +6,7 @@ import { MangoUser } from '../../types/mango';
 
 interface MangoCardProps {
   user: MangoUser;
-  onPress: (userName: string, userId?: number) => void;
+  onPress: (userName: string, userId?: number, userInfo?: MangoUser) => void;
 }
 
 export default function MangoCard({ user, onPress }: MangoCardProps) {
@@ -14,7 +14,7 @@ export default function MangoCard({ user, onPress }: MangoCardProps) {
     <TouchableOpacity
       className="w-[48%] mb-4 bg-white rounded-2xl overflow-hidden"
       style={{ aspectRatio: 0.65 }}
-      onPress={() => onPress(user.nickname, user.userId)}
+      onPress={() => onPress(user.nickname, user.userId, user)}
     >
       <View className="flex-1 relative">
         {/* 프로필 이미지 영역 */}

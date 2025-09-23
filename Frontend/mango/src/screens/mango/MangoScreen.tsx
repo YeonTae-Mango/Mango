@@ -1,6 +1,7 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { getUserById } from '../../api/auth';
 import Layout from '../../components/common/Layout';
 import MangoCard from '../../components/mango/MangoCard';
 import MangoTab from '../../components/mango/MangoTab';
@@ -22,13 +23,63 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
   // 망고 카드 클릭 핸들러
   const navigation = useNavigation<any>();
   const handleProfilePress = useCallback(
-    (userName: string, userId?: number) => {
-      navigation.navigate('ProfileDetail', {
-        userName,
-        userId,
-        fromScreen: 'Mango',
-        activeTab, // 현재 활성 탭 정보 추가
-      });
+    async (userName: string, userId?: number, userInfo?: MangoUser) => {
+      try {
+        // getUserById API로 전체 사용자 정보 조회
+        let fullUserData = null;
+        if (userId) {
+          const response = await getUserById(userId);
+          fullUserData = (response as any)?.data;
+        }
+
+        const profileData = fullUserData
+          ? {
+              id: fullUserData.userId,
+              nickname: fullUserData.nickname,
+              age: fullUserData.age,
+              introduction: fullUserData.introduction || '',
+              mainType: fullUserData.mainType,
+              food: fullUserData.food || '',
+              keywords: fullUserData.keywords || [],
+              profileImageUrls: fullUserData.profileImageUrls || [
+                userInfo?.profileUrl || '',
+              ],
+              sigungu: fullUserData.sigungu,
+              distance:
+                fullUserData.distanceBetweenMe || fullUserData.distance || 0,
+            }
+          : userInfo
+            ? {
+                id: userInfo.userId,
+                nickname: userInfo.nickname,
+                age: userInfo.age,
+                introduction: '', // MangoUser에는 없으므로 빈 값
+                mainType: userInfo.mainType,
+                food: '', // MangoUser에는 없으므로 빈 값
+                keywords: [], // MangoUser에는 없으므로 빈 배열
+                profileImageUrls: [userInfo.profileUrl],
+                sigungu: userInfo.sigungu,
+                distance: 0, // MangoUser에는 없으므로 기본값
+              }
+            : undefined;
+
+        navigation.navigate('ProfileDetail', {
+          userName,
+          userId,
+          fromScreen: 'Mango',
+          activeTab, // 현재 활성 탭 정보 추가
+          profileData, // 전체 사용자 정보 전달
+        });
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+        // 에러 시 기본 정보만 전달
+        navigation.navigate('ProfileDetail', {
+          userName,
+          userId,
+          fromScreen: 'Mango',
+          activeTab,
+        });
+      }
     },
     [navigation, activeTab]
   );

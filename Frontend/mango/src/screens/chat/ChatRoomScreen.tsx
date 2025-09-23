@@ -1,6 +1,12 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -30,6 +36,7 @@ interface Message {
   isRead: boolean;
   date?: string; // 날짜 구분자용
   isDateSeparator?: boolean;
+  createdAt?: string; // 원본 날짜 정보
 }
 
 export default function ChatRoomScreen() {
@@ -38,12 +45,14 @@ export default function ChatRoomScreen() {
   const route = useRoute();
   const { user } = useAuthStore();
 
-  const { userName, chatRoomId, userId, profileImageUrl } = route.params as {
-    userName: string;
-    chatRoomId: string;
-    userId?: number;
-    profileImageUrl?: string;
-  };
+  const { userName, chatRoomId, userId, profileImageUrl, mainType } =
+    route.params as {
+      userName: string;
+      chatRoomId: string;
+      userId?: number;
+      profileImageUrl?: string;
+      mainType?: string;
+    };
 
   // 디버깅 로그 추가
   console.log('🔍 ChatRoomScreen 파라미터:', { userName, chatRoomId, userId });
@@ -76,9 +85,19 @@ export default function ChatRoomScreen() {
       requestId: number;
       targetUserId: number;
     }) => blockUser(requestId, targetUserId),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       console.log('사용자 차단/신고 성공');
       setIsBlocked(true);
+
+      // 성공 메시지와 함께 뒤로가기
+      setTimeout(() => {
+        Alert.alert('완료', '처리가 완료되었습니다.', [
+          {
+            text: '확인',
+            onPress: () => navigation.goBack(),
+          },
+        ]);
+      }, 100);
     },
     onError: error => {
       console.error('사용자 차단/신고 실패:', error);
@@ -102,10 +121,13 @@ export default function ChatRoomScreen() {
     data: messagesData,
     isLoading: messagesLoading,
     error: messagesError,
+    refetch: refetchMessages,
   } = useQuery({
     queryKey: ['chatMessages', chatRoomId],
     queryFn: () => getChatMessages(parseInt(chatRoomId), 0, 50),
     enabled: !!chatRoomId,
+    staleTime: 0, // 항상 fresh 데이터로 취급
+    refetchOnWindowFocus: true,
   });
 
   // chatRoomData 로드 로그
@@ -125,37 +147,129 @@ export default function ChatRoomScreen() {
   // API에서 받은 메시지 데이터를 화면용 데이터로 변환
   const transformMessagesData = useCallback(
     (apiMessages: any[]): Message[] => {
-      if (!apiMessages || !user) return [];
+      console.log('🔄 메시지 데이터 변환 시작:', apiMessages);
+      if (!apiMessages || !user) {
+        console.log('❌ 메시지 또는 사용자 정보 없음:', { apiMessages, user });
+        return [];
+      }
 
-      return apiMessages.map(msg => ({
-        id: msg.id.toString(),
-        text: msg.content || '',
-        isMyMessage: msg.senderId === user.id,
-        time: new Date(msg.createdAt).toLocaleTimeString('ko-KR', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-        }),
-        isRead: msg.isRead,
-      }));
+      const transformedMessages = apiMessages.map(msg => {
+        console.log('📝 메시지 변환:', {
+          id: msg.id,
+          content: msg.content,
+          senderId: msg.senderId,
+          createdAt: msg.createdAt,
+          currentUserId: user.id,
+        });
+
+        const messageDate = new Date(msg.createdAt);
+        return {
+          id: msg.id.toString(),
+          text: msg.content || '',
+          isMyMessage: msg.senderId === user.id,
+          time: messageDate.toLocaleTimeString('ko-KR', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+          }),
+          isRead: msg.isRead || false,
+          createdAt: msg.createdAt, // 날짜 구분을 위해 원본 날짜 저장
+        };
+      });
+
+      console.log('✅ 변환된 메시지들:', transformedMessages);
+      return transformedMessages;
     },
     [user]
   );
 
-  // 실제 메시지 데이터 + 로컬 메시지 상태
-  const [localMessages, setLocalMessages] = useState<Message[]>([]);
+  // 날짜별로 메시지를 그룹화하고 날짜 구분선을 추가하는 함수
+  const addDateSeparators = useCallback((messages: Message[]): Message[] => {
+    if (messages.length === 0) return [];
 
-  // API에서 받은 메시지와 로컬 메시지를 합침
-  const apiMessages =
-    messagesData && (messagesData as any)?.content
-      ? transformMessagesData((messagesData as any).content)
-      : [];
-  const allMessages = [...apiMessages, ...localMessages].sort(
-    (a, b) => parseInt(a.id) - parseInt(b.id)
-  );
+    const messagesWithDates: Message[] = [];
+    let lastDate = '';
+
+    messages.forEach((message, index) => {
+      // 메시지의 날짜를 추출
+      const messageDateTime = message.createdAt
+        ? new Date(message.createdAt)
+        : new Date();
+
+      const messageDate = messageDateTime.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long',
+      });
+
+      // 날짜가 바뀌었거나 첫 메시지인 경우 날짜 구분선 추가
+      if (messageDate !== lastDate) {
+        messagesWithDates.push({
+          id: `date-${index}-${Date.now()}`,
+          text: '',
+          isMyMessage: false,
+          time: '',
+          isRead: false,
+          date: messageDate,
+          isDateSeparator: true,
+        });
+        lastDate = messageDate;
+      }
+
+      messagesWithDates.push(message);
+    });
+
+    return messagesWithDates;
+  }, []);
+
+  // API에서 받은 메시지 데이터
+  const allMessages = useMemo(() => {
+    console.log('🔍 메시지 데이터 처리:', {
+      messagesData: messagesData ? 'exists' : 'null',
+      content: (messagesData as any)?.content ? 'exists' : 'null',
+      contentLength: (messagesData as any)?.content?.length || 0,
+    });
+
+    if (messagesData && (messagesData as any)?.content) {
+      const basicMessages = transformMessagesData(
+        (messagesData as any).content
+      );
+      return addDateSeparators(basicMessages);
+    }
+    return [];
+  }, [messagesData, transformMessagesData, addDateSeparators]);
 
   const handleProfilePress = () => {
-    navigation.navigate('ProfileDetail', { userName });
+    const userData = (userInfo as any)?.data;
+    if (userData) {
+      // API로 받은 실제 사용자 정보 전달
+      navigation.navigate('ProfileDetail', {
+        userName: userData.nickname,
+        userId: userData.userId,
+        fromScreen: 'Chat',
+        // 사용자 전체 정보 전달
+        profileData: {
+          id: userData.userId,
+          nickname: userData.nickname,
+          age: userData.age,
+          introduction: userData.introduction,
+          mainType: userData.mainType,
+          food: userData.food,
+          keywords: userData.keywords,
+          profileImageUrls: userData.profileImageUrls,
+          sigungu: userData.sigungu,
+          distance: userData.distanceBetweenMe || userData.distance || 0,
+        },
+      });
+    } else {
+      // userInfo가 없으면 기본 정보만 전달
+      navigation.navigate('ProfileDetail', {
+        userName,
+        userId,
+        fromScreen: 'Chat',
+      });
+    }
   };
 
   const handleMenuPress = () => {
@@ -213,8 +327,6 @@ export default function ChatRoomScreen() {
               requestId: user.id,
               targetUserId: targetUserId,
             });
-            Alert.alert('알림', '사용자가 차단되었습니다.');
-            navigation.goBack();
           } else {
             console.log('❌ 차단 실패 - 필요한 정보가 없음');
             Alert.alert('오류', '사용자 정보를 불러올 수 없습니다.');
@@ -248,28 +360,15 @@ export default function ChatRoomScreen() {
           chatService.subscribeToRoom(
             parseInt(chatRoomId),
             (newMessage: any) => {
-              // 새 메시지 수신 시 로컬 상태에 추가
-              const transformedMessage: Message = {
-                id: newMessage.id.toString(),
-                text: newMessage.content || '',
-                isMyMessage: newMessage.senderId === user?.id,
-                time: new Date(newMessage.createdAt).toLocaleTimeString(
-                  'ko-KR',
-                  {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true,
-                  }
-                ),
-                isRead: newMessage.isRead,
-              };
+              console.log('📩 새 메시지 수신:', newMessage);
 
-              setLocalMessages(prev => [...prev, transformedMessage]);
+              // 새 메시지 수신 시 메시지 목록 새로고침
+              refetchMessages();
 
               // 새 메시지 수신 후 자동 스크롤
               setTimeout(() => {
                 flatListRef.current?.scrollToEnd({ animated: true });
-              }, 100);
+              }, 200);
             }
           );
         }
@@ -287,7 +386,7 @@ export default function ChatRoomScreen() {
         chatService.unsubscribeFromRoom(parseInt(chatRoomId));
       }
     };
-  }, [chatRoomId, user?.id]);
+  }, [chatRoomId, user?.id, refetchMessages]);
 
   const handleSendMessage = async (message: string) => {
     if (!isConnected || !chatRoomId) {
@@ -297,12 +396,27 @@ export default function ChatRoomScreen() {
 
     try {
       // WebSocket으로 메시지 전송
-      chatService.sendMessage(parseInt(chatRoomId), message, 'TEXT');
+      chatService.sendMessage(
+        parseInt(chatRoomId),
+        message,
+        'TEXT',
+        (result: any) => {
+          console.log('✅ 메시지 전송 성공:', result);
+          // 전송 성공 후 메시지 목록 새로고침
+          setTimeout(() => {
+            refetchMessages();
+          }, 100);
+        },
+        (error: any) => {
+          console.error('❌ 메시지 전송 실패:', error);
+          Alert.alert('오류', '메시지 전송에 실패했습니다.');
+        }
+      );
 
       // 자동 스크롤
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      }, 200);
     } catch (error) {
       console.error('메시지 전송 실패:', error);
       Alert.alert('오류', '메시지 전송에 실패했습니다.');
@@ -358,8 +472,6 @@ export default function ChatRoomScreen() {
               requestId: user.id,
               targetUserId: targetUserId,
             });
-            Alert.alert('알림', '신고가 접수되었습니다.');
-            navigation.goBack();
           } else {
             console.log('❌ 신고 실패 - 필요한 정보가 없음');
             Alert.alert('오류', '사용자 정보를 불러올 수 없습니다.');
@@ -420,7 +532,7 @@ export default function ChatRoomScreen() {
       <ChatHeader
         userName={userName}
         profileImageUrl={profileImageUrl}
-        mainType={(userInfo as any)?.data?.mainType}
+        mainType={mainType || (userInfo as any)?.data?.mainType}
         showUserInfo={true}
         showMenu={!isBlocked}
         onBackPress={() => navigation.goBack()}
