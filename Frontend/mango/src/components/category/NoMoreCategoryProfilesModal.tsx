@@ -132,16 +132,6 @@ export default function NoMoreCategoryProfilesModal({
                     다른 카테고리 보기
                   </Text>
                 </TouchableOpacity>
-
-                {/* 닫기 버튼 */}
-                <TouchableOpacity
-                  className="bg-gray-100 py-4 rounded-2xl"
-                  onPress={onClose}
-                >
-                  <Text className="text-subheading-regular text-gray-600 text-center">
-                    닫기
-                  </Text>
-                </TouchableOpacity>
               </View>
             </Animated.View>
           </TouchableWithoutFeedback>
