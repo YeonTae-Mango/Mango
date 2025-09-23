@@ -65,20 +65,34 @@ export const useInfiniteMangoFollowing = () => {
   return useInfiniteQuery({
     queryKey: ['infiniteMangoFollowing', userId],
     queryFn: ({ pageParam = 0 }) => {
+      console.log('📤 Following API 호출, pageParam:', pageParam);
       return getMangoFollowing(userId!, pageParam);
     },
     enabled: isAuthenticated && !!userId,
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
+      console.log('🔍 Following getNextPageParam:', {
+        lastPageData: lastPage?.data,
+        dataLength: lastPage?.data?.length,
+        allPagesLength: allPages.length,
+        hasMoreData: lastPage?.data?.length > 0,
+        fullResponse: lastPage,
+      });
+
       if (
         lastPage?.data &&
         Array.isArray(lastPage.data) &&
-        lastPage.data.length >= 10
+        lastPage.data.length > 0
       ) {
+        // 데이터가 있으면 일단 다음 페이지 요청해보기
+        // (서버에서 빈 배열을 보내면 그때 중단)
         const nextPage = allPages.length;
+        console.log('✅ Following 다음 페이지 요청:', nextPage);
         return nextPage;
+      } else {
+        console.log('❌ Following 데이터 없음 - 무간스크롤 중단');
+        return undefined;
       }
-      return undefined;
     },
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -95,21 +109,34 @@ export const useInfiniteMangoFollowers = () => {
   return useInfiniteQuery({
     queryKey: ['infiniteMangoFollowers', userId],
     queryFn: ({ pageParam = 0 }) => {
-      console.log('훅: Followers API 호출, pageParam:', pageParam);
+      console.log('📤 Followers API 호출, pageParam:', pageParam);
       return getMangoFollowers(userId!, pageParam);
     },
     enabled: isAuthenticated && !!userId,
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
+      console.log('🔍 Followers getNextPageParam:', {
+        lastPageData: lastPage?.data,
+        dataLength: lastPage?.data?.length,
+        allPagesLength: allPages.length,
+        hasMoreData: lastPage?.data?.length > 0,
+        fullResponse: lastPage,
+      });
+
       if (
         lastPage?.data &&
         Array.isArray(lastPage.data) &&
-        lastPage.data.length >= 10
+        lastPage.data.length > 0
       ) {
+        // 데이터가 있으면 일단 다음 페이지 요청해보기
+        // (서버에서 빈 배열을 보내면 그때 중단)
         const nextPage = allPages.length;
+        console.log('✅ Followers 다음 페이지 요청:', nextPage);
         return nextPage;
+      } else {
+        console.log('❌ Followers 데이터 없음 - 무한스크롤 중단');
+        return undefined;
       }
-      return undefined;
     },
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,

@@ -139,10 +139,27 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
   const users: MangoUser[] = useMemo(() => {
     const data = activeTab === 'sent' ? followingData : followersData;
 
-    if (!data?.pages) return [];
+    console.log('🔍 사용자 데이터 평탄화:', {
+      activeTab,
+      hasData: !!data,
+      pagesCount: data?.pages?.length || 0,
+      data: data?.pages,
+    });
+
+    if (!data?.pages) {
+      console.log('❌ pages 없음');
+      return [];
+    }
+
     // API 응답 구조에 따라 data 필드 추출
-    const allUsers = data.pages.flatMap(page => {
+    const allUsers = data.pages.flatMap((page, index) => {
+      console.log(`📄 페이지 ${index} 데이터:`, page);
       return (page as any)?.data || [];
+    });
+
+    console.log('✅ 최종 사용자 목록:', {
+      totalUsers: allUsers.length,
+      users: allUsers,
     });
 
     return allUsers;
@@ -150,11 +167,24 @@ export default function MangoScreen({ onLogout }: MangoScreenProps) {
 
   // 무한 스크롤 로드 더 함수
   const handleLoadMore = useCallback(() => {
+    console.log('🔄 handleLoadMore 호출:', {
+      activeTab,
+      hasNextPage,
+      isFetchingNextPage,
+      usersLength: users.length,
+    });
+
     // 다음 페이지가 있고, 현재 다음 페이지를 불러오고 있지 않을 때만 호출
     if (hasNextPage && !isFetchingNextPage) {
+      console.log('✅ fetchNextPage 호출');
       fetchNextPage();
+    } else {
+      console.log('❌ fetchNextPage 호출 안됨:', {
+        hasNextPage,
+        isFetchingNextPage,
+      });
     }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, activeTab, users.length]);
 
   // MangoCard 렌더링 함수
   const renderMangoCard = useCallback(
