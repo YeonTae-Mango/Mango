@@ -82,43 +82,41 @@ public class UserController extends BaseController {
     return toResponseEntity(userService.getUserById(userId, token), "사용자 조회에 성공하였습니다.");
   }
 
-  @Operation(
-      summary = "사용자 정보 수정",
-      description = "JWT 토큰을 이용해 본인 계정의 정보를 수정합니다.",
-      requestBody = @RequestBody(
-          description = "수정할 사용자 정보",
-          required = true,
-          content = @Content(schema = @Schema(implementation = UserUpdateRequest.class))
-      ),
-      responses = {
-          @ApiResponse(
-              responseCode = "200",
-              description = "수정 성공",
-              content = @Content(schema = @Schema(implementation = UserUpdateResponse.class))
-          ),
-          @ApiResponse(
-              responseCode = "400",
-              description = "잘못된 입력값(닉네임 등)",
-              content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-          ),
-          @ApiResponse(
-              responseCode = "403",
-              description = "본인 계정만 수정 가능",
-              content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-          )
-      }
-  )
-  @PutMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<BaseResponse> updateUser(
-      @PathVariable Long userId,
-      @RequestHeader("Authorization") String token,
-      @RequestPart("request") UserUpdateRequest request,
-      @RequestPart(value = "files", required = false) List<MultipartFile> files
-  ) {
-    UserUpdateRequest req = UserUpdateRequest.of(request, files);
-    return toResponseEntity(userService.updateUser(userId, token, req),
-        "사용자 정보가 수정 되었습니다.");
-  }
+    @Operation(
+        summary = "사용자 정보 수정",
+        description = "JWT 토큰을 이용해 본인 계정의 정보를 수정합니다.",
+        requestBody = @RequestBody(
+                description = "수정할 사용자 정보",
+                required = true,
+                content = @Content(schema = @Schema(implementation = UserUpdateRequest.class))
+        ),
+        responses = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "수정 성공",
+                        content = @Content(schema = @Schema(implementation = UserUpdateResponse.class))
+                ),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "잘못된 입력값(닉네임 등)",
+                        content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                ),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "본인 계정만 수정 가능",
+                        content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                )
+        }
+    )
+    @PutMapping("/{userId}")
+    public ResponseEntity<BaseResponse> updateUser(
+            @PathVariable Long userId,
+            @RequestHeader("Authorization") String token,
+            @RequestBody @Valid UserUpdateRequest request
+    ) {
+        return toResponseEntity(userService.updateUser(userId, token, request),
+                "사용자 정보가 수정 되었습니다.");
+    }
 
   @Operation(
       summary = "매칭 거리 설정 수정",

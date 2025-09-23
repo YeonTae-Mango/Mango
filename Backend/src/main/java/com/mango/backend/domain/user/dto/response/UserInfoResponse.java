@@ -28,7 +28,9 @@ public record UserInfoResponse(
         String mainType,
         List<String> keywords,
         String food,
-        List<String> profileImageUrls
+        List<String> profileImageUrls,
+        List<Long> profileImageUrlsId
+
 ) {
 
     public static UserInfoResponse of(
@@ -36,6 +38,7 @@ public record UserInfoResponse(
             Integer distanceBetweenMe,
             String mainType, List<String> keywords, String food,
             List<String> profileImageUrls,
+            List<Long> profileImageUrlsId,
             boolean theyLiked) {
         String latitude = null;
         String longitude = null;
@@ -75,6 +78,7 @@ public record UserInfoResponse(
                 .keywords(keywords)
                 .food(food)
                 .profileImageUrls(profileImageUrls)
+                .profileImageUrlsId(profileImageUrlsId)
                 .build();
     }
 }
