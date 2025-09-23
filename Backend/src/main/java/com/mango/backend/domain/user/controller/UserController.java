@@ -112,10 +112,9 @@ public class UserController extends BaseController {
   public ResponseEntity<BaseResponse> updateUser(
       @PathVariable Long userId,
       @RequestHeader("Authorization") String token,
-      @RequestPart("request") UserUpdateRequest request,
-      @RequestPart(value = "files", required = false) List<MultipartFile> files
+      @RequestPart("request") UserUpdateRequest request
   ) {
-    UserUpdateRequest req = UserUpdateRequest.of(request, files);
+    UserUpdateRequest req = UserUpdateRequest.of(request);
     return toResponseEntity(userService.updateUser(userId, token, req),
         "사용자 정보가 수정 되었습니다.");
   }

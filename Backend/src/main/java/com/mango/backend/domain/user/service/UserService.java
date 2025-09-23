@@ -1,11 +1,11 @@
 package com.mango.backend.domain.user.service;
 
+import com.mango.backend.domain.auth.repository.AuthRepository;
 import com.mango.backend.domain.consumptionpattern.entity.ConsumptionPattern;
 import com.mango.backend.domain.consumptionpattern.repository.ConsumptionPatternRepository;
 import com.mango.backend.domain.mango.repository.MangoRepository;
 import com.mango.backend.domain.user.dto.request.UpdateDistanceRequest;
 import com.mango.backend.domain.user.dto.request.UserUpdateRequest;
-import com.mango.backend.domain.user.dto.response.MyInfoResponse;
 import com.mango.backend.domain.user.dto.response.UserInfoResponse;
 import com.mango.backend.domain.user.dto.response.UserUpdateResponse;
 import com.mango.backend.domain.user.entity.User;
@@ -19,7 +19,6 @@ import com.mango.backend.global.util.JwtProvider;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +37,7 @@ public class UserService {
   private final UserPhotoRepository userPhotoRepository;
   private final ConsumptionPatternRepository consumptionPatternRepository;
   private final MangoRepository mangoRepository;
+  private final AuthRepository authRepository;
   private final FileUtil fileUtil;
   private final RedisTemplate<String, String> redisTemplate;
   private final JwtProvider jwtProvider;
@@ -108,53 +108,16 @@ public class UserService {
     if (nickname == null || nickname.isBlank() || nickname.length() > 10) {
       return ServiceResult.failure(ErrorCode.USER_NICKNAME_LENGTH);
     }
-
-    List<MultipartFile> newFiles = request.photos();
-    if (newFiles.size() > 4) {
-      return ServiceResult.failure(ErrorCode.FILE_TOO_MANY);
+    if (authRepository.existsByNickname(nickname)) {
+      return ServiceResult.failure(ErrorCode.USER_NICKNAME_ALREADY_EXISTS);
     }
-    if (newFiles.isEmpty()) {
-      return ServiceResult.failure(ErrorCode.FILE_TOO_LITTLE);
+    if ((request.latitude() != null && request.longitude() == null) ||
+        (request.latitude() == null && request.longitude() != null)) {
+      throw new IllegalArgumentException("위도와 경도는 함께 제공되어야 합니다");
     }
     return userRepository.findById(requestId)
         .map(user -> {
           user.updateProfile(request);
-
-          // 기존 사진 삭제
-          List<UserPhoto> existingPhotos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(user);
-          for (UserPhoto photo : existingPhotos) {
-            try {
-              fileUtil.deleteFile(photo.getPhotoUrl(), "profile");
-            } catch (IOException e) {
-              log.warn("기존 파일 삭제 실패: {}", photo.getPhotoUrl(), e);
-            }
-          }
-          userPhotoRepository.deleteAll(existingPhotos);
-
-          // 새 사진 저장 및 매핑
-          for (int i = 0; i < newFiles.size(); i++) {
-            MultipartFile file = newFiles.get(i);
-            String url;
-            try {
-              url = fileUtil.saveFile(file, "profile");
-            } catch (IOException e) {
-              throw new RuntimeException("사진 저장 실패", e);
-            }
-
-            UserPhoto newPhoto = UserPhoto.builder()
-                .user(user)
-                .photoUrl(url)
-                .photoOrder((byte) (i + 1))
-                .build();
-
-            userPhotoRepository.save(newPhoto);
-
-            // 1번 사진은 대표 프로필
-            if (i == 0) {
-              user.updateProfilePhoto(newPhoto);
-            }
-          }
-
           return ServiceResult.success(UserUpdateResponse.fromEntity(user));
         })
         .orElse(ServiceResult.failure(ErrorCode.USER_NOT_FOUND));
