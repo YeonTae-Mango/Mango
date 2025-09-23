@@ -114,7 +114,7 @@ spring:
       password: ${REDIS_PASSWORD}
 logging:
   level:
-    root: INFO
+    root: DEBUG
 
 upload:
   dir: /app/uploads/dev/
