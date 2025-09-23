@@ -25,7 +25,13 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
-  const { isAuthenticated, isLoading, restoreAuth, clearAuth } = useAuthStore();
+  const {
+    isAuthenticated,
+    isLoading,
+    isSignupInProgress,
+    restoreAuth,
+    clearAuth,
+  } = useAuthStore();
 
   // 앱 시작 시 저장된 인증 정보 복원
   useEffect(() => {
@@ -101,7 +107,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <NavigationContainer>
-          {isAuthenticated ? (
+          {isAuthenticated && !isSignupInProgress ? (
             <MainStack onLogout={handleLogout} />
           ) : (
             <AuthStack onLoginSuccess={handleLoginSuccess} />

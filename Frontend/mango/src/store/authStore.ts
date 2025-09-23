@@ -26,6 +26,7 @@ interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isSignupInProgress: boolean; // 회원가입 진행 중 여부
 }
 
 // 인증 액션 인터페이스
@@ -46,6 +47,8 @@ interface AuthActions {
   restoreAuth: () => Promise<void>;
   // 로딩 상태 설정
   setLoading: (loading: boolean) => void;
+  // 회원가입 진행 상태 설정
+  setSignupInProgress: (inProgress: boolean) => void;
 }
 
 // 전체 스토어 타입
@@ -61,6 +64,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   refreshToken: null,
   isAuthenticated: false,
   isLoading: false,
+  isSignupInProgress: false,
 
   /**
    * 로그인 성공 시 인증 정보 설정
@@ -90,6 +94,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         refreshToken: refreshToken || get().refreshToken,
         isAuthenticated: true,
         isLoading: false,
+        isSignupInProgress: false, // 로그인 시 회원가입 상태 해제
       });
 
       console.log('✅ 인증 정보 설정 완료');
@@ -165,6 +170,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         refreshToken: null,
         isAuthenticated: false,
         isLoading: false,
+        isSignupInProgress: false,
       });
 
       console.log('✅ 로그아웃 완료');
@@ -206,6 +212,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           refreshToken,
           isAuthenticated: true,
           isLoading: false,
+          isSignupInProgress: false,
         });
 
         console.log('✅ 인증 정보 복원 완료');
@@ -227,5 +234,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   setLoading: (loading: boolean) => {
     console.log('⏳ 로딩 상태 변경:', loading);
     set({ isLoading: loading });
+  },
+
+  /**
+   * 회원가입 진행 상태 설정
+   * @param inProgress 회원가입 진행 중 여부
+   */
+  setSignupInProgress: (inProgress: boolean) => {
+    console.log('📝 회원가입 진행 상태 변경:', inProgress);
+    set({ isSignupInProgress: inProgress });
   },
 }));

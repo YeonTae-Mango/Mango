@@ -83,7 +83,7 @@ export const useSignup = (): UseSignupReturn => {
         console.log('🎉 회원가입 성공!');
         console.log('🎉 서버 응답:', JSON.stringify(response, null, 2));
 
-        // 3. 회원가입 성공 - signupUser 함수에서 이미 사용자 정보 저장 처리됨
+        // 3. 회원가입 성공 - signupApi에서 토큰 저장 및 회원가입 진행 상태 설정 완료
         console.log('🎉 회원가입 성공! 완료 화면으로 이동');
 
         // 성공 상태 업데이트
