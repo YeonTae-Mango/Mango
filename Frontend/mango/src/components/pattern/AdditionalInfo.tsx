@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
+import { CategoryChartData } from '../../types/chart';
 
 interface AdditionalInfoProps {
   activeTab: 'category' | 'month' | 'keyword' | 'time' | 'history';
@@ -23,9 +24,10 @@ interface AdditionalInfoProps {
       }>;
     };
   };
+  categoryChartData?: CategoryChartData | null;
 }
 
-export default function AdditionalInfo({ activeTab, additionalInfoData }: AdditionalInfoProps) {
+export default function AdditionalInfo({ activeTab, additionalInfoData, categoryChartData }: AdditionalInfoProps) {
   if (activeTab === 'history') {
     return null; // 내역 탭에서는 추가사항 표시하지 않음
   }
@@ -80,20 +82,41 @@ export default function AdditionalInfo({ activeTab, additionalInfoData }: Additi
           </>
         ) : (
           <>
-            <Text className="text-body-large-regular text-text-primary text-center mb-2">
-              {additionalInfoData.category.topCategories[0].name}에 
-              <Text className='font-bold'>
-                {' '}{additionalInfoData.category.topCategories[0].percentage}%
-              </Text>
-              , {additionalInfoData.category.topCategories[1].name}에 
-              <Text className='font-bold'>
-                {' '}{additionalInfoData.category.topCategories[1].percentage}%
-              </Text>
-              로
-            </Text>
-            <Text className="text-body-large-regular text-text-primary text-center">
-              가장 많은 소비를 했어요!
-            </Text>
+            {categoryChartData?.highest ? (
+              <>
+                <Text className="text-body-large-regular text-text-primary text-center mb-2">
+                  {Object.keys(categoryChartData.highest)[0]}에 
+                  <Text className='font-bold'>
+                    {' '}{categoryChartData.highest[Object.keys(categoryChartData.highest)[0]]}%
+                  </Text>
+                  , {Object.keys(categoryChartData.highest)[1]}에 
+                  <Text className='font-bold'>
+                    {' '}{categoryChartData.highest[Object.keys(categoryChartData.highest)[1]]}%
+                  </Text>
+                  로
+                </Text>
+                <Text className="text-body-large-regular text-text-primary text-center">
+                  가장 많은 소비를 했어요!
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text className="text-body-large-regular text-text-primary text-center mb-2">
+                  {additionalInfoData.category.topCategories[0].name}에 
+                  <Text className='font-bold'>
+                    {' '}{additionalInfoData.category.topCategories[0].percentage}%
+                  </Text>
+                  , {additionalInfoData.category.topCategories[1].name}에 
+                  <Text className='font-bold'>
+                    {' '}{additionalInfoData.category.topCategories[1].percentage}%
+                  </Text>
+                  로
+                </Text>
+                <Text className="text-body-large-regular text-text-primary text-center">
+                  가장 많은 소비를 했어요!
+                </Text>
+              </>
+            )}
           </>
         )}
       </View>
