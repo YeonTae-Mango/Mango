@@ -57,11 +57,9 @@ public class UserPhotoService {
         }
         return userRepository.findByIdWithPhotos(requestId)
                 .map(user -> {
-
                     if (user.getPhotoCount() + files.size() > 4) {
                         return ServiceResult.<List<UploadPhotoResponse>>failure(ErrorCode.FILE_TOO_MANY);
                     }
-                    List<UserPhoto> photosToSave = new ArrayList<>();
 
                     for (MultipartFile file : files) {
                         String url;
@@ -71,9 +69,13 @@ public class UserPhotoService {
                             throw new RuntimeException(e);
                         }
                         user.addPhoto(url);
-                        photosToSave.add(user.getPhotos().getLast());
                     }
-                    List<UploadPhotoResponse> responses = photosToSave.stream()
+                    userRepository.flush();
+                    List<UserPhoto> recentPhotos = user.getPhotos()
+                            .stream()
+                            .skip(Math.max(0, user.getPhotos().size() - files.size()))
+                            .toList();
+                    List<UploadPhotoResponse> responses = recentPhotos.stream()
                             .map(UploadPhotoResponse::from)
                             .toList();
                     return ServiceResult.success(responses);
