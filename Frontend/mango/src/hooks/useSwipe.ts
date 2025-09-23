@@ -9,7 +9,7 @@ import {
 import type { SwipeAction, UseSwipeOptions } from '../types/swipe';
 
 export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
-  const { category, onSwipeSuccess } = options; // 옵션에서 카테고리와 콜백 추출
+  const { category, onSwipeSuccess, onMatchSuccess } = options; // 옵션에서 카테고리와 콜백 추출
   const queryClient = useQueryClient(); // React Query 클라이언트
   const [currentIndex, setCurrentIndex] = useState(0); // 현재 프로필 인덱스 상태 관리
 
@@ -50,14 +50,68 @@ export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
         throw error;
       }
     },
-    onSuccess: variables => {
+    onSuccess: (data, variables) => {
+      console.log('🚀 useSwipe onSuccess 호출됨:', {
+        data,
+        variables,
+        onMatchSuccess: !!onMatchSuccess,
+      });
+
       // API 성공 시 애니메이션 트리거 (버튼 클릭용)
       if (onSwipeSuccess) {
         const direction = variables.action === 'like' ? 'right' : 'left';
         onSwipeSuccess(direction);
       }
 
-      // API 호출 성공 후에만 다음 프로필로 이동
+      // 매치 성공 확인 (좋아요인 경우에만)
+      if (variables.action === 'like' && data && onMatchSuccess) {
+        console.log('🔍 스와이프 좋아요 응답 확인:', data);
+        console.log('🔍 응답 전체 구조:', JSON.stringify(data, null, 2));
+        console.log('🔍 현재 프로필:', currentProfile);
+        console.log('🔍 현재 프로필의 theyLiked:', currentProfile?.theyLiked);
+
+        // 매칭 조건 확인
+        let isMatched = false;
+
+        // 1. API 응답에서 매칭 필드 확인
+        const possibleMatchFields = [
+          data.matched,
+          data.isMatched,
+          data.match,
+          data.isMatch,
+          data.success && data.matched,
+          data.data?.matched,
+          data.data?.isMatched,
+          data.data?.match,
+          data.result?.matched,
+          data.message === 'match' || data.message === '매치',
+          data.status === 'match' || data.status === 'matched',
+          // 메시지에서 매칭 키워드 찾기
+          data.message?.includes('매치') || data.message?.includes('match'),
+          data.message?.includes('서로') || data.message?.includes('mutual'),
+        ];
+
+        console.log('🔍 매치 필드 검사:', possibleMatchFields);
+        isMatched = possibleMatchFields.some(field => field === true);
+
+        // 2. 현재 프로필이 "나를 망고한 사람"(theyLiked: true)이면 무조건 매칭!
+        if (currentProfile?.theyLiked === true) {
+          console.log('🎯 "나를 망고한 사람"에게 망고 보냄 -> 자동 매칭!');
+          isMatched = true;
+        }
+
+        if (isMatched && currentProfile) {
+          console.log('🎉 매치 성공!', currentProfile);
+          onMatchSuccess(currentProfile);
+        } else {
+          console.log('👍 좋아요 성공, 매치는 아님');
+          console.log('👍 매치 검사 결과:', {
+            isMatched,
+            hasCurrentProfile: !!currentProfile,
+            theyLiked: currentProfile?.theyLiked,
+          });
+        }
+      } // API 호출 성공 후에만 다음 프로필로 이동
       setCurrentIndex((prev: number) => {
         const nextIndex = prev + 1;
         return nextIndex;
@@ -111,7 +165,50 @@ export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
         throw error;
       }
     },
-    onSuccess: variables => {
+    onSuccess: (data, variables) => {
+      console.log('🎭 스와이프 onSuccess 호출됨:', {
+        data,
+        variables,
+        onMatchSuccess: !!onMatchSuccess,
+      });
+
+      // 매치 성공 확인 (좋아요인 경우에만)
+      if (variables.action === 'like' && data && onMatchSuccess) {
+        console.log('🎭 스와이프 좋아요 응답 확인:', data);
+        console.log('🎭 현재 프로필:', currentProfile);
+        console.log('🎭 현재 프로필의 theyLiked:', currentProfile?.theyLiked);
+
+        // 매칭 조건 확인
+        let isMatched = false;
+
+        // 1. API 응답에서 매칭 필드 확인
+        const possibleMatchFields = [
+          data.matched,
+          data.isMatched,
+          data.match,
+          data.isMatch,
+          data.message?.includes('매치') || data.message?.includes('match'),
+        ];
+
+        console.log('🎭 매치 필드 검사:', possibleMatchFields);
+        isMatched = possibleMatchFields.some(field => field === true);
+
+        // 2. 현재 프로필이 "나를 망고한 사람"(theyLiked: true)이면 무조건 매칭!
+        if (currentProfile?.theyLiked === true) {
+          console.log(
+            '🎭🎯 "나를 망고한 사람"에게 스와이프 망고 -> 자동 매칭!'
+          );
+          isMatched = true;
+        }
+
+        if (isMatched && currentProfile) {
+          console.log('🎭🎉 스와이프 매치 성공!', currentProfile);
+          onMatchSuccess(currentProfile);
+        } else {
+          console.log('🎭👍 스와이프 좋아요 성공, 매치는 아님');
+        }
+      }
+
       // 스와이프는 이미 애니메이션에서 인덱스가 증가했으므로 여기서는 증가 안 함
     },
     onError: (error, variables) => {
