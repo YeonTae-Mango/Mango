@@ -316,6 +316,30 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
     );
   }
 
+  // 채팅방이 없을 때
+  if (chatRooms.length === 0) {
+    return (
+      <Layout onLogout={onLogout} showBottomSafeArea={false}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text className="text-subheading-bold text-center">
+            <Text className="text-subheading-bold text-center text-mango-red">
+              망
+            </Text>
+            설이지 말
+            <Text className="text-subheading-bold text-center text-mango-red">
+              고
+            </Text>
+            , 지금 당장{' '}
+            <Text className="text-subheading-bold text-center text-mango-red">
+              망고
+            </Text>
+            하세요! 🥭✨
+          </Text>
+        </View>
+      </Layout>
+    );
+  }
+
   return (
     <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <FlatList
