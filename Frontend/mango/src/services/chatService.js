@@ -21,134 +21,157 @@ class ChatService {
    * WebSocket 연결을 설정합니다
    */
   async connect() {
-    if (this.isConnected || this.isConnecting) {
-      console.log('🔌 이미 연결되었거나 연결 중입니다');
-      return;
+    if (this.isConnected) {
+      console.log('🔌 이미 연결되어 있습니다');
+      return Promise.resolve();
     }
 
-    try {
-      this.isConnecting = true;
-      console.log('🔌 WebSocket 연결 시작...');
+    if (this.isConnecting) {
+      console.log('🔌 연결 중입니다 - 연결 완료까지 대기');
+      // 이미 연결 중이라면 연결 완료까지 대기
+      return this.waitForConnection();
+    }
 
-      const token = await getAuthToken();
-      if (!token) {
-        throw new Error('인증 토큰이 없습니다');
-      }
-
-      // SockJS 라이브러리를 사용한 연결
-      const SockJS = require('sockjs-client');
-      const sockjsUrl = 'https://j13a408.p.ssafy.io/dev/ws-chat';
-
-      console.log('🔌 SockJS 라이브러리로 연결 시도...');
-      console.log('🔗 SockJS URL:', sockjsUrl);
-
-      // SockJS 클라이언트 사용
-      this.socket = new SockJS(sockjsUrl, null, {
-        transports: ['websocket', 'xhr-polling', 'xhr-streaming'],
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      this.socket.onopen = () => {
-        console.log('🔌 SockJS 연결 성공');
+    return new Promise(async (resolve, reject) => {
+      try {
         this.isConnecting = true;
+        this.connectResolve = resolve;
+        this.connectReject = reject;
 
-        // SockJS 연결 후 바로 STOMP CONNECT 프레임 전송
-        console.log('📤 STOMP CONNECT 프레임 전송 중...');
-        this._sendFrame('CONNECT', {
-          'accept-version': '1.0,1.1,2.0',
-          'heart-beat': '10000,10000',
-          Authorization: `Bearer ${token}`,
-          host: 'j13a408.p.ssafy.io',
-        });
+        console.log('🔌 WebSocket 연결 시작...');
 
-        // CONNECT 응답 타임아웃 설정 (10초)
-        this.connectTimeout = setTimeout(() => {
-          if (this.isConnecting && !this.isConnected) {
-            console.error('⏰ STOMP CONNECT 타임아웃 - 서버 응답 없음');
-            console.log('🔄 다른 헤더로 재시도...');
-
-            // 다른 헤더 형식으로 재시도
-            this._sendFrame('CONNECT', {
-              'accept-version': '1.2',
-              'heart-beat': '0,0',
-              Authorization: `Bearer ${token}`,
-            });
-            setTimeout(() => {
-              if (this.isConnecting && !this.isConnected) {
-                console.error('❌ STOMP 연결 최종 실패 - 연결 종료');
-                this.disconnect();
-              }
-            }, 5000);
-          }
-        }, 10000);
-      };
-
-      this.socket.onmessage = event => {
-        console.log('📥 SockJS 메시지 수신:', event.data);
-
-        // SockJS는 JSON 배열로 메시지를 감쌀 수 있음
-        let messageData = event.data;
-        if (typeof messageData === 'string' && messageData.startsWith('[')) {
-          try {
-            const parsed = JSON.parse(messageData);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              messageData = parsed[0]; // 첫 번째 메시지 사용
-              console.log('📦 SockJS 배열에서 추출된 메시지:', messageData);
-            }
-          } catch (error) {
-            console.log('⚠️ SockJS 메시지 파싱 실패, 원본 사용');
-          }
+        const token = await getAuthToken();
+        if (!token) {
+          this.isConnecting = false;
+          reject(new Error('인증 토큰이 없습니다'));
+          return;
         }
 
-        this._handleMessage(messageData);
-      };
+        // SockJS 라이브러리를 사용한 연결
+        const SockJS = require('sockjs-client');
+        const sockjsUrl = 'https://j13a408.p.ssafy.io/dev/ws-chat';
 
-      this.socket.onerror = error => {
-        console.error('❌ WebSocket 오류:', error);
-        this.isConnected = false;
-        this.isConnecting = false;
-        this._notifyConnectionStatus(false);
-      };
+        console.log('🔌 SockJS 라이브러리로 연결 시도...');
+        console.log('🔗 SockJS URL:', sockjsUrl);
 
-      this.socket.onclose = event => {
-        console.log('🔌 WebSocket 연결 끊김:', {
-          code: event.code,
-          reason: event.reason || '이유 없음',
-          wasClean: event.wasClean,
-          type: event.type,
+        // SockJS 클라이언트 사용
+        this.socket = new SockJS(sockjsUrl, null, {
+          transports: ['websocket', 'xhr-polling', 'xhr-streaming'],
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
-        // 연결 코드별 상세 정보
-        const closeReasons = {
-          1000: '정상 종료',
-          1001: '서버가 떠남',
-          1002: '프로토콜 오류',
-          1003: '지원되지 않는 데이터',
-          1005: '상태 코드 없음',
-          1006: '비정상 종료 (방화벽/프록시 문제 가능)',
-          1007: '잘못된 데이터',
-          1008: '정책 위반',
-          1009: '메시지가 너무 큼',
-          1010: '확장 협상 실패',
-          1011: '서버 오류',
+        this.socket.onopen = () => {
+          console.log('🔌 SockJS 연결 성공');
+          this.isConnecting = true;
+
+          // SockJS 연결 후 바로 STOMP CONNECT 프레임 전송
+          console.log('📤 STOMP CONNECT 프레임 전송 중...');
+          this._sendFrame('CONNECT', {
+            'accept-version': '1.0,1.1,2.0',
+            'heart-beat': '10000,10000',
+            Authorization: `Bearer ${token}`,
+            host: 'j13a408.p.ssafy.io',
+          });
+
+          // CONNECT 응답 타임아웃 설정 (10초)
+          this.connectTimeout = setTimeout(() => {
+            if (this.isConnecting && !this.isConnected) {
+              console.error('⏰ STOMP CONNECT 타임아웃 - 서버 응답 없음');
+              console.log('🔄 다른 헤더로 재시도...');
+
+              // 다른 헤더 형식으로 재시도
+              this._sendFrame('CONNECT', {
+                'accept-version': '1.2',
+                'heart-beat': '0,0',
+                Authorization: `Bearer ${token}`,
+              });
+              setTimeout(() => {
+                if (this.isConnecting && !this.isConnected) {
+                  console.error('❌ STOMP 연결 최종 실패 - 연결 종료');
+                  this.isConnecting = false;
+                  if (this.connectReject) {
+                    this.connectReject(new Error('STOMP 연결 타임아웃'));
+                  }
+                  this.disconnect();
+                }
+              }, 5000);
+            }
+          }, 10000);
         };
 
-        console.log(
-          `📋 종료 이유: ${closeReasons[event.code] || '알 수 없는 이유'}`
-        );
+        this.socket.onmessage = event => {
+          console.log('📥 SockJS 메시지 수신:', event.data);
 
-        this.isConnected = false;
+          // SockJS는 JSON 배열로 메시지를 감쌀 수 있음
+          let messageData = event.data;
+          if (typeof messageData === 'string' && messageData.startsWith('[')) {
+            try {
+              const parsed = JSON.parse(messageData);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                messageData = parsed[0]; // 첫 번째 메시지 사용
+                console.log('📦 SockJS 배열에서 추출된 메시지:', messageData);
+              }
+            } catch (_error) {
+              console.log('⚠️ SockJS 메시지 파싱 실패, 원본 사용');
+            }
+          }
+
+          this._handleMessage(messageData);
+        };
+
+        this.socket.onerror = error => {
+          console.error('❌ WebSocket 오류:', error);
+          this.isConnected = false;
+          this.isConnecting = false;
+          if (this.connectReject) {
+            this.connectReject(error);
+          }
+          this._notifyConnectionStatus(false);
+        };
+
+        this.socket.onclose = event => {
+          console.log('🔌 WebSocket 연결 끊김:', {
+            code: event.code,
+            reason: event.reason || '이유 없음',
+            wasClean: event.wasClean,
+            type: event.type,
+          });
+
+          // 연결 코드별 상세 정보
+          const closeReasons = {
+            1000: '정상 종료',
+            1001: '서버가 떠남',
+            1002: '프로토콜 오류',
+            1003: '지원되지 않는 데이터',
+            1005: '상태 코드 없음',
+            1006: '비정상 종료 (방화벽/프록시 문제 가능)',
+            1007: '잘못된 데이터',
+            1008: '정책 위반',
+            1009: '메시지가 너무 큼',
+            1010: '확장 협상 실패',
+            1011: '서버 오류',
+          };
+
+          console.log(
+            `📋 종료 이유: ${closeReasons[event.code] || '알 수 없는 이유'}`
+          );
+
+          this.isConnected = false;
+          this.isConnecting = false;
+          if (this.connectReject && !this.isConnected) {
+            this.connectReject(new Error(`WebSocket 연결 끊김: ${event.code}`));
+          }
+          this._notifyConnectionStatus(false);
+        };
+      } catch (error) {
+        console.error('❌ WebSocket 연결 실패:', error);
         this.isConnecting = false;
         this._notifyConnectionStatus(false);
-      };
-    } catch (error) {
-      console.error('❌ WebSocket 연결 실패:', error);
-      this.isConnecting = false;
-      this._notifyConnectionStatus(false);
-      throw error;
-    }
+        reject(error);
+      }
+    });
   }
 
   /**
@@ -246,6 +269,13 @@ class ChatService {
             this.connectTimeout = null;
           }
 
+          // Promise resolve 처리
+          if (this.connectResolve) {
+            this.connectResolve();
+            this.connectResolve = null;
+            this.connectReject = null;
+          }
+
           this._notifyConnectionStatus(true);
           break;
         case 'MESSAGE':
@@ -255,6 +285,14 @@ class ChatService {
           console.error('❌ STOMP 오류:', frame.headers, frame.body);
           this.isConnected = false;
           this.isConnecting = false;
+
+          // Promise reject 처리
+          if (this.connectReject) {
+            this.connectReject(new Error(`STOMP 오류: ${frame.body}`));
+            this.connectResolve = null;
+            this.connectReject = null;
+          }
+
           this._notifyConnectionStatus(false);
           break;
       }
@@ -658,6 +696,45 @@ class ChatService {
         callback(isConnected);
       } catch (error) {
         console.error('❌ 연결상태 콜백 오류:', error);
+      }
+    });
+  }
+
+  /**
+   * 연결이 완료될 때까지 대기합니다
+   */
+  async waitForConnection() {
+    return new Promise((resolve, reject) => {
+      // 이미 연결되어 있으면 바로 resolve
+      if (this.isConnected) {
+        resolve();
+        return;
+      }
+
+      // 연결 중이 아니라면 reject
+      if (!this.isConnecting) {
+        reject(new Error('연결이 시작되지 않았습니다'));
+        return;
+      }
+
+      // 기존 Promise가 있다면 그것을 사용
+      if (this.connectResolve) {
+        const originalResolve = this.connectResolve;
+        const originalReject = this.connectReject;
+
+        this.connectResolve = () => {
+          originalResolve();
+          resolve();
+        };
+
+        this.connectReject = error => {
+          originalReject(error);
+          reject(error);
+        };
+      } else {
+        // 새로운 Promise 설정
+        this.connectResolve = resolve;
+        this.connectReject = reject;
       }
     });
   }
