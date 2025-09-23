@@ -1,5 +1,8 @@
+import { useNavigation } from '@react-navigation/native';
+import { useMutation } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { createOrGetChatRoom } from '../../api/chat';
 import Layout from '../../components/common/Layout';
 import ActionButtons from '../../components/home/ActionButtons';
 import NoMoreProfilesModal from '../../components/home/NoMoreProfilesModal';
@@ -13,10 +16,44 @@ interface HomeScreenProps {
 
 export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const profileCardRef = useRef<ProfileCardRef>(null); // ProfileCard 참조
+  const navigation = useNavigation<any>();
 
   // 현재 로그인된 사용자 정보 (새로운 인증 시스템 사용)
   const { user } = useAuthStore();
   const userId = user?.id || 0;
+
+  // 채팅방 생성 뮤테이션
+  const createChatRoomMutation = useMutation({
+    mutationFn: createOrGetChatRoom,
+    onSuccess: chatRoomData => {
+      console.log('🎉 채팅방 생성 성공:', chatRoomData);
+
+      // 매치 성공 알림 후 채팅방으로 이동
+      Alert.alert(
+        '🎉 매치 성공!',
+        `${(chatRoomData as any).otherUser?.nickname || '상대방'}님과 매치되었습니다! 채팅을 시작해보세요.`,
+        [
+          {
+            text: '나중에',
+            style: 'cancel',
+          },
+          {
+            text: '채팅하기',
+            onPress: () => {
+              navigation.navigate('ChatRoom', {
+                chatRoomId: (chatRoomData as any).id.toString(),
+                userName: (chatRoomData as any).otherUser?.nickname || '상대방',
+              });
+            },
+          },
+        ]
+      );
+    },
+    onError: error => {
+      console.error('❌ 채팅방 생성 실패:', error);
+      Alert.alert('오류', '채팅방 생성에 실패했습니다.');
+    },
+  });
 
   // useSwipe 훅 사용
   const {
@@ -35,6 +72,11 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     onSwipeSuccess: (direction: 'left' | 'right') => {
       // API 성공 시 애니메이션 트리거 (버튼 클릭용)
       profileCardRef.current?.triggerSwipe(direction);
+    },
+    onMatchSuccess: matchedProfile => {
+      // 매치 성공 시 채팅방 생성
+      console.log('🎉 매치 성공 콜백 호출:', matchedProfile);
+      createChatRoomMutation.mutate(matchedProfile.id);
     },
   });
 
@@ -70,9 +112,15 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   };
 
   const handleMango = () => {
+    console.log('🍭 handleMango 호출됨:', {
+      currentProfile,
+      likeProfile: !!likeProfile,
+    });
     if (currentProfile) {
+      console.log('🍭 likeProfile 호출 시작:', currentProfile.id);
       // 버튼 클릭: API 먼저 호출
       likeProfile(currentProfile.id);
+      console.log('🍭 likeProfile 호출 완료');
       // API 성공 후 애니메이션은 useSwipe 훅에서 처리
     } else {
       console.log('현재 프로필이 없음');
