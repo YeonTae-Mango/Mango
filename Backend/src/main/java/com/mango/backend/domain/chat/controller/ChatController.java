@@ -2,7 +2,9 @@ package com.mango.backend.domain.chat.controller;
 
 import com.mango.backend.domain.chat.dto.request.ChatMessageRequest;
 import com.mango.backend.domain.chat.dto.response.ChatMessageResponse;
+import com.mango.backend.domain.chat.dto.response.ChatNotificationDTO;
 import com.mango.backend.domain.chat.entity.ChatMessage;
+import com.mango.backend.domain.chat.entity.ChatRoom;
 import com.mango.backend.domain.chat.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -142,16 +144,17 @@ public class ChatController {
 
     /**
      * 저장된 메시지를 채팅방 구독자들에게 브로드캐스트
-     * 
+     *
      * === 브로드캐스트 경로 ===
      * /topic/chat/{roomId} → 해당 채팅방을 구독한 모든 클라이언트가 수신
-     * 
+     * /topic/notification/{userId} → 채팅방 밖에서 알림 수신 (새로 추가)
+     *
      * === 클라이언트 구독 방법 ===
      * stompClient.subscribe('/topic/chat/1', function(message) {
      *   var chatMessage = JSON.parse(message.body);
      *   // 메시지 화면에 표시
      * });
-     * 
+     *
      * @param savedMessage 저장된 메시지 엔티티
      */
     private void broadcastMessage(ChatMessage savedMessage) {
@@ -159,12 +162,64 @@ public class ChatController {
         // savedMessage는 이미 sender 연관관계가 로드된 상태여야 함
         ChatMessageResponse response = ChatMessageResponse.fromEntity(savedMessage);
 
-        // 채팅방 구독자들에게 브로드캐스트
+        // 1. 채팅방 구독자들에게 브로드캐스트 
         String destination = "/topic/chat/" + savedMessage.getChatRoomId();
         messagingTemplate.convertAndSend(destination, response);
 
-        log.debug("메시지 브로드캐스트 완료 - 목적지: {}, 메시지ID: {}, 발신자: {}",
+        // 2. 상대방의 개인 알림 채널로도 전송 (채팅방 목록 업데이트용)
+        sendNotificationToReceiver(savedMessage, response);
+
+        log.debug("메시지 브로드캐스트 완료 - 채팅방: {}, 메시지ID: {}, 발신자: {}",
                  destination, savedMessage.getId(), response.getSenderNickname());
+    }
+
+    /**
+     * 상대방에게 채팅 알림 전송 (채팅방 목록 업데이트용)
+     *
+     * === 알림 전송 흐름 ===
+     * 1. 채팅방에서 상대방 ID 추출
+     * 2. 간단한 알림 DTO 생성
+     * 3. /topic/notification/{userId}로 전송
+     *
+     * @param savedMessage 저장된 메시지
+     * @param response 메시지 응답 DTO
+     */
+    private void sendNotificationToReceiver(ChatMessage savedMessage, ChatMessageResponse response) {
+        try {
+            // 채팅방 ID로 채팅방 정보 조회
+            Long chatRoomId = savedMessage.getChatRoomId();
+            ChatRoom chatRoom = chatMessageService.findChatRoomById(chatRoomId);
+            if (chatRoom == null) {
+                log.warn("채팅방 정보를 찾을 수 없음 - 알림 전송 스킵");
+                return;
+            }
+
+            // 상대방 ID 찾기
+            Long senderId = savedMessage.getSenderId();
+            Long receiverId = chatRoom.getUser1Id().equals(senderId)
+                ? chatRoom.getUser2Id()
+                : chatRoom.getUser1Id();
+
+            // 알림 DTO 생성
+            ChatNotificationDTO notification = ChatNotificationDTO.newMessageNotification(
+                chatRoom.getId(),
+                savedMessage.getContent(),
+                response.getSenderNickname(),
+                senderId,
+                savedMessage.getMessageType(),
+                savedMessage.getCreatedAt()
+            );
+
+            // 상대방의 개인 채널로 알림 전송
+            String notificationDestination = "/topic/notification/" + receiverId;
+            messagingTemplate.convertAndSend(notificationDestination, notification);
+
+            log.debug("알림 전송 완료 - 수신자ID: {}, 채팅방ID: {}", receiverId, chatRoom.getId());
+
+        } catch (Exception e) {
+            // 알림 전송 실패해도 메인 메시지 전송은 정상 처리
+            log.error("알림 전송 실패 - 메시지ID: {}, 에러: {}", savedMessage.getId(), e.getMessage());
+        }
     }
 
     /**
