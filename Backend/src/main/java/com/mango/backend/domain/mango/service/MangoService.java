@@ -13,6 +13,7 @@ import com.mango.backend.domain.user.repository.UserRepository;
 import com.mango.backend.global.common.ServiceResult;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.mango.backend.global.error.ErrorCode;
@@ -38,7 +39,9 @@ public class MangoService {
   public ServiceResult<List<MangoUserResponse>> getUsersILiked(Long userId, int page) {
     Pageable pageable = PageRequest.of(page, 10); // 10명씩
     Page<User> usersPage = mangoRepository.findUsersILikedWithProfile(userId, pageable);
+    Set<Long> matchedUserIds = matchRepository.findMatchedUserIdsByUserId(userId);
     List<MangoUserResponse> response = usersPage.stream()
+            .filter(user -> !matchedUserIds.contains(user.getId()))
             .map(user -> {
               // MongoDB에서 mainType 가져오기
               String mainType = consumptionPatternRepository
@@ -57,8 +60,10 @@ public class MangoService {
   public ServiceResult<List<MangoUserResponse>> getUsersWhoLikedMe(Long userId, int page) {
     Pageable pageable = PageRequest.of(page, 10); // 10명씩
     Page<User> usersPage = mangoRepository.findUsersWhoLikedMeWithProfile(userId, pageable);
+    Set<Long> matchedUserIds = matchRepository.findMatchedUserIdsByUserId(userId);
 
     List<MangoUserResponse> response = usersPage.stream()
+            .filter(user -> !matchedUserIds.contains(user.getId()))
             .map(user -> {
               // MongoDB에서 mainType 가져오기
               String mainType = consumptionPatternRepository
