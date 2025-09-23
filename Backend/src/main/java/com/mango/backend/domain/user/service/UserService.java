@@ -78,11 +78,11 @@ public class UserService {
     String food = consumptionPattern.getFood().getFirst().getName();
 
     List<String> profileImageUrls = new ArrayList<>();
-    List<String> profileImageUrlsId = new ArrayList<>();
+    List<Long> profileImageUrlsId = new ArrayList<>();
     List<UserPhoto> userPhotos = userPhotoRepository.findByUserOrderByPhotoOrderAsc(user);
     for (UserPhoto photo : userPhotos) {
       profileImageUrls.add(photo.getPhotoUrl());
-      profileImageUrlsId.add(photo.getId().toString()); // 또는 String.valueOf(photo.getId())
+      profileImageUrlsId.add(photo.getId());
     }
 
     boolean theyLiked = mangoRepository.existsByFromAndTo(user, me);
