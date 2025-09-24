@@ -34,6 +34,7 @@ export default function ProfileEditScreen() {
   // 상태 관리
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [photos, setPhotos] = useState<string[]>([]);
+  const [photoIds, setPhotoIds] = useState<number[]>([]); // 이미지 ID 저장
   const [oneWord, setOneWord] = useState('');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,7 +91,9 @@ export default function ProfileEditScreen() {
         // 프로필 데이터로 상태 초기화
         setOneWord(profile.introduction || '');
         console.log('📸 profileImageUrls:', profile.profileImageUrls);
+        console.log('📸 profileImageUrlsId:', profile.profileImageUrlsId);
         setPhotos(profile.profileImageUrls || []);
+        setPhotoIds(profile.profileImageUrlsId || []);
         console.log('📸 photos 상태 설정 완료');
         
         // 거리 설정 초기화
@@ -144,7 +147,20 @@ export default function ProfileEditScreen() {
   };
 
   const handlePhotoRemove = (index: number) => {
+    const imageId = photoIds[index];
+    console.log('🗑️ 이미지 삭제 요청:', { index, imageId, imageUrl: photos[index] });
+    
+    // TODO: 서버에 DELETE 요청 보내기 (imageId가 -1이 아닌 경우)
+    if (imageId !== -1) {
+      console.log('📡 서버에 이미지 삭제 요청 예정:', imageId);
+      // deleteImageFromServer(imageId);
+    } else {
+      console.log('ℹ️ 새로 업로드된 이미지 - 서버 삭제 요청 불필요');
+    }
+    
+    // 로컬 상태에서 제거
     setPhotos(prev => prev.filter((_, i) => i !== index));
+    setPhotoIds(prev => prev.filter((_, i) => i !== index));
   };
 
   /**
@@ -173,6 +189,10 @@ export default function ProfileEditScreen() {
         
         // 업로드된 이미지 URL을 photos 배열에 추가
         setPhotos(prev => [...prev, response.data[0]]);
+        
+        // TODO: 업로드 API에서 이미지 ID를 반환하도록 수정 필요
+        // 현재는 임시로 -1 사용 (새로 업로드된 이미지임을 표시)
+        setPhotoIds(prev => [...prev, -1]);
         
         Alert.alert('성공', '이미지가 업로드되었습니다.');
       } else {
@@ -351,9 +371,11 @@ export default function ProfileEditScreen() {
               />
             </View>
             <Text>Photos length: {photos.length}</Text>
+            <Text>PhotoIds length: {photoIds.length}</Text>
             <Text>User ID: {user?.id}</Text>
             <Text>UserProfile: {userProfile ? 'Loaded' : 'Not loaded'}</Text>
             <Text>Photos: {JSON.stringify(photos)}</Text>
+            <Text>PhotoIds: {JSON.stringify(photoIds)}</Text>
 
             {/* API로 받아온 이미지 표시 */}
             {photos.length > 0 && (

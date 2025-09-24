@@ -20,6 +20,7 @@ export interface UserProfile {
   keywords: string[];
   food: string;
   profileImageUrls: string[];
+  profileImageUrlsId: number[];
 }
 
 // API 응답 타입
