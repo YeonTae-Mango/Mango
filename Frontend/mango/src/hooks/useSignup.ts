@@ -155,7 +155,7 @@ export const transformFormDataToSignupRequest = (formData: {
   email: string;
   password: string;
   birthdate: string;
-  gender: 'male' | 'female' | '';
+  gender: 'M' | 'F' | '';
   city: string;
   district: string;
   latitude: number;
