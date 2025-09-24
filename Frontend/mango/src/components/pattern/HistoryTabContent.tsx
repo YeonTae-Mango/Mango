@@ -178,7 +178,7 @@ export default function HistoryTabContent({ categoryData, historyApiData, format
             onHttpError={handleWebViewError}
             onMessage={handleMessage}
             javaScriptEnabled={true}
-            domStorageEnabled={true}
+            domStorageEnabled={false}
             startInLoadingState={true}
             scalesPageToFit={true}
             showsHorizontalScrollIndicator={false}
