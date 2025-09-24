@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { CATEGORIES, CategoryType } from '../../constants/category';
 import { MangoUser } from '../../types/mango';
 
 interface MangoCardProps {
@@ -10,6 +11,15 @@ interface MangoCardProps {
 }
 
 export default function MangoCard({ user, onPress }: MangoCardProps) {
+  // 메인 타입으로 카테고리 정보 찾기
+  const getCategoryInfo = (mainType: string) => {
+    const categoryKey = Object.keys(CATEGORIES).find(
+      key => CATEGORIES[key as CategoryType].name === mainType
+    ) as CategoryType;
+
+    return categoryKey ? CATEGORIES[categoryKey] : null;
+  };
+
   return (
     <TouchableOpacity
       className="w-[48%] mb-4 bg-white rounded-2xl overflow-hidden"
@@ -56,7 +66,9 @@ export default function MangoCard({ user, onPress }: MangoCardProps) {
           {/* 카테고리 */}
           <View className="flex-row">
             <View className="bg-mango-red/80 rounded-full px-3 py-1.5 flex-row items-center">
-              <Ionicons name="flame-outline" size={16} color="white" />
+              <Text className="text-sm mr-1">
+                {getCategoryInfo(user.mainType)?.emoji || '❓'}
+              </Text>
               <Text className="text-body-medium-semibold text-white ml-1">
                 {user.mainType || '일반'}
               </Text>
