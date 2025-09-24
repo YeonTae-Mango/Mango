@@ -208,6 +208,38 @@ public class ChatRoomService {
     }
 
     /**
+     * 채팅방 삭제
+     *
+     * === 처리 방식 ===
+     * - 물리적 삭제 (채팅방과 메시지 모두 삭제)
+     * - 삭제 권한 검증 (참여자만 삭제 가능)
+     * - CASCADE 설정으로 연관 메시지 자동 삭제
+     *
+     * @param chatRoomId 삭제할 채팅방 ID
+     * @param userId 삭제 요청 사용자 ID
+     * @throws IllegalArgumentException 권한이 없거나 채팅방이 없는 경우
+     */
+    @Transactional
+    public void deleteChatRoom(Long chatRoomId, Long userId) {
+        log.debug("채팅방 삭제 시작 - 채팅방ID: {}, 사용자ID: {}", chatRoomId, userId);
+
+        // 1. 채팅방 존재 및 권한 검증
+        ChatRoom chatRoom = validateChatRoomAccess(chatRoomId, userId);
+
+        // 2. 채팅방에 속한 모든 메시지 삭제 (CASCADE가 설정되어 있지 않은 경우를 대비)
+        long deletedMessageCount = chatMessageRepository.countByChatRoomId(chatRoomId);
+        chatMessageRepository.deleteAll(
+            chatMessageRepository.findByChatRoomIdOrderBySequenceNumberAsc(chatRoomId, PageRequest.of(0, Integer.MAX_VALUE))
+        );
+        log.debug("채팅 메시지 {} 개 삭제 완료", deletedMessageCount);
+
+        // 3. 채팅방 삭제
+        chatRoomRepository.delete(chatRoom);
+        log.info("채팅방 삭제 완료 - 채팅방ID: {}, 삭제자ID: {}, 삭제된 메시지: {}개",
+                 chatRoomId, userId, deletedMessageCount);
+    }
+
+    /**
      * 채팅방 응답에 마지막 메시지 정보 설정
      * 
      * @param response 설정할 채팅방 응답 DTO
