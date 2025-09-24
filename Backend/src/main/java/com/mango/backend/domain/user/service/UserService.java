@@ -109,9 +109,9 @@ public class UserService {
     if (nickname == null || nickname.isBlank() || nickname.length() > 10) {
       return ServiceResult.failure(ErrorCode.USER_NICKNAME_LENGTH);
     }
-    if (authRepository.existsByNickname(nickname)) {
-      return ServiceResult.failure(ErrorCode.USER_NICKNAME_ALREADY_EXISTS);
-    }
+//    if (authRepository.existsByNickname(nickname)) {
+//      return ServiceResult.failure(ErrorCode.USER_NICKNAME_ALREADY_EXISTS);
+//    }
     if ((request.latitude() != null && request.longitude() == null) ||
         (request.latitude() == null && request.longitude() != null)) {
       throw new IllegalArgumentException("위도와 경도는 함께 제공되어야 합니다");
