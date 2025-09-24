@@ -73,10 +73,16 @@ export default function HistoryTabContent({ categoryData, historyApiData, format
     highest: {}
   };
 
-  // 총 누적 소비액 계산 (카테고리 데이터의 total 사용)
+  // 이번달 누적 소비액 계산 (thisMonthRaw에서 null이 아닌 마지막 값)
   const getTotalAmount = () => {
-    if (categoryData && categoryData.total) {
-      return parseInt(categoryData.total);
+    if (historyApiData && historyApiData.thisMonthRaw) {
+      // thisMonthRaw 배열에서 null이 아닌 마지막 값 찾기
+      const validValues = historyApiData.thisMonthRaw.filter(value => value !== null && value !== undefined);
+      if (validValues.length > 0) {
+        const lastValue = validValues[validValues.length - 1];
+        // API에서 받은 값이 이미 만원 단위이므로 그대로 반환
+        return lastValue;
+      }
     }
     // API 데이터가 없으면 기본값 사용
     return parseInt(displayData.total) || historyData.totalAmount;
@@ -113,10 +119,10 @@ export default function HistoryTabContent({ categoryData, historyApiData, format
         {/* 총 누적 소비액 */}
         <View className="bg-gray rounded-2xl p-4 mb-6">
           <Text className="text-body-large-semibold text-text-primary mb-2 text-center">
-            총 누적 소비액
+            이번 달 누적 소비액
           </Text>
           <Text className="text-heading-bold text-text-primary mb-2 text-center">
-            {formatAmount(getTotalAmount())}
+            {getTotalAmount().toLocaleString() + '만원'}
           </Text>
           {(() => {
             const increaseData = getIncreaseRate();
@@ -124,14 +130,17 @@ export default function HistoryTabContent({ categoryData, historyApiData, format
               <Text className={`text-body-medium-semibold text-center ${
                 increaseData.isIncrease ? 'text-green-500' : 'text-red-500'
               }`}>
-                {increaseData.isIncrease ? '+' : '-'} 전월 대비 {increaseData.rate.toFixed(1)}% {increaseData.isIncrease ? '증가' : '감소'}
+                {historyApiData?.todayIndex !== undefined ? 
+                  `${historyApiData.todayIndex + 1}일 기준` :
+                  `${new Date().getDate()}일 기준`
+                } 전월 대비 {increaseData.isIncrease ? '+' : '-'}{increaseData.rate.toFixed(1)}% {increaseData.isIncrease ? '증가' : '감소'}
               </Text>
             );
           })()}
         </View>
 
         {/* 내역 목록 */}
-        <View className="space-y-3">
+        {/* <View className="space-y-3">
           {displayData.labels.map((label, index) => (
             <View 
               key={index} 
@@ -153,7 +162,7 @@ export default function HistoryTabContent({ categoryData, historyApiData, format
               </View>
             </View>
           ))}
-        </View>
+        </View> */}
       </View>
     );
   };

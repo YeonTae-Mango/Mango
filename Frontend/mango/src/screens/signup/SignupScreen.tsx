@@ -11,6 +11,7 @@ import Layout from '../../components/common/Layout';
 import CustomHeader from '../../components/common/CustomHeader';
 import EmailForm from '../../components/signup/EmailForm';
 import PasswordForm from '../../components/signup/PasswordForm';
+import NicknameForm from '../../components/signup/NicknameForm';
 import BirthdateForm from '../../components/signup/BirthdateForm';
 import GenderForm from '../../components/signup/GenderForm';
 import LocationForm from '../../components/signup/LocationForm';
@@ -33,6 +34,7 @@ export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [nickname, setNickname] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [gender, setGender] = useState<'M' | 'F' | ''>('');
   const [city, setCity] = useState('');
@@ -44,6 +46,7 @@ export default function SignupScreen() {
   // 에러 상태 관리
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [nicknameError, setNicknameError] = useState('');
   const [birthdateError, setBirthdateError] = useState('');
 
   // 이메일 유효성 검증
@@ -79,6 +82,26 @@ export default function SignupScreen() {
     },
     []
   );
+
+  // 닉네임 유효성 검증
+  const validateNickname = useCallback((nickname: string) => {
+    if (!nickname.trim()) {
+      setNicknameError('닉네임을 입력해주세요.');
+      return false;
+    } else if (nickname.length < 2) {
+      setNicknameError('닉네임은 2자 이상이어야 합니다.');
+      return false;
+    } else if (nickname.length > 20) {
+      setNicknameError('닉네임은 20자 이하여야 합니다.');
+      return false;
+    } else if (!/^[가-힣a-zA-Z0-9]+$/.test(nickname)) {
+      setNicknameError('닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.');
+      return false;
+    } else {
+      setNicknameError('');
+      return true;
+    }
+  }, []);
 
   // 생년월일 유효성 검증 (만 19세 이상)
   const validateBirthdate = useCallback((birthdate: string) => {
@@ -191,6 +214,12 @@ export default function SignupScreen() {
         return;
       }
     }
+    if (currentStep === 'nickname') {
+      if (!validateNickname(nickname)) {
+        console.log('❌ 닉네임 유효성 검사 실패');
+        return;
+      }
+    }
     if (currentStep === 'birthdate') {
       if (!validateBirthdate(birthdate)) {
         console.log('❌ 생년월일 유효성 검사 실패');
@@ -223,6 +252,7 @@ export default function SignupScreen() {
       console.log('🚀 현재 폼 데이터:', {
         email,
         password,
+        nickname,
         birthdate,
         gender,
         city,
@@ -236,6 +266,7 @@ export default function SignupScreen() {
       const signupData = transformFormDataToSignupRequest({
         email,
         password,
+        nickname,
         birthdate,
         gender,
         city,
@@ -276,6 +307,7 @@ export default function SignupScreen() {
   // 각 단계별 transform 값
   const emailTransform = getTransform('email');
   const passwordTransform = getTransform('password');
+  const nicknameTransform = getTransform('nickname');
   const birthdateTransform = getTransform('birthdate');
   const genderTransform = getTransform('gender');
   const locationTransform = getTransform('location');
@@ -301,7 +333,6 @@ export default function SignupScreen() {
             <EmailForm
               value={email}
               onChangeText={setEmail}
-              error={emailError}
             />
           </Animated.View>
 
@@ -321,6 +352,20 @@ export default function SignupScreen() {
             />
           </Animated.View>
 
+          {/* 닉네임 폼 */}
+          <Animated.View
+            className="absolute inset-0"
+            style={{
+              transform: [{ translateX: nicknameTransform }],
+            }}
+          >
+            <NicknameForm
+              nickname={nickname}
+              onNicknameChange={setNickname}
+              error={nicknameError}
+            />
+          </Animated.View>
+
           {/* 생년월일 폼 */}
           <Animated.View
             className="absolute inset-0"
@@ -331,7 +376,6 @@ export default function SignupScreen() {
             <BirthdateForm
               value={birthdate}
               onChangeText={setBirthdate}
-              error={birthdateError}
             />
           </Animated.View>
 
@@ -400,14 +444,16 @@ export default function SignupScreen() {
               ? !!email && !emailError
               : currentStep === 'password'
                 ? !!password && !passwordError
-                : currentStep === 'birthdate'
-                  ? !!birthdate && !birthdateError
-                  : currentStep === 'gender'
-                    ? !!gender
-                    : currentStep === 'location'
-                      ? !!(city && district)
-                      : currentStep === 'radius'
-                        ? radius >= 100
+                : currentStep === 'nickname'
+                  ? !!nickname && !nicknameError
+                  : currentStep === 'birthdate'
+                    ? !!birthdate && !birthdateError
+                    : currentStep === 'gender'
+                      ? !!gender
+                      : currentStep === 'location'
+                        ? !!(city && district)
+                        : currentStep === 'radius'
+                          ? radius >= 100
                         : false
           }
           onPress={handleNext}

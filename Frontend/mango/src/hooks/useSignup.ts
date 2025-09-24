@@ -154,6 +154,7 @@ export const useSignup = (): UseSignupReturn => {
 export const transformFormDataToSignupRequest = (formData: {
   email: string;
   password: string;
+  nickname: string;
   birthdate: string;
   gender: 'M' | 'F' | '';
   city: string;
@@ -165,8 +166,8 @@ export const transformFormDataToSignupRequest = (formData: {
   console.log('🔄 폼 데이터를 API 요청 형식으로 변환');
   console.log('🔄 원본 폼 데이터:', JSON.stringify(formData, null, 2));
 
-  // 닉네임은 이메일의 @ 앞부분을 기본값으로 사용 (추후 별도 입력 필드 추가 가능)
-  const nickname = formData.email.split('@')[0];
+  // 닉네임은 폼 데이터에서 직접 가져오기
+  const nickname = formData.nickname;
 
   // birthdate 형식 변환: "2000 / 09 / 22" → "2000-09-22"
   const formatBirthDate = (birthdate: string): string => {
@@ -186,7 +187,7 @@ export const transformFormDataToSignupRequest = (formData: {
     longitude: formData.longitude,
     sido: formData.city,
     sigungu: formData.district,
-    distance: formData.radius / 1000, // 미터 단위를 킬로미터 단위로 변환
+    distance: formData.radius, // km 단위 그대로 사용
   };
 
   console.log(
