@@ -102,4 +102,18 @@ public class ChartController extends BaseController {
     ) {
         return toResponseEntity(chartService.getTwoTypeChart(myUserId, otherUserId), "대표유형 비교 차트 조회에 성공하였습니다.");
     }
+    @GetMapping("twoCategoryChart/{myUserId}/{otherUserId}")
+    @Operation(summary = "대표유형 비교 차트 조회", description = "두 사용자의각자의 카테고리별 소비 비율을 피라미드 형식으로 보여주는 차트를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "나와 상대의 대표유형 비교 차트 조회에 성공하였습니다."),
+            @ApiResponse(responseCode = "404", description = "소비패턴 데이터가 없습니다.")
+    })
+    public ResponseEntity<BaseResponse> getTwoCategoryChart(
+            @Parameter(description = "내 사용자 ID", required = true, example = "1")
+            @PathVariable Long myUserId,
+            @Parameter(description = "비교할 사용자 ID", required = true, example = "2")
+            @PathVariable Long otherUserId
+    ) {
+        return toResponseEntity(chartService.getTwoCategoryChart(myUserId, otherUserId), "나와 상대의 대표유형 비교 차트 조회에 성공하였습니다.");
+    }
 }

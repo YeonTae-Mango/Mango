@@ -230,6 +230,37 @@ public class ChartService {
         return ServiceResult.success(response);
     }
 
+    public ServiceResult<TwoCategoryChartResponse> getTwoCategoryChart(Long myUserId, Long otherUserId) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime oneMonthAgo = now.minusMonths(1);
+
+        List<MainCode> mainCodes = mainCodeRepository.findByMainCodeStartingWith("PH_");
+        String[] labels = mainCodes.stream()
+                .map(MainCode::getMainCodeName)
+                .toArray(String[]::new);
+
+        List<PaymentHistory> myPayments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(myUserId, oneMonthAgo, now);
+        Map<String, Integer> myWeights = calculateCategoryWeights(myPayments, labels);
+
+        List<PaymentHistory> otherPayments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(otherUserId, oneMonthAgo, now);
+        Map<String, Integer> otherWeights = calculateCategoryWeights(otherPayments, labels);
+
+        Integer[] myData = new Integer[labels.length];
+        Integer[] partnerData = new Integer[labels.length];
+
+        for (int i = 0; i < labels.length; i++) {
+            myData[i] = -myWeights.getOrDefault(labels[i], 0);
+            partnerData[i] = otherWeights.getOrDefault(labels[i], 0);
+        }
+
+        TwoCategoryChartResponse response = TwoCategoryChartResponse.builder()
+                .labels(labels)
+                .myData(myData)
+                .partnerData(partnerData)
+                .build();
+        return ServiceResult.success(response);
+    }
+
     private static void countPaymentByTime(List<PaymentHistory> payments, int[] data) {
         for (PaymentHistory ph : payments) {
             LocalDateTime phTime = ph.getPaymentTime();
@@ -256,4 +287,28 @@ public class ChartService {
             return "오후 6시 ~ 자정";
         }
     }
+
+    private Map<String, Integer> calculateCategoryWeights(List<PaymentHistory> payments, String[] labels) {
+        Map<String, Long> statistics = new HashMap<>();
+        long total = 0L;
+
+        for (String label : labels) {
+            statistics.put(label, 0L);
+        }
+
+        for (PaymentHistory payment : payments) {
+            statistics.merge(payment.getCategory(), payment.getPaymentAmount(), Long::sum);
+            total += payment.getPaymentAmount();
+        }
+
+        Map<String, Integer> weights = new HashMap<>();
+        for (String label : labels) {
+            long amount = statistics.get(label);
+            int weight = total > 0 ? (int) Math.round(((double) amount / total) * 100) : 0;
+            weights.put(label, weight);
+        }
+
+        return weights;
+    }
+
 }
