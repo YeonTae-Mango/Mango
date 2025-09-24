@@ -22,8 +22,8 @@ export default function RadiusForm({
   onRadiusChange,
 }: RadiusFormProps) {
   const [currentRadius, setCurrentRadius] = useState(radius);
-  // 거리 옵션들 (ProfileEditScreen과 동일한 7개 스텝, m 단위로 변환)
-  const distanceOptions = [1000, 3000, 5000, 10000, 30000, 50000, 100000]; // 1km, 3km, 5km, 10km, 30km, 50km, 100km
+  // 거리 옵션들 (ProfileEditScreen과 동일한 7개 스텝, km 단위)
+  const distanceOptions = [1, 3, 5, 10, 30, 50, 100]; // 1km, 3km, 5km, 10km, 30km, 50km, 100km
   const distanceIndex = distanceOptions.findIndex(
     option => option >= currentRadius
   );
@@ -42,23 +42,23 @@ export default function RadiusForm({
 
   // 반경에 따른 줌 레벨 계산 함수
   const calculateZoom = (radius: number) => {
-    if (radius <= 1000) return 13; // 1km 이하: 매우 가까운 거리
-    if (radius <= 3000) return 11; // 1-3km: 가까운 거리
-    if (radius <= 5000) return 10; // 3-5km: 보통 거리
-    if (radius <= 10000) return 9; // 5-10km: 먼 거리
-    if (radius <= 30000) return 8; // 10-30km: 매우 먼 거리
-    if (radius <= 50000) return 7; // 30-50km: 광역 거리
+    if (radius <= 1) return 13; // 1km 이하: 매우 가까운 거리
+    if (radius <= 3) return 11; // 1-3km: 가까운 거리
+    if (radius <= 5) return 10; // 3-5km: 보통 거리
+    if (radius <= 10) return 9; // 5-10km: 먼 거리
+    if (radius <= 30) return 8; // 10-30km: 매우 먼 거리
+    if (radius <= 50) return 7; // 30-50km: 광역 거리
     return 6; // 50km 이상: 초광역 거리
   };
 
   // 반경에 따른 안내 문구 생성
   const getRadiusDescription = (radius: number) => {
-    if (radius <= 1000) return '매우 가까운 거리 (건물 단위)';
-    if (radius <= 3000) return '가까운 거리 (블록 단위)';
-    if (radius <= 5000) return '보통 거리 (동네 단위)';
-    if (radius <= 10000) return '먼 거리 (지역 단위)';
-    if (radius <= 30000) return '매우 먼 거리 (광역 단위)';
-    if (radius <= 50000) return '초광역 거리 (시/도 단위)';
+    if (radius <= 1) return '매우 가까운 거리 (건물 단위)';
+    if (radius <= 3) return '가까운 거리 (블록 단위)';
+    if (radius <= 5) return '보통 거리 (동네 단위)';
+    if (radius <= 10) return '먼 거리 (지역 단위)';
+    if (radius <= 30) return '매우 먼 거리 (광역 단위)';
+    if (radius <= 50) return '초광역 거리 (시/도 단위)';
     return '전국 단위 거리';
   };
 
@@ -112,7 +112,7 @@ export default function RadiusForm({
             <NaverMapCircleOverlay
               latitude={latitude}
               longitude={longitude}
-              radius={currentRadius}
+              radius={currentRadius * 1000}
               color={'#FF6D6033'}
               outlineColor={'#FF6D60'}
               outlineWidth={2}
@@ -152,7 +152,7 @@ export default function RadiusForm({
           <View className="bg-mango-primary rounded-full px-4 py-1.5 flex-row items-center">
             <Ionicons name="location-outline" size={14} color="white" />
             <Text className="text-body-medium-semibold text-white ml-2">
-              {Math.round(currentRadius / 1000)}km
+              {Math.round(currentRadius)}km
             </Text>
           </View>
           <Text className="text-body-large-regular text-text-primary">

@@ -107,12 +107,24 @@ export default function ProfileEditScreen() {
         setPhotoIds(profile.profileImageUrlsId || []);
         console.log('📸 photos 상태 설정 완료');
         
-        // 거리 설정 초기화 (서버에서 받은 m 단위를 km 단위로 변환)
-        const distanceInKm = profile.distance / 1000;
-        const distanceIdx = distanceOptions.findIndex(d => d === distanceInKm);
-        if (distanceIdx !== -1) {
-          setDistanceIndex(distanceIdx);
+        // 거리 설정 초기화 (서버에서 받은 km 단위 값 사용)
+        const distanceInKm = profile.distance;
+        console.log('📏 서버에서 받은 거리 (km):', distanceInKm);
+        
+        // 가장 가까운 거리 옵션 찾기
+        let closestIndex = 3; // 기본값: 10km
+        let minDiff = Math.abs(distanceOptions[3] - distanceInKm);
+        
+        for (let i = 0; i < distanceOptions.length; i++) {
+          const diff = Math.abs(distanceOptions[i] - distanceInKm);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestIndex = i;
+          }
         }
+        
+        console.log('📏 가장 가까운 거리 옵션:', distanceOptions[closestIndex], 'km (인덱스:', closestIndex, ')');
+        setDistanceIndex(closestIndex);
         
         console.log('✅ 프로필 정보 로드 완료:', profile);
       } catch (error) {
