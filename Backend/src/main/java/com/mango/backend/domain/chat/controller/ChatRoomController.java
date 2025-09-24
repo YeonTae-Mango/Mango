@@ -275,6 +275,44 @@ public class ChatRoomController {
     }
 
     /**
+     * 채팅방 삭제
+     *
+     * === 처리 방식 ===
+     * - 물리적 삭제 (Hard Delete)
+     * - 채팅방과 모든 메시지 삭제
+     * - 참여자만 삭제 가능
+     *
+     * === 요청 예시 ===
+     * DELETE /api/v1/chat/rooms/1
+     * Authorization: Bearer jwt-token
+     *
+     * @param roomId 삭제할 채팅방 ID
+     * @param principal JWT에서 추출한 사용자 정보
+     * @return 204 No Content (성공) 또는 에러 응답
+     */
+    @DeleteMapping("/rooms/{roomId}")
+    public ResponseEntity<Void> deleteChatRoom(
+            @PathVariable Long roomId,
+            Principal principal) {
+        try {
+            Long userId = extractUserIdFromPrincipal(principal);
+            log.debug("채팅방 삭제 요청 - 채팅방ID: {}, 사용자ID: {}", roomId, userId);
+
+            chatRoomService.deleteChatRoom(roomId, userId);
+
+            log.debug("채팅방 삭제 완료 - 채팅방ID: {}", roomId);
+            return ResponseEntity.noContent().build();
+
+        } catch (IllegalArgumentException e) {
+            log.warn("채팅방 삭제 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("채팅방 삭제 중 예상치 못한 오류", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
      * Principal에서 사용자 ID 추출 (게스트 사용자 지원)
      *
      * === 배포용 게스트 Principal 처리 ===
