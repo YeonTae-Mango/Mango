@@ -30,6 +30,23 @@ export interface UserProfileResponse {
   status: string;
 }
 
+// 프로필 수정 요청 타입
+export interface UpdateProfileRequest {
+  nickname: string;
+  longitude: number;
+  latitude: number;
+  sido: string;
+  sigungu: string;
+  distance: number;
+  introduction: string;
+}
+
+// 프로필 수정 응답 타입
+export interface UpdateProfileResponse {
+  userId: number;
+  updatedAt: string;
+}
+
 /**
  * 사용자 정보 조회 API
  * @param userId 조회할 사용자 ID
@@ -50,6 +67,30 @@ export const getUserProfile = async (userId: number): Promise<UserProfile> => {
     }
   } catch (error) {
     console.error('❌ 사용자 정보 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 사용자 프로필 수정 API
+ * @param userId 수정할 사용자 ID
+ * @param updateData 수정할 프로필 데이터
+ * @returns 수정 결과
+ */
+export const updateUserProfile = async (
+  userId: number, 
+  updateData: UpdateProfileRequest
+): Promise<UpdateProfileResponse> => {
+  try {
+    console.log('📤 사용자 프로필 수정 요청:', { userId, updateData });
+    
+    const response = await apiClient.put<UpdateProfileResponse>(`/users/${userId}`, updateData);
+    
+    console.log('📥 사용자 프로필 수정 응답:', response.data);
+    
+    return response.data;
+  } catch (error) {
+    console.error('❌ 사용자 프로필 수정 실패:', error);
     throw error;
   }
 };
