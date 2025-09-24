@@ -163,9 +163,32 @@ export const validateSignupData = (data: Partial<SignupRequest>): string[] => {
     errors.push('비밀번호는 최소 6자 이상이어야 합니다.');
   }
 
-  // 생년월일 검증
+  // 생년월일 검증 (만 19세 이상)
   if (!data.birthDate) {
     errors.push('생년월일을 입력해주세요.');
+  } else {
+    try {
+      // 생년월일 형식 변환: "2000-09-22" → Date 객체
+      const birthDate = new Date(data.birthDate);
+      const today = new Date();
+
+      // 만 19세 계산
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+
+      if (age < 19) {
+        errors.push('만 19세 이상만 가입 가능합니다.');
+      }
+    } catch (error) {
+      errors.push('올바른 생년월일 형식이 아닙니다.');
+    }
   }
 
   // 성별 검증
@@ -188,8 +211,8 @@ export const validateSignupData = (data: Partial<SignupRequest>): string[] => {
     errors.push('시/군/구를 선택해주세요.');
   }
 
-  // 거리 검증
-  if (typeof data.distance !== 'number' || data.distance < 100) {
+  // 거리 검증 (킬로미터 단위)
+  if (typeof data.distance !== 'number' || data.distance < 0.1) {
     errors.push('거리는 최소 100m 이상이어야 합니다.');
   }
 

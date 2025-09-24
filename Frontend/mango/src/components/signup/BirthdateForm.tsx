@@ -5,9 +5,25 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 interface BirthdateFormProps {
   value: string;
   onChangeText: (value: string) => void;
+  error?: string;
 }
 
-export default function BirthdateForm({ value, onChangeText }: BirthdateFormProps) {
+export default function BirthdateForm({
+  value,
+  onChangeText,
+  error,
+}: BirthdateFormProps) {
+  // 만 19세 이상만 가입 가능하도록 최대 날짜 설정 (현재 날짜 기준 19년 전)
+  const getMaxDate = () => {
+    const today = new Date();
+    const maxDate = new Date(
+      today.getFullYear() - 19,
+      today.getMonth(),
+      today.getDate()
+    );
+    return maxDate;
+  };
+
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
 
@@ -44,10 +60,15 @@ export default function BirthdateForm({ value, onChangeText }: BirthdateFormProp
           className="h-14 bg-gray rounded-xl px-4 justify-center"
           onPress={showDatepicker}
         >
-          <Text className={`text-base ${value ? 'text-text-primary' : 'text-secondary'}`}>
+          <Text
+            className={`text-base ${value ? 'text-text-primary' : 'text-secondary'}`}
+          >
             {value || 'YYYY / MM / DD'}
           </Text>
         </TouchableOpacity>
+        {error && (
+          <Text className="text-red-500 text-sm mt-2 ml-1">{error}</Text>
+        )}
       </View>
 
       {/* Date Picker */}
@@ -59,7 +80,7 @@ export default function BirthdateForm({ value, onChangeText }: BirthdateFormProp
           is24Hour={true}
           display="default"
           onChange={onChange}
-          maximumDate={new Date()}
+          maximumDate={getMaxDate()}
           minimumDate={new Date(1900, 0, 1)}
         />
       )}

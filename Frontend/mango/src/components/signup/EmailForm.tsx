@@ -4,9 +4,14 @@ import { Text, TextInput, View } from 'react-native';
 interface EmailFormProps {
   value: string;
   onChangeText: (value: string) => void;
+  error?: string;
 }
 
-export default function EmailForm({ value, onChangeText }: EmailFormProps) {
+export default function EmailForm({
+  value,
+  onChangeText,
+  error,
+}: EmailFormProps) {
   return (
     <View className="flex-1 pt-10">
       {/* 안내 문구 */}
@@ -27,6 +32,9 @@ export default function EmailForm({ value, onChangeText }: EmailFormProps) {
           autoCapitalize="none"
           autoCorrect={false}
         />
+        {error && (
+          <Text className="text-red-500 text-sm mt-2 ml-1">{error}</Text>
+        )}
       </View>
     </View>
   );
