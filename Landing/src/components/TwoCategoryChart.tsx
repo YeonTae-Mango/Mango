@@ -26,6 +26,7 @@ function TwoCategoryChart() {
   
   const { receivedMessage } = useWebViewMessage((data) => {
     console.log('TwoCategoryChart에서 파싱된 데이터 수신:', data);
+    // React Native에서 여러 형태로 올 수 있으므로 유연하게 처리 (TwoKeywordChart와 동일)
     setParsedData(data.data || data);
   });
 
@@ -35,17 +36,23 @@ function TwoCategoryChart() {
   const defaultYourData = [30, 15, 10, 8, 12, 25, 18];     // 양수로 오른쪽 표시
 
   // 받은 데이터가 있으면 사용, 없으면 기본값 사용
-  const categoryLabels = (parsedData && parsedData.labels && Array.isArray(parsedData.labels)) 
-    ? parsedData.labels 
+  const categoryLabels = (parsedData && parsedData.data.labels && Array.isArray(parsedData.data.labels)) 
+    ? parsedData.data.labels 
     : defaultLabels;
 
-  const myData = (parsedData && parsedData.myData && Array.isArray(parsedData.myData)) 
-    ? parsedData.myData.map((value: number) => -Math.abs(value)) // 내 데이터는 음수로
+  const myData = (parsedData && parsedData.data.myData && Array.isArray(parsedData.data.myData)) 
+    ? parsedData.data.myData 
     : defaultMyData;
 
-  const yourData = (parsedData && parsedData.yourData && Array.isArray(parsedData.yourData)) 
-    ? parsedData.yourData.map((value: number) => Math.abs(value)) // 상대 데이터는 양수로
+  const yourData = (parsedData && parsedData.data.partnerData && Array.isArray(parsedData.data.partnerData)) 
+    ? parsedData.data.partnerData 
     : defaultYourData;
+
+  // 동적 축 범위 계산 (대칭)
+  const maxLeftValue = Math.max(...myData.map(Math.abs));
+  const maxRightValue = Math.max(...yourData.map(Math.abs));
+  const maxRange = Math.max(maxLeftValue, maxRightValue);
+  const axisRange = Math.ceil(maxRange / 10) * 10; // 10 단위로 올림
 
   const chartData = {
     labels: categoryLabels,
@@ -96,6 +103,8 @@ function TwoCategoryChart() {
       x: {
         stacked: true,
         beginAtZero: true,
+        min: -axisRange,  // 동적 좌측 범위
+        max: axisRange,   // 동적 우측 범위 (대칭)
         title: {
           display: false,
           text: '값'
@@ -145,6 +154,7 @@ function TwoCategoryChart() {
               <>
                 <div><strong>전체 데이터:</strong> {JSON.stringify(parsedData, null, 2)}</div>
                 <div><strong>카테고리 라벨 개수:</strong> {categoryLabels.length}</div>
+                <div><strong>{JSON.stringify(parsedData.data.partnerData)}</strong></div>
                 <div><strong>내 데이터 개수:</strong> {myData.length}</div>
                 <div><strong>상대 데이터 개수:</strong> {yourData.length}</div>
               </>

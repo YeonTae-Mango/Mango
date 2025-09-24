@@ -31,21 +31,62 @@ function TwoKeywordChart() {
 
   // 기본 데이터 (인당 3개씩 총 6개 키워드)
   const defaultMyData = [95, 87, 75, 0, 0, 0];
-  const defaultYourData = [0, 0, 0, 65, 48, 42];
+  const defaultOtherData = [0, 0, 0, 65, 48, 42];
   const defaultKeywordLabels = ["#쇼핑러버", "#맛집탐방", "#문화생활", "#여행가", "#운동매니아", "#카페애호가"];
 
-  // 받은 데이터가 있으면 사용, 없으면 기본값 사용
-  const myData = (parsedData && parsedData.myData && Array.isArray(parsedData.myData)) 
-    ? parsedData.myData 
-    : defaultMyData;
+  // parsedData 구조 파악 및 데이터 처리
+  let keywordLabels = defaultKeywordLabels;
+  let myData = defaultMyData;
+  let otherData = defaultOtherData;
+  let debugInfo = null;
 
-  const yourData = (parsedData && parsedData.yourData && Array.isArray(parsedData.yourData)) 
-    ? parsedData.yourData 
-    : defaultYourData;
-
-  const keywordLabels = (parsedData && parsedData.labels && Array.isArray(parsedData.labels)) 
-    ? parsedData.labels 
-    : defaultKeywordLabels;
+  if (parsedData) {
+    try {
+      // 내 키워드 데이터 추출 (상위 3개)
+      const myKeywordData = parsedData.myData?.data?.data || parsedData.myData?.data || parsedData.myData || [];
+      const myKeywords = parsedData.myData?.data?.labels || parsedData.myKeywords || [];
+      
+      // 상대 키워드 데이터 추출 (상위 3개)
+      const otherKeywordData = parsedData.otherData?.data?.data || parsedData.yourData?.data || parsedData.yourData || [];
+      const otherKeywords = parsedData.otherData?.data?.labels || parsedData.yourKeywords || [];
+      
+      // 상위 3개씩 추출
+      const myTop3Data = Array.isArray(myKeywordData) ? myKeywordData.slice(0, 3) : [0, 0, 0];
+      const myTop3Keywords = Array.isArray(myKeywords) ? myKeywords.slice(0, 3) : ['#키워드1', '#키워드2', '#키워드3'];
+      
+      const otherTop3Data = Array.isArray(otherKeywordData) ? otherKeywordData.slice(0, 3) : [0, 0, 0];
+      const otherTop3Keywords = Array.isArray(otherKeywords) ? otherKeywords.slice(0, 3) : ['#키워드4', '#키워드5', '#키워드6'];
+      
+      // 라벨 합치기 (내 3개 + 상대 3개)
+      keywordLabels = [...myTop3Keywords, ...otherTop3Keywords];
+      
+      // 데이터 배열 만들기
+      // myData: [내 3개 값, 0, 0, 0]
+      myData = [...myTop3Data, 0, 0, 0];
+      
+      // yourData: [0, 0, 0, 상대 3개 값]
+      otherData = [0, 0, 0, ...otherTop3Data];
+      
+      // 디버그 정보 수집
+      debugInfo = {
+        myKeywordData,
+        myKeywords,
+        yourKeywordData: otherKeywordData,
+        yourKeywords: otherKeywords,
+        myTop3Data,
+        myTop3Keywords,
+        yourTop3Data: otherTop3Data,
+        yourTop3Keywords: otherTop3Keywords
+      };
+      
+    } catch (error) {
+      // 에러 발생 시 기본값 사용
+      keywordLabels = defaultKeywordLabels;
+      myData = defaultMyData;
+      otherData = defaultOtherData;
+      debugInfo = { error: error instanceof Error ? error.message : '알 수 없는 에러' };
+    }
+  }
 
   const chartData = {
     labels: keywordLabels,
@@ -53,8 +94,8 @@ function TwoKeywordChart() {
       {
         label: "나",
         data: myData.map((value: number) => value === 0 ? null : value),
-        backgroundColor: "rgba(255, 99, 132, 0.8)",
-        borderColor: "rgba(255, 99, 132, 1)",
+        backgroundColor: "rgba(54, 162, 235, 0.8)",  // 파란색 (원래 상대 색상)
+        borderColor: "rgba(54, 162, 235, 1)",
         borderWidth: 2,
         borderRadius: {
           topLeft: 0,
@@ -66,9 +107,9 @@ function TwoKeywordChart() {
       },
       {
         label: "상대",
-        data: yourData.map((value: number) => value === 0 ? null : value),
-        backgroundColor: "rgba(54, 162, 235, 0.8)",
-        borderColor: "rgba(54, 162, 235, 1)",
+        data: otherData.map((value: number) => value === 0 ? null : value),
+        backgroundColor: "rgba(255, 99, 132, 0.8)",  // 빨간색 (원래 내 색상)
+        borderColor: "rgba(255, 99, 132, 1)",
         borderWidth: 1,
         borderRadius: {
           topLeft: 0,
@@ -104,7 +145,7 @@ function TwoKeywordChart() {
     scales: {
       x: {
         beginAtZero: true,
-        max: 100,
+        // max: 100,
         title: {
           display: false,
           text: '점수'
@@ -147,9 +188,25 @@ function TwoKeywordChart() {
             {parsedData ? (
               <>
                 <div><strong>전체 데이터:</strong> {JSON.stringify(parsedData, null, 2)}</div>
-                <div><strong>키워드 라벨 개수:</strong> {keywordLabels.length}</div>
-                <div><strong>내 데이터 개수:</strong> {myData.length}</div>
-                <div><strong>상대 데이터 개수:</strong> {yourData.length}</div>
+                <hr className="my-2 border-blue-200" />
+                {debugInfo && !debugInfo.error && (
+                  <>
+                    <div><strong>📊 데이터 처리 과정:</strong></div>
+                    <div><strong>내 원본 키워드 데이터:</strong> [{debugInfo.myKeywordData?.join?.(', ') || '없음'}]</div>
+                    <div><strong>내 원본 키워드 라벨:</strong> [{debugInfo.myKeywords?.join?.(', ') || '없음'}]</div>
+                    <div><strong>상대 원본 키워드 데이터:</strong> [{debugInfo.yourKeywordData?.join?.(', ') || '없음'}]</div>
+                    <div><strong>상대 원본 키워드 라벨:</strong> [{debugInfo.yourKeywords?.join?.(', ') || '없음'}]</div>
+                    <hr className="my-1 border-blue-200" />
+                    <div><strong>내 상위 3개 데이터:</strong> [{debugInfo.myTop3Data?.join?.(', ')}]</div>
+                    <div><strong>내 상위 3개 라벨:</strong> [{debugInfo.myTop3Keywords?.join?.(', ')}]</div>
+                    <div><strong>상대 상위 3개 데이터:</strong> [{debugInfo.yourTop3Data?.join?.(', ')}]</div>
+                    <div><strong>상대 상위 3개 라벨:</strong> [{debugInfo.yourTop3Keywords?.join?.(', ')}]</div>
+                  </>
+                )}
+                {debugInfo?.error && (
+                  <div className="text-red-600"><strong>❌ 에러:</strong> {debugInfo.error}</div>
+                )}
+                <hr className="my-2 border-blue-200" />
               </>
             ) : (
               "파싱된 데이터를 기다리는 중..."
@@ -159,7 +216,7 @@ function TwoKeywordChart() {
           <div className="text-xs text-green-600 break-words bg-green-50 p-2 rounded">
             <div><strong>키워드 라벨:</strong> [{keywordLabels.join(', ')}]</div>
             <div><strong>내 데이터:</strong> [{myData.join(', ')}]</div>
-            <div><strong>상대 데이터:</strong> [{yourData.join(', ')}]</div>
+            <div><strong>상대 데이터:</strong> [{otherData.join(', ')}]</div>
           </div>
         </div>
       </div> */}
