@@ -24,7 +24,8 @@ function TwoTimeChart() {
   
   const { receivedMessage } = useWebViewMessage((data) => {
     console.log('TwoTimeChart에서 파싱된 데이터 수신:', data);
-    setParsedData(data.data);
+    // React Native에서 여러 형태로 올 수 있으므로 유연하게 처리
+    setParsedData(data.data || data);
   });
 
   // 기본 데이터
@@ -33,12 +34,12 @@ function TwoTimeChart() {
   const defaultTimeLabels = ["06시", "12시", "18시", "24시"];
 
   // 받은 데이터가 있으면 사용, 없으면 기본값 사용
-  const myData = (parsedData && parsedData.myData && Array.isArray(parsedData.myData)) 
-    ? parsedData.myData 
+  const myData = (parsedData && parsedData.data.myData && Array.isArray(parsedData.data.myData)) 
+    ? parsedData.data.myData 
     : defaultMyData;
 
-  const yourData = (parsedData && parsedData.yourData && Array.isArray(parsedData.yourData)) 
-    ? parsedData.yourData 
+  const yourData = (parsedData && parsedData.data.yourData && Array.isArray(parsedData.data.yourData)) 
+    ? parsedData.data.yourData 
     : defaultYourData;
 
   const timeLabels = (parsedData && parsedData.timeLabels && Array.isArray(parsedData.timeLabels)) 
@@ -144,7 +145,7 @@ function TwoTimeChart() {
           <div className="text-xs text-blue-600 break-words bg-blue-50 p-2 rounded mb-2">
             {parsedData ? (
               <>
-                <div><strong>전체 데이터:</strong> {JSON.stringify(parsedData, null, 2)}</div>
+                <div><strong>전체 데이터:</strong> {JSON.stringify(parsedData.data, null, 2)}</div>
                 <div><strong>핫타임:</strong> {parsedData.hotTime || "정보 없음"}</div>
                 <div><strong>시간 라벨 개수:</strong> {timeLabels.length}</div>
                 <div><strong>내 데이터 개수:</strong> {myData.length}</div>
