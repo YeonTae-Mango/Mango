@@ -142,7 +142,7 @@ export default function KeywordTabContent({ keywordApiData, additionalInfoData }
             onHttpError={handleWebViewError}
             onMessage={handleMessage}
             javaScriptEnabled={true}
-            domStorageEnabled={true}
+            domStorageEnabled={false}
             startInLoadingState={true}
             scalesPageToFit={true}
             showsHorizontalScrollIndicator={false}
