@@ -2,11 +2,14 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface GenderFormProps {
-  selectedGender: 'male' | 'female' | '';
-  onGenderSelect: (gender: 'male' | 'female') => void;
+  selectedGender: 'M' | 'F' | '';
+  onGenderSelect: (gender: 'M' | 'F') => void;
 }
 
-export default function GenderForm({ selectedGender, onGenderSelect }: GenderFormProps) {
+export default function GenderForm({
+  selectedGender,
+  onGenderSelect,
+}: GenderFormProps) {
   return (
     <View className="flex-1 pt-10">
       {/* 안내 문구 */}
@@ -21,17 +24,15 @@ export default function GenderForm({ selectedGender, onGenderSelect }: GenderFor
         {/* 남자 버튼 */}
         <TouchableOpacity
           className={`h-14 px-16 rounded-xl justify-center items-center ${
-            selectedGender === 'male' 
-              ? 'bg-mango-red' 
-              : 'bg-gray'
+            selectedGender === 'M' ? 'bg-mango-red' : 'bg-gray'
           }`}
-          onPress={() => onGenderSelect('male')}
+          onPress={() => onGenderSelect('M')}
         >
-          <Text className={`text-xl font-semibold ${
-            selectedGender === 'male' 
-              ? 'text-white' 
-              : 'text-text-primary'
-          }`}>
+          <Text
+            className={`text-xl font-semibold ${
+              selectedGender === 'M' ? 'text-white' : 'text-text-primary'
+            }`}
+          >
             남자
           </Text>
         </TouchableOpacity>
@@ -39,17 +40,15 @@ export default function GenderForm({ selectedGender, onGenderSelect }: GenderFor
         {/* 여자 버튼 */}
         <TouchableOpacity
           className={`h-14 px-16 rounded-xl justify-center items-center ${
-            selectedGender === 'female' 
-              ? 'bg-mango-red' 
-              : 'bg-gray'
+            selectedGender === 'F' ? 'bg-mango-red' : 'bg-gray'
           }`}
-          onPress={() => onGenderSelect('female')}
+          onPress={() => onGenderSelect('F')}
         >
-          <Text className={`text-xl font-semibold ${
-            selectedGender === 'female' 
-              ? 'text-white' 
-              : 'text-text-primary'
-          }`}>
+          <Text
+            className={`text-xl font-semibold ${
+              selectedGender === 'F' ? 'text-white' : 'text-text-primary'
+            }`}
+          >
             여자
           </Text>
         </TouchableOpacity>

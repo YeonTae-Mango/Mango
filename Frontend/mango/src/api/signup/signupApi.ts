@@ -194,7 +194,7 @@ export const validateSignupData = (data: Partial<SignupRequest>): string[] => {
   // 성별 검증
   if (!data.gender) {
     errors.push('성별을 선택해주세요.');
-  } else if (!['male', 'female'].includes(data.gender)) {
+  } else if (!['M', 'F'].includes(data.gender)) {
     errors.push('올바른 성별을 선택해주세요.');
   }
 

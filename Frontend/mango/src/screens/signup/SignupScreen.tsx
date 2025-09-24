@@ -34,7 +34,7 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [birthdate, setBirthdate] = useState('');
-  const [gender, setGender] = useState<'male' | 'female' | ''>('');
+  const [gender, setGender] = useState<'M' | 'F' | ''>('');
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
   const [latitude, setLatitude] = useState(37.5013);
