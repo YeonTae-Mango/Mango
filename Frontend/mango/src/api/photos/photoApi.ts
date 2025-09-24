@@ -9,7 +9,10 @@ export interface PhotoUploadRequest {
 export interface PhotoUploadResponse {
   status: string;
   message: string;
-  data: string[]; // 업로드된 이미지 URL 배열
+  data: {
+    photoId: number;
+    photoUrl: string;
+  }[]; // 업로드된 이미지 정보 배열
 }
 
 // 에러 응답 타입 정의
@@ -209,6 +212,73 @@ export const convertImagesToBase64 = async (
   } catch (error) {
     console.error('❌ 이미지 변환 중 오류 발생:', error);
     throw error;
+  }
+};
+
+// 사진 삭제 응답 타입 정의
+export interface PhotoDeleteResponse {
+  message: string;
+  data: {
+    deletedPhotoId: number;
+  };
+  status: string;
+}
+
+/**
+ * 사용자 사진 삭제 API 호출 함수
+ * @param userId 사용자 ID
+ * @param photoId 삭제할 사진 ID
+ * @returns Promise<PhotoDeleteResponse>
+ */
+export const deleteUserPhoto = async (
+  userId: number,
+  photoId: number
+): Promise<PhotoDeleteResponse> => {
+  console.log('🗑️ 사용자 사진 삭제 API 호출 시작');
+  console.log('🗑️ 사용자 ID:', userId);
+  console.log('🗑️ 삭제할 사진 ID:', photoId);
+
+  try {
+    console.log(
+      '🗑️ API 요청 URL:',
+      `${apiClient.defaults.baseURL}/photos/${userId}/${photoId}`
+    );
+
+    const response = await apiClient.delete<PhotoDeleteResponse>(
+      `/photos/${userId}/${photoId}`
+    );
+
+    console.log('✅ 사진 삭제 API 호출 성공');
+    console.log('✅ 응답 상태:', response.status);
+    console.log('✅ 응답 데이터:', JSON.stringify(response.data, null, 2));
+
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ 사진 삭제 API 호출 실패');
+
+    if (error.response) {
+      // 서버에서 응답을 받았지만 에러 상태 코드
+      console.error('❌ 서버 응답 에러:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+
+      throw new Error(
+        error.response.data?.message || '사진 삭제에 실패했습니다.'
+      );
+    } else if (error.request) {
+      // 요청이 전송되었지만 응답을 받지 못함
+      console.error('❌ 네트워크 에러 - 응답 없음:', error.request);
+      throw new Error(
+        '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.'
+      );
+    } else {
+      // 요청 설정 중 에러 발생
+      console.error('❌ 요청 설정 에러:', error.message);
+      throw new Error('요청 처리 중 오류가 발생했습니다.');
+    }
   }
 };
 
