@@ -192,7 +192,15 @@ export default function ProfileDetailScreen() {
 
   // 소비패턴 궁합 보기 버튼 핸들러
   const handleMatchingPattern = () => {
-    navigation.navigate('MatchingPattern', { userName });
+    const otherUserId = receivedProfileData?.id || userId;
+    if (!otherUserId) {
+      Alert.alert('오류', '사용자 정보를 불러올 수 없습니다.');
+      return;
+    }
+    navigation.navigate('MatchingPattern', { 
+      userName, 
+      otherUserId 
+    });
   };
 
   // 망고하기 버튼 핸들러

@@ -87,6 +87,28 @@ export const getMyTimeChart = async (userId) => {
 };
 
 /**
+ * 두 사용자의 시간대 비교 차트를 조회합니다.
+ * @param {number} myUserId - 내 사용자 ID
+ * @param {number} otherUserId - 비교할 사용자 ID
+ * @returns {Promise<TwoTimeChartResponse>} API 응답 프로미스
+ */
+export const getTwoTimeChart = async (myUserId, otherUserId) => {
+  try {
+    const token = await getAuthToken();
+    const response = await apiClient.get(`/chart/twoTimeChart/${myUserId}/${otherUserId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log('두 시간대 비교 차트 API 응답:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('두 시간대 비교 차트 API 오류:', error);
+    throw error;
+  }
+};
+
+/**
  * 사용자의 이번 달 소비 내역 차트를 조회합니다.
  * @param {number} userId - 사용자 ID
  * @returns {Promise<HistoryChartResponse>} API 응답 프로미스
@@ -103,6 +125,50 @@ export const getMyHistoryChart = async (userId) => {
     return response.data;
   } catch (error) {
     console.error('소비 내역 차트 API 오류:', error);
+    throw error;
+  }
+};
+
+/**
+ * 두 사용자의 카테고리 비교 차트를 조회합니다.
+ * @param {number} myUserId - 내 사용자 ID
+ * @param {number} otherUserId - 비교할 사용자 ID
+ * @returns {Promise<TwoCategoryChartResponse>} API 응답 프로미스
+ */
+export const getTwoCategoryChart = async (myUserId, otherUserId) => {
+  try {
+    const token = await getAuthToken();
+    const response = await apiClient.get(`/chart/twoCategoryChart/${myUserId}/${otherUserId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log('두 카테고리 비교 차트 API 응답:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('두 카테고리 비교 차트 API 오류:', error);
+    throw error;
+  }
+};
+
+/**
+ * 두 사용자의 키워드 비교 차트를 조회합니다.
+ * @param {number} myUserId - 내 사용자 ID
+ * @param {number} otherUserId - 비교할 사용자 ID
+ * @returns {Promise<TwoKeywordChartResponse>} API 응답 프로미스
+ */
+export const getTwoKeywordChart = async (myUserId, otherUserId) => {
+  try {
+    const token = await getAuthToken();
+    const response = await apiClient.get(`/chart/twoKeywordChart/${myUserId}/${otherUserId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log('두 키워드 비교 차트 API 응답:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('두 키워드 비교 차트 API 오류:', error);
     throw error;
   }
 };

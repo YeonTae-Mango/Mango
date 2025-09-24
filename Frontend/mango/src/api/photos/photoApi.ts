@@ -9,6 +9,7 @@ export interface PhotoUploadRequest {
 export interface PhotoUploadResponse {
   status: string;
   message: string;
+  data: string[]; // 업로드된 이미지 URL 배열
 }
 
 // 에러 응답 타입 정의
