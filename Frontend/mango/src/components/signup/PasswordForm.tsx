@@ -6,13 +6,15 @@ interface PasswordFormProps {
   confirmPassword: string;
   onPasswordChange: (value: string) => void;
   onConfirmPasswordChange: (value: string) => void;
+  error?: string;
 }
 
-export default function PasswordForm({ 
-  password, 
-  confirmPassword, 
-  onPasswordChange, 
-  onConfirmPasswordChange 
+export default function PasswordForm({
+  password,
+  confirmPassword,
+  onPasswordChange,
+  onConfirmPasswordChange,
+  error,
 }: PasswordFormProps) {
   return (
     <View className="flex-1 pt-10">
@@ -34,7 +36,7 @@ export default function PasswordForm({
           autoCapitalize="none"
           autoCorrect={false}
         />
-        
+
         {/* 비밀번호 확인 필드 */}
         <TextInput
           className="h-14 bg-gray rounded-xl px-4 text-base mt-4"
@@ -45,6 +47,9 @@ export default function PasswordForm({
           autoCapitalize="none"
           autoCorrect={false}
         />
+        {error && (
+          <Text className="text-red-500 text-sm mt-2 ml-1">{error}</Text>
+        )}
       </View>
     </View>
   );

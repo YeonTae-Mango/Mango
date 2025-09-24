@@ -186,7 +186,7 @@ export const transformFormDataToSignupRequest = (formData: {
     longitude: formData.longitude,
     sido: formData.city,
     sigungu: formData.district,
-    distance: formData.radius,
+    distance: formData.radius / 1000, // 미터 단위를 킬로미터 단위로 변환
   };
 
   console.log(

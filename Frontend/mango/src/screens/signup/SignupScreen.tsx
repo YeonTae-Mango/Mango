@@ -39,7 +39,98 @@ export default function SignupScreen() {
   const [district, setDistrict] = useState('');
   const [latitude, setLatitude] = useState(37.5013);
   const [longitude, setLongitude] = useState(127.0396);
-  const [radius, setRadius] = useState(300);
+  const [radius, setRadius] = useState(1000);
+
+  // 에러 상태 관리
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [birthdateError, setBirthdateError] = useState('');
+
+  // 이메일 유효성 검증
+  const validateEmail = useCallback((email: string) => {
+    if (!email.trim()) {
+      setEmailError('이메일을 입력해주세요.');
+      return false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('올바른 이메일 형식이 아닙니다.');
+      return false;
+    } else {
+      setEmailError('');
+      return true;
+    }
+  }, []);
+
+  // 비밀번호 유효성 검증
+  const validatePassword = useCallback(
+    (password: string, confirmPassword: string) => {
+      if (!password.trim()) {
+        setPasswordError('비밀번호를 입력해주세요.');
+        return false;
+      } else if (password.length < 6) {
+        setPasswordError('비밀번호는 최소 6자 이상이어야 합니다.');
+        return false;
+      } else if (password !== confirmPassword) {
+        setPasswordError('비밀번호가 일치하지 않습니다.');
+        return false;
+      } else {
+        setPasswordError('');
+        return true;
+      }
+    },
+    []
+  );
+
+  // 생년월일 유효성 검증 (만 19세 이상)
+  const validateBirthdate = useCallback((birthdate: string) => {
+    console.log('🔍 생년월일 검증 시작:', birthdate);
+
+    if (!birthdate.trim()) {
+      setBirthdateError('생년월일을 입력해주세요.');
+      return false;
+    }
+
+    // 생년월일 형식 변환: "2000 / 09 / 22" → Date 객체
+    const formatBirthDate = (birthdate: string): Date => {
+      const cleaned = birthdate.replace(/\s/g, '').replace(/\//g, '-');
+      const [year, month, day] = cleaned.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    };
+
+    try {
+      const birthDate = formatBirthDate(birthdate);
+      const today = new Date();
+
+      console.log('🔍 생년월일:', birthDate);
+      console.log('🔍 오늘 날짜:', today);
+
+      // 만 19세 계산
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+
+      console.log('🔍 계산된 나이:', age);
+
+      if (age < 19) {
+        console.log('❌ 만 19세 미만 - 가입 불가');
+        setBirthdateError('만 19세 이상만 가입 가능합니다.');
+        return false;
+      } else {
+        console.log('✅ 만 19세 이상 - 가입 가능');
+        setBirthdateError('');
+        return true;
+      }
+    } catch (error) {
+      console.log('❌ 생년월일 형식 오류:', error);
+      setBirthdateError('올바른 생년월일 형식이 아닙니다.');
+      return false;
+    }
+  }, []);
 
   // 회원가입 성공 시 처리
   useEffect(() => {
@@ -65,26 +156,46 @@ export default function SignupScreen() {
     }
   }, [error, clearError]);
 
+  // 실시간 유효성 검증
+  useEffect(() => {
+    if (currentStep === 'email' && email) {
+      validateEmail(email);
+    }
+  }, [email, currentStep, validateEmail]);
+
+  useEffect(() => {
+    if (currentStep === 'password' && (password || confirmPassword)) {
+      validatePassword(password, confirmPassword);
+    }
+  }, [password, confirmPassword, currentStep, validatePassword]);
+
+  useEffect(() => {
+    if (currentStep === 'birthdate' && birthdate) {
+      validateBirthdate(birthdate);
+    }
+  }, [birthdate, currentStep, validateBirthdate]);
+
   const handleNext = useCallback(async () => {
     console.log('👆 다음 버튼 클릭 - 현재 단계:', currentStep);
 
     // 각 단계별 유효성 검사
-    if (currentStep === 'email' && !email.trim()) {
-      console.log('❌ 이메일 입력 필요');
-      return;
+    if (currentStep === 'email') {
+      if (!validateEmail(email)) {
+        console.log('❌ 이메일 유효성 검사 실패');
+        return;
+      }
     }
-    if (
-      currentStep === 'password' &&
-      (!password.trim() || password !== confirmPassword)
-    ) {
-      console.log('❌ 비밀번호 확인 필요');
-      Alert.alert('입력 오류', '비밀번호를 확인해주세요.');
-      return;
+    if (currentStep === 'password') {
+      if (!validatePassword(password, confirmPassword)) {
+        console.log('❌ 비밀번호 유효성 검사 실패');
+        return;
+      }
     }
-    if (currentStep === 'birthdate' && !birthdate.trim()) {
-      console.log('❌ 생년월일 입력 필요');
-      Alert.alert('입력 오류', '생년월일을 입력해주세요.');
-      return;
+    if (currentStep === 'birthdate') {
+      if (!validateBirthdate(birthdate)) {
+        console.log('❌ 생년월일 유효성 검사 실패');
+        return;
+      }
     }
     if (currentStep === 'gender' && !gender) {
       console.log('❌ 성별 선택 필요');
@@ -187,7 +298,11 @@ export default function SignupScreen() {
               transform: [{ translateX: emailTransform }],
             }}
           >
-            <EmailForm value={email} onChangeText={setEmail} />
+            <EmailForm
+              value={email}
+              onChangeText={setEmail}
+              error={emailError}
+            />
           </Animated.View>
 
           {/* 비밀번호 폼 */}
@@ -202,6 +317,7 @@ export default function SignupScreen() {
               confirmPassword={confirmPassword}
               onPasswordChange={setPassword}
               onConfirmPasswordChange={setConfirmPassword}
+              error={passwordError}
             />
           </Animated.View>
 
@@ -212,7 +328,11 @@ export default function SignupScreen() {
               transform: [{ translateX: birthdateTransform }],
             }}
           >
-            <BirthdateForm value={birthdate} onChangeText={setBirthdate} />
+            <BirthdateForm
+              value={birthdate}
+              onChangeText={setBirthdate}
+              error={birthdateError}
+            />
           </Animated.View>
 
           {/* 성별 폼 */}
@@ -277,11 +397,11 @@ export default function SignupScreen() {
         <SignupButton
           isActive={
             currentStep === 'email'
-              ? !!email
+              ? !!email && !emailError
               : currentStep === 'password'
-                ? !!password
+                ? !!password && !passwordError
                 : currentStep === 'birthdate'
-                  ? !!birthdate
+                  ? !!birthdate && !birthdateError
                   : currentStep === 'gender'
                     ? !!gender
                     : currentStep === 'location'

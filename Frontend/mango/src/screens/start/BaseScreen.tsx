@@ -134,13 +134,13 @@ export default function BaseScreen({ onLoginSuccess }: BaseScreenProps) {
         </View>
 
         {/* 테스트 버튼 */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           className="h-12 bg-blue-500 rounded-xl justify-center items-center"
           onPress={handleTest}
           disabled={isLoading}
         >
           <Text className="text-base font-semibold text-white">테스트</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </Layout>
   );
