@@ -5,6 +5,8 @@ import com.mango.backend.global.common.BaseController;
 import com.mango.backend.global.common.api.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -102,18 +104,39 @@ public class ChartController extends BaseController {
     ) {
         return toResponseEntity(chartService.getTwoTypeChart(myUserId, otherUserId), "대표유형 비교 차트 조회에 성공하였습니다.");
     }
+
     @GetMapping("twoCategoryChart/{myUserId}/{otherUserId}")
-    @Operation(summary = "대표유형 비교 차트 조회", description = "두 사용자의각자의 카테고리별 소비 비율을 피라미드 형식으로 보여주는 차트를 조회합니다.")
+    @Operation(
+            summary = "두 사용자 카테고리별 소비 비교 차트 조회",
+            description = "두 사용자의 최근 1개월간 카테고리별 소비 비중을 비교하여 피라미드 형태의 차트 데이터를 제공합니다. " +
+                          "내 데이터는 음수로, 상대방 데이터는 양수로 반환되어 양방향 비교가 가능하며, " +
+                          "각 사용자의 최고 소비 카테고리와 비중을 myHighest, otherHighest로 별도 제공합니다."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "나와 상대의 대표유형 비교 차트 조회에 성공하였습니다."),
-            @ApiResponse(responseCode = "404", description = "소비패턴 데이터가 없습니다.")
+            @ApiResponse(responseCode = "200", description = "두 사용자의 카테고리별 소비 비교 차트 조회에 성공하였습니다.",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "두 사용자의 카테고리별 소비 비교 차트 조회에 성공하였습니다.",
+                                      "data": {
+                                        "labels": ["학문/교육", "음식", "여가/오락", "생활서비스", "미디어/통신", "소매/유통", "공연/전시"],
+                                        "myData": [-15, -9, -23, -19, -4, -27, -3],
+                                        "partnerData": [1, 11, 31, 11, 4, 39, 3],
+                                        "myHighest": { "소매/유통": "27" },
+                                        "otherHighest": { "소매/유통": "39" }
+                                      },
+                                      "status": "SUCCESS"
+                                    }
+                                    """)
+                    )),
+            @ApiResponse(responseCode = "404", description = "해당 사용자들의 소비 데이터가 존재하지 않습니다.")
     })
     public ResponseEntity<BaseResponse> getTwoCategoryChart(
-            @Parameter(description = "내 사용자 ID", required = true, example = "1")
+            @Parameter(description = "기준이 되는 사용자 ID (차트에서 음수로 표시, myHighest 기준)", required = true, example = "1")
             @PathVariable Long myUserId,
-            @Parameter(description = "비교할 사용자 ID", required = true, example = "2")
+            @Parameter(description = "비교 대상 사용자 ID (차트에서 양수로 표시, otherHighest 기준)", required = true, example = "2")
             @PathVariable Long otherUserId
     ) {
-        return toResponseEntity(chartService.getTwoCategoryChart(myUserId, otherUserId), "나와 상대의 대표유형 비교 차트 조회에 성공하였습니다.");
+        return toResponseEntity(chartService.getTwoCategoryChart(myUserId, otherUserId), "두 사용자의 카테고리별 소비 비교 차트 조회에 성공하였습니다.");
     }
 }

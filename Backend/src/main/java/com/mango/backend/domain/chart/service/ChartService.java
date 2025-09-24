@@ -253,14 +253,35 @@ public class ChartService {
             partnerData[i] = otherWeights.getOrDefault(labels[i], 0);
         }
 
+        // myHighest 계산
+        Map<String, String> myHighest = new HashMap<>();
+        String myHighestCategory = myWeights.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("");
+        if (!myHighestCategory.isEmpty()) {
+            myHighest.put(myHighestCategory, myWeights.get(myHighestCategory).toString());
+        }
+
+        // otherHighest 계산
+        Map<String, String> otherHighest = new HashMap<>();
+        String otherHighestCategory = otherWeights.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("");
+        if (!otherHighestCategory.isEmpty()) {
+            otherHighest.put(otherHighestCategory, otherWeights.get(otherHighestCategory).toString());
+        }
+
         TwoCategoryChartResponse response = TwoCategoryChartResponse.builder()
                 .labels(labels)
                 .myData(myData)
                 .partnerData(partnerData)
+                .myHighest(myHighest)
+                .otherHighest(otherHighest)
                 .build();
         return ServiceResult.success(response);
     }
-
     private static void countPaymentByTime(List<PaymentHistory> payments, int[] data) {
         for (PaymentHistory ph : payments) {
             LocalDateTime phTime = ph.getPaymentTime();
