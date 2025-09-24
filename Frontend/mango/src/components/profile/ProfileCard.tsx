@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { CATEGORIES, CategoryType } from '../../constants/category';
 
 interface ProfileCardProps {
   name: string;
@@ -23,6 +24,15 @@ export default function ProfileCard({
   images = [],
 }: ProfileCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // 메인 타입으로 카테고리 정보 찾기
+  const getCategoryInfo = (mainType: string) => {
+    const categoryKey = Object.keys(CATEGORIES).find(
+      key => CATEGORIES[key as CategoryType].name === mainType
+    ) as CategoryType;
+
+    return categoryKey ? CATEGORIES[categoryKey] : null;
+  };
 
   // 더미 이미지 (이미지가 없을 경우)
   const defaultImage =
@@ -91,8 +101,10 @@ export default function ProfileCard({
             <Text className="text-heading-bold text-white mr-4">
               {name} <Text>{age}</Text>
             </Text>
-            <View className="bg-mango-red rounded-full px-4 py-1 flex-row items-center">
-              <Ionicons name="flame-outline" size={18} color="white" />
+            <View className="bg-mango-red/80 rounded-full px-4 py-1 flex-row items-center">
+              <Text className="text-lg">
+                {getCategoryInfo(category)?.emoji || '❓'}
+              </Text>
               <Text className="text-body-large-regular text-white ml-2">
                 {category}
               </Text>

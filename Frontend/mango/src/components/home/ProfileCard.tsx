@@ -15,6 +15,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { CATEGORIES, CategoryType } from '../../constants/category';
 import type { SwipeProfile } from '../../types/swipe';
 
 interface ProfileCardProps {
@@ -41,6 +42,15 @@ const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
       distance,
       theyLiked,
     } = profile;
+
+    // 메인 타입으로 카테고리 정보 찾기
+    const getCategoryInfo = (mainType: string) => {
+      const categoryKey = Object.keys(CATEGORIES).find(
+        key => CATEGORIES[key as CategoryType].name === mainType
+      ) as CategoryType;
+
+      return categoryKey ? CATEGORIES[categoryKey] : null;
+    };
 
     // 이미지 슬라이더 상태 및 핸들러
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -205,8 +215,10 @@ const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
               <Text className="text-heading-bold text-white mr-4">
                 {nickname} <Text>{age}</Text>
               </Text>
-              <View className="bg-mango-red rounded-full px-4 py-1 flex-row items-center">
-                <Ionicons name="flame-outline" size={18} color="white" />
+              <View className="bg-mango-red/80 rounded-full px-4 py-1 flex-row items-center">
+                <Text className="text-lg">
+                  {getCategoryInfo(mainType)?.emoji || '❓'}
+                </Text>
                 <Text className="text-body-large-regular text-white ml-2">
                   {mainType}
                 </Text>
