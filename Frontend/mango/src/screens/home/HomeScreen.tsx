@@ -22,9 +22,6 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const { user } = useAuthStore();
   const userId = user?.id || 0;
 
-  // 매치된 프로필 정보 저장
-  const [matchedProfile, setMatchedProfile] = useState<any>(null);
-
   // 채팅방 생성 뮤테이션
   const createChatRoomMutation = useMutation({
     mutationFn: createOrGetChatRoom,
@@ -92,17 +89,25 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     },
   });
 
-  // 모든 프로필을 다 조회한 경우 NoMoreProfilesModal 자동 표시
+  // 모든 프로필을 다 조회한 경우 또는 처음부터 빈 목록인 경우 NoMoreProfilesModal 자동 표시
   useEffect(() => {
-    if (
-      !isLoading &&
-      hasProfiles &&
-      !hasMoreProfiles &&
-      currentProfile === null
-    ) {
-      setShowNoMoreProfilesModal(true);
+    if (!isLoading && !isError) {
+      // 1. 처음부터 프로필이 없는 경우 (hasProfiles가 false)
+      // 2. 모든 프로필을 다 스와이프한 경우 (hasProfiles가 true이지만 hasMoreProfiles가 false이고 currentProfile이 null)
+      const shouldShowModal =
+        !hasProfiles || // 처음부터 빈 목록
+        (hasProfiles && !hasMoreProfiles && currentProfile === null); // 모든 프로필 소진
+
+      if (shouldShowModal) {
+        console.log('🚫 프로필 없음 - NoMoreProfilesModal 표시', {
+          hasProfiles,
+          hasMoreProfiles,
+          currentProfile: !!currentProfile,
+        });
+        setShowNoMoreProfilesModal(true);
+      }
     }
-  }, [isLoading, hasProfiles, hasMoreProfiles, currentProfile]);
+  }, [isLoading, isError, hasProfiles, hasMoreProfiles, currentProfile]);
 
   // 스와이프 상태 관리(방향 및 강도)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(
@@ -231,24 +236,36 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     <Layout onLogout={onLogout} showBottomSafeArea={false}>
       <View className="flex-1 bg-white relative">
         {/* 프로필 카드 - 스와이프 제스처 감지 및 애니메이션을 처리 */}
-        {currentProfile && (
+        {currentProfile ? (
           <ProfileCard
             ref={profileCardRef}
             profile={currentProfile}
             onSwipeUpdate={handleSwipeUpdate}
             onNextProfile={handleNextProfile}
           />
+        ) : (
+          // 프로필이 없는 경우 빈 화면 표시
+          <View className="flex-1 justify-center items-center">
+            <Text className="text-subheading-bold text-gray-400 mb-4">
+              당신에 주변에 더이상 사람이 없어요😢
+            </Text>
+            <Text className="text-body-small-regular text-gray-400">
+              검색 범위를 조정해보세요
+            </Text>
+          </View>
         )}
 
         {/* 액션 버튼 - 스와이프 상태에 따라 크기와 색상이 변동 */}
-        <View className="absolute bottom-0 left-0 right-0 z-30">
-          <ActionButtons
-            onDislike={handleDislike}
-            onMango={handleMango}
-            swipeDirection={swipeDirection}
-            swipeIntensity={swipeIntensity}
-          />
-        </View>
+        {currentProfile && (
+          <View className="absolute bottom-0 left-0 right-0 z-30">
+            <ActionButtons
+              onDislike={handleDislike}
+              onMango={handleMango}
+              swipeDirection={swipeDirection}
+              swipeIntensity={swipeIntensity}
+            />
+          </View>
+        )}
 
         {/* 모달들 */}
         <NoMoreProfilesModal

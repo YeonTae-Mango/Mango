@@ -1,8 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
+import { useMutation } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Modal,
   PanResponder,
@@ -11,6 +14,8 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { updateUserDistance } from '../../api/auth';
+import { useAuthStore } from '../../store/authStore';
 
 interface NoMoreProfilesModalProps {
   visible: boolean;
@@ -23,10 +28,38 @@ export default function NoMoreProfilesModal({
   onClose,
   onConfirm,
 }: NoMoreProfilesModalProps) {
+  const { user } = useAuthStore();
   const slideAnim = useRef(new Animated.Value(300)).current;
-  const distanceOptions = [5, 10, 15, 20, 30, 40, 50];
-  const [distanceIndex, setDistanceIndex] = useState(1); // 기본 10km (인덱스 1)
-  const distance = distanceOptions[distanceIndex];
+  // RadiusForm과 동일한 거리 옵션들 (m 단위)
+  const distanceOptions = [1000, 3000, 5000, 10000, 30000, 50000, 100000]; // 1km, 3km, 5km, 10km, 30km, 50km, 100km
+  const [distanceIndex, setDistanceIndex] = useState(3); // 기본 10km (인덱스 3)
+  const currentDistance = distanceOptions[distanceIndex];
+
+  // 거리 업데이트 뮤테이션
+  const updateDistanceMutation = useMutation({
+    mutationFn: (distance: number) => {
+      if (!user?.id) {
+        throw new Error('사용자 정보가 없습니다.');
+      }
+      return updateUserDistance(user.id, distance);
+    },
+    onSuccess: () => {
+      console.log('✅ 거리 업데이트 성공');
+      Alert.alert('완료', '매칭 거리가 성공적으로 변경되었습니다.', [
+        {
+          text: '확인',
+          onPress: () => {
+            onConfirm(Math.round(currentDistance / 1000));
+            onClose();
+          },
+        },
+      ]);
+    },
+    onError: error => {
+      console.error('❌ 거리 업데이트 실패:', error);
+      Alert.alert('오류', '거리 변경에 실패했습니다. 다시 시도해주세요.');
+    },
+  });
 
   const panResponder = useRef(
     PanResponder.create({
@@ -70,8 +103,9 @@ export default function NoMoreProfilesModal({
   }, [visible, slideAnim]);
 
   const handleConfirm = () => {
-    onConfirm(distance);
-    onClose();
+    const distanceInKm = Math.round(currentDistance / 1000);
+    console.log('🗺️ 거리 업데이트 시작:', distanceInKm, 'km');
+    updateDistanceMutation.mutate(distanceInKm);
   };
 
   return (
@@ -128,14 +162,15 @@ export default function NoMoreProfilesModal({
               </Text>
 
               {/* 거리 조정 섹션 */}
-              <View className="mx-6">
+              <View className="mx-10">
                 <View className="flex-row items-center justify-between">
                   <Text className="text-subheading-bold font-medium">
                     최대 거리 조정
                   </Text>
-                  <View className="bg-mango-primary px-4 py-1 rounded-full">
-                    <Text className="text-white text-body-large-regular">
-                      {distance}km
+                  <View className="bg-mango-primary px-4 py-1 rounded-full flex-row items-center">
+                    <Ionicons name="location-outline" size={14} color="white" />
+                    <Text className="text-white text-body-large-regular ml-1">
+                      {Math.round(currentDistance / 1000)}km
                     </Text>
                   </View>
                 </View>
@@ -150,7 +185,10 @@ export default function NoMoreProfilesModal({
                     minimumValue={0}
                     maximumValue={6}
                     value={distanceIndex}
-                    onValueChange={value => setDistanceIndex(Math.round(value))}
+                    onValueChange={value => {
+                      const newIndex = Math.round(value);
+                      setDistanceIndex(newIndex);
+                    }}
                     minimumTrackTintColor="#FF6D60"
                     maximumTrackTintColor="#F3F4F6"
                     thumbTintColor="#FF6D60"
@@ -161,12 +199,26 @@ export default function NoMoreProfilesModal({
 
               {/* 확인 버튼 */}
               <TouchableOpacity
-                className="bg-mango-red py-6 my-6 rounded-2xl"
+                className={`py-6 my-6 rounded-2xl ${
+                  updateDistanceMutation.isPending
+                    ? 'bg-gray-400'
+                    : 'bg-mango-red'
+                }`}
                 onPress={handleConfirm}
+                disabled={updateDistanceMutation.isPending}
               >
-                <Text className="text-subheading-regular text-white text-center">
-                  확인
-                </Text>
+                {updateDistanceMutation.isPending ? (
+                  <View className="flex-row justify-center items-center">
+                    <ActivityIndicator size="small" color="white" />
+                    <Text className="text-subheading-regular text-white text-center ml-2">
+                      변경 중...
+                    </Text>
+                  </View>
+                ) : (
+                  <Text className="text-subheading-regular text-white text-center">
+                    확인
+                  </Text>
+                )}
               </TouchableOpacity>
             </Animated.View>
           </TouchableWithoutFeedback>
