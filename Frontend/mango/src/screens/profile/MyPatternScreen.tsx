@@ -20,6 +20,9 @@ export default function MyPatternScreen() {
   // auth.js에서 관리하는 사용자 ID 사용
   const [currentUserId, setCurrentUserId] = useState<number>(103); // 기본값 103
   
+  // 카테고리 차트 기간 상태
+  const [categoryPeriod, setCategoryPeriod] = useState<number>(1); // 기본값: 이번달
+  
   // auth.js에서 사용자 ID 가져오기
   useEffect(() => {
     const fetchUserId = async () => {
@@ -31,8 +34,8 @@ export default function MyPatternScreen() {
     fetchUserId();
   }, []);
   
-  // 카테고리 차트 API 호출
-  const { data: categoryChartData, isLoading: categoryLoading, error: categoryError } = useCategoryChart(currentUserId);
+  // 카테고리 차트 API 호출 (period: 1=이번달, 2=저번달, 3=최근 6개월)
+  const { data: categoryChartData, isLoading: categoryLoading, error: categoryError } = useCategoryChart(currentUserId, categoryPeriod);
 
   // 월별 차트 API 호출
   const { data: monthlyChartData, isLoading: monthlyLoading, error: monthlyError } = useMonthlyChart(currentUserId);
@@ -317,6 +320,8 @@ export default function MyPatternScreen() {
             categoryData={categoryData} 
             formatAmount={formatAmount}
             additionalInfoData={additionalInfoData}
+            selectedPeriod={categoryPeriod}
+            onPeriodChange={setCategoryPeriod}
           />
         ) : activeTab === 'month' ? (
           <MonthTabContent 

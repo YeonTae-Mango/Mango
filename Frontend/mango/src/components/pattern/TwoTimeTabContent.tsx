@@ -99,6 +99,17 @@ export default function TwoTimeTabContent({ activeTab, userName, otherUserId }: 
     }
   };
 
+  // API 데이터가 변경될 때마다 차트에 전송
+  useEffect(() => {
+    if (chartData && !loading) {
+      console.log('📊 시간대 API 데이터 변경됨, 차트에 전송:', chartData);
+      postMessage({ 
+        type: 'twoTime', 
+        data: chartData
+      });
+    }
+  }, [chartData, loading]);
+
   // 핫타임 배열에서 직접 가져오기 (첫 번째: 나, 두 번째: 상대방)
   const getHotTime = (data: any, index: number) => {
     if (!data || !data.hotTime || !Array.isArray(data.hotTime)) {

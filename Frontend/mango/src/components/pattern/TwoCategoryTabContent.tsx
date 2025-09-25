@@ -99,6 +99,17 @@ export default function TwoCategoryTabContent({ activeTab, userName, otherUserId
     }
   };
 
+  // API 데이터가 변경될 때마다 차트에 전송
+  useEffect(() => {
+    if (chartData && !loading) {
+      console.log('📊 카테고리 API 데이터 변경됨, 차트에 전송:', chartData);
+      postMessage({ 
+        type: 'twoCategory', 
+        data: chartData
+      });
+    }
+  }, [chartData, loading]);
+
   return (
     <View>
       <View className="px-4 mt-6">

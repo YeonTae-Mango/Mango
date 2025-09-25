@@ -24,9 +24,9 @@ export default function MyPatternTab({ activeTab, onTabChange }: MyPatternTabPro
             className="flex-1 relative py-3"
             onPress={() => onTabChange(tab.key as typeof activeTab)}
           >
-            <Text className={`text-center text-subheading-bold ${
+            <Text className={`text-center text-body-large-semibold ${
               activeTab === tab.key ? 'text-mango-red' : 'text-text-primary'
-            }`}>
+            }`} style={{ fontWeight: '700' }}>
               {tab.label}
             </Text>
             <View className={`absolute bottom-0 left-0 right-0 h-1 ${
