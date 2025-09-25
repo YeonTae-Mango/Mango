@@ -18,14 +18,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
-import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -79,7 +76,11 @@ public class UserController extends BaseController {
 
     @Operation(
             summary = "사용자 정보 수정",
-            description = "JWT 토큰을 이용해 본인 계정의 정보를 수정합니다.",
+            description = "JWT 토큰을 이용해 본인 계정의 정보를 수정합니다.\n\n" +
+                          "**입력 제한사항:**\n" +
+                          "- 닉네임: 1~10자 (공백 불가)\n" +
+                          "- 위도: -90.0 ~ 90.0 (필수)\n" +
+                          "- 경도: -180.0 ~ 180.0 (필수)",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -88,19 +89,33 @@ public class UserController extends BaseController {
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "잘못된 입력값(닉네임 등)",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                            description = "잘못된 입력값",
+                            content = @Content(
+                                    schema = @Schema(implementation = ErrorResponse.class)
+                            )
                     ),
                     @ApiResponse(
                             responseCode = "403",
-                            description = "본인 계정만 수정 가능",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                            description = "권한 없음 - 본인 계정만 수정 가능",
+                            content = @Content(
+                                    schema = @Schema(implementation = ErrorResponse.class)
+                            )
                     )
             }
     )
     @PutMapping("/{userId}")
     public ResponseEntity<BaseResponse> updateUser(
+            @Parameter(
+                    description = "수정할 사용자 ID (토큰의 사용자 ID와 일치해야 함)",
+                    example = "1"
+            )
             @PathVariable Long userId,
+
+            @Parameter(
+                    description = "JWT 인증 토큰 (Bearer 포함)",
+                    example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    required = true
+            )
             @RequestHeader("Authorization") String token,
             @org.springframework.web.bind.annotation.RequestBody UserUpdateRequest request
     ) {
