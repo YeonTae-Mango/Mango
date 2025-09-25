@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
@@ -70,6 +70,14 @@ export default function MonthTabContent({ monthData, monthlyApiData, formatAmoun
     }
   };
 
+  // API 데이터가 변경될 때마다 차트에 전송
+  useEffect(() => {
+    if (monthlyApiData && !loading) {
+      console.log('📊 월별 API 데이터 변경됨, 차트에 전송:', monthlyApiData);
+      postMessage({ type: 'month', data: monthlyApiData });
+    }
+  }, [monthlyApiData, loading]);
+
   // API 데이터가 있으면 사용, 없으면 기본 데이터 사용
   const displayData = monthlyApiData || {
     label: ['4', '5', '6', '7', '8', '9'],
@@ -84,7 +92,7 @@ export default function MonthTabContent({ monthData, monthlyApiData, formatAmoun
   const getMonthColor = (value: number) => {
     if (value === maxValue) return 'bg-orange-500';
     if (value === minValue) return 'bg-green-500';
-    return 'bg-gray';
+    return 'bg-white';
   };
 
   // 네 번째(7월)와 다섯 번째(8월) 데이터 비교
@@ -123,7 +131,7 @@ export default function MonthTabContent({ monthData, monthlyApiData, formatAmoun
               <Text className="text-body-medium-regular text-text-secondary mb-2">{month}월</Text>
               <View className={`${getMonthColor(displayData.data[index])} rounded-xl px-4 py-2`}>
                 <Text className={`text-body-large-semibold ${
-                  getMonthColor(displayData.data[index]) === 'bg-gray' ? 'text-text-primary' : 'text-white'
+                  getMonthColor(displayData.data[index]) === 'bg-white' ? 'text-text-primary' : 'text-white'
                 }`}>
                   {formatAmount(displayData.data[index])}
                 </Text>
@@ -141,7 +149,7 @@ export default function MonthTabContent({ monthData, monthlyApiData, formatAmoun
               </Text>
               <View className={`${getMonthColor(displayData.data[index + 3])} rounded-xl px-4 py-2`}>
                 <Text className={`text-body-large-semibold ${
-                  getMonthColor(displayData.data[index + 3]) === 'bg-gray' ? 'text-text-primary' : 'text-white'
+                  getMonthColor(displayData.data[index + 3]) === 'bg-white' ? 'text-text-primary' : 'text-white'
                 }`}>
                   {formatAmount(displayData.data[index + 3])}
                 </Text>

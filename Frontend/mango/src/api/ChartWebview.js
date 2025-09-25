@@ -4,12 +4,16 @@ import apiClient from './client';
 /**
  * 사용자의 카테고리별 소비 패턴 차트를 조회합니다.
  * @param {number} userId - 사용자 ID
+ * @param {number} period - 기간 (1: 이번달, 2: 저번달, 3: 최근 6개월)
  * @returns {Promise<CategoryChartResponse>} API 응답 프로미스
  */
-export const getMyCategoryChart = async (userId) => {
+export const getMyCategoryChart = async (userId, period = 1) => {
   try {
     const token = await getAuthToken();
     const response = await apiClient.get(`/chart/myCategoryChart/${userId}`, {
+      params: {
+        period: period
+      },
       headers: {
         Authorization: `Bearer ${token}`,
       },

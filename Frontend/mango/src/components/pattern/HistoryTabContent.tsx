@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
@@ -63,6 +63,14 @@ export default function HistoryTabContent({ categoryData, historyApiData, format
       console.error('Error parsing WebView message:', error);
     }
   };
+
+  // API 데이터가 변경될 때마다 차트에 전송
+  useEffect(() => {
+    if (historyApiData && !loading) {
+      console.log('📊 내역 API 데이터 변경됨, 차트에 전송:', historyApiData);
+      postMessage({ type: 'history', data: historyApiData });
+    }
+  }, [historyApiData, loading]);
 
   // API 데이터가 없으면 기본 데이터 사용
   const displayData = categoryData || {

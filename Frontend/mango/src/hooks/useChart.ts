@@ -17,8 +17,9 @@ import {
 /**
  * 카테고리별 소비 패턴 차트를 가져오는 훅
  * @param userId - 사용자 ID
+ * @param period - 기간 (1: 이번달, 2: 저번달, 3: 최근 6개월)
  */
-export const useCategoryChart = (userId: number) => {
+export const useCategoryChart = (userId: number, period: number = 1) => {
   const [data, setData] = useState<CategoryChartResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -30,7 +31,7 @@ export const useCategoryChart = (userId: number) => {
       setIsLoading(true);
       setError(null);
       try {
-        const result = await getMyCategoryChart(userId);
+        const result = await getMyCategoryChart(userId, period);
         setData(result);
       } catch (err) {
         setError(err as Error);
@@ -40,7 +41,7 @@ export const useCategoryChart = (userId: number) => {
     };
 
     fetchData();
-  }, [userId]);
+  }, [userId, period]);
 
   return { data, isLoading, error };
 };

@@ -4,6 +4,7 @@ import { WebView } from 'react-native-webview';
 import { getTwoTypeChart } from '../../api/chart/twoTypeChartApi';
 import { useAuthStore } from '../../store/authStore';
 import { getUserById } from '../../api/auth';
+import { getUserProfile } from '../../api/profile';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
 
 interface TwoTypeTabContentProps {
@@ -20,6 +21,7 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
   const [error, setError] = useState<string | null>(null);
   const [chartData, setChartData] = useState<any>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
+  const [myProfile, setMyProfile] = useState<any>(null);
 
   // 최대값을 가진 유형 찾기
   const getMaxType = (data: number[], labels: string[]) => {
@@ -41,8 +43,22 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
     }
   };
 
+  // 현재 사용자 프로필 정보 조회 함수
+  const fetchMyProfile = async (userId: number) => {
+    try {
+      console.log(`🔍 내 프로필 정보 조회 중... (userId: ${userId})`);
+      const profileData = await getUserProfile(userId);
+      console.log('✅ 내 프로필 정보 조회 성공:', profileData);
+      setMyProfile(profileData);
+      return profileData;
+    } catch (error) {
+      console.error('❌ 내 프로필 정보 조회 실패:', error);
+      return null;
+    }
+  };
+
   // 내 유형과 상대방 유형 계산
-  const myType = chartData ? getMaxType(chartData.myData, chartData.labels) : '핫플헌터';
+  const myType = myProfile?.mainType || (chartData ? getMaxType(chartData.myData, chartData.labels) : '핫플헌터');
   const otherType = chartData ? getMaxType(chartData.partnerData, chartData.labels) : '모험가';
 
   // 디버깅용: 조회된 사용자 정보 출력
@@ -57,6 +73,19 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
       });
     }
   }, [userInfo]);
+
+  // 디버깅용: 내 프로필 정보 출력
+  useEffect(() => {
+    if (myProfile) {
+      console.log('👤 내 프로필 정보:', {
+        userId: myProfile.userId,
+        nickname: myProfile.nickname,
+        mainType: myProfile.mainType,
+        keywords: myProfile.keywords,
+        // 기타 프로필 정보 필드들
+      });
+    }
+  }, [myProfile]);
 
   // API 데이터 조회
   useEffect(() => {
@@ -81,8 +110,11 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
         setChartData(data);
         console.log('📊 차트 데이터 설정 완료:', data);
 
-        // 특정 사용자 정보도 함께 조회
-        await fetchUserInfo(otherUserId);
+        // 특정 사용자 정보와 내 프로필 정보도 함께 조회
+        await Promise.all([
+          fetchUserInfo(otherUserId),
+          fetchMyProfile(user.id)
+        ]);
       } catch (error) {
         console.error('❌ 차트 데이터 조회 실패:', error);
         setError('차트 데이터를 불러오는데 실패했습니다.');
@@ -135,6 +167,14 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
       console.error('Error parsing WebView message:', error);
     }
   };
+
+  // API 데이터가 변경될 때마다 차트에 전송
+  useEffect(() => {
+    if (chartData && !loading) {
+      console.log('📊 유형 API 데이터 변경됨, 차트에 전송:', chartData);
+      postMessage({ type: 'twoType', data: chartData });
+    }
+  }, [chartData, loading]);
 
   return (
     <View>
