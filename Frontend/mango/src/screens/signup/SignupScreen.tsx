@@ -41,7 +41,7 @@ export default function SignupScreen() {
   const [district, setDistrict] = useState('');
   const [latitude, setLatitude] = useState(37.5013);
   const [longitude, setLongitude] = useState(127.0396);
-  const [radius, setRadius] = useState(1000);
+  const [radius, setRadius] = useState(1);
 
   // 에러 상태 관리
   const [emailError, setEmailError] = useState('');
@@ -91,8 +91,8 @@ export default function SignupScreen() {
     } else if (nickname.length < 2) {
       setNicknameError('닉네임은 2자 이상이어야 합니다.');
       return false;
-    } else if (nickname.length > 20) {
-      setNicknameError('닉네임은 20자 이하여야 합니다.');
+    } else if (nickname.length > 10) {
+      setNicknameError('닉네임은 10자 이하여야 합니다.');
       return false;
     } else if (!/^[가-힣a-zA-Z0-9]+$/.test(nickname)) {
       setNicknameError('닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.');
@@ -193,6 +193,12 @@ export default function SignupScreen() {
   }, [password, confirmPassword, currentStep, validatePassword]);
 
   useEffect(() => {
+    if (currentStep === 'nickname' && nickname) {
+      validateNickname(nickname);
+    }
+  }, [nickname, currentStep, validateNickname]);
+
+  useEffect(() => {
     if (currentStep === 'birthdate' && birthdate) {
       validateBirthdate(birthdate);
     }
@@ -236,7 +242,7 @@ export default function SignupScreen() {
       Alert.alert('입력 오류', '위치를 선택해주세요.');
       return;
     }
-    if (currentStep === 'radius' && radius < 100) {
+    if (currentStep === 'radius' && radius < 1) {
       console.log('❌ 반경 설정 필요');
       Alert.alert('입력 오류', '반경을 설정해주세요.');
       return;
@@ -453,7 +459,7 @@ export default function SignupScreen() {
                       : currentStep === 'location'
                         ? !!(city && district)
                         : currentStep === 'radius'
-                          ? radius >= 100
+                          ? radius >= 1
                         : false
           }
           onPress={handleNext}
