@@ -32,14 +32,28 @@ public class ChartService {
     private final MainCodeRepository mainCodeRepository;
     private final ConsumptionPatternRepository consumptionPatternRepository;
 
-    public ServiceResult<MyCategoryChartResponse> getMyCategoryChart(Long userId) {
-        log.info("getMyCategoryChart {}", userId);
+    public ServiceResult<MyCategoryChartResponse> getMyCategoryChart(Long userId, int period) {
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startDate;
+        switch (period) {
+            case 1: // 이번달
+                startDate = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                break;
+            case 2: // 저번달
+                LocalDateTime lastMonth = now.minusMonths(1);
+                startDate = lastMonth.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                now = lastMonth.withDayOfMonth(lastMonth.toLocalDate().lengthOfMonth())
+                        .withHour(23).withMinute(59).withSecond(59);
+                break;
+            case 3: // 6개월전 1일부터 오늘까지
+                LocalDateTime sixMonthsAgo = now.minusMonths(6);
+                startDate = sixMonthsAgo.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                break;
+            default:
+                return ServiceResult.failure(ErrorCode.USER_INVALID_INPUT);
+        }
+        List<PaymentHistory> payments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(userId, startDate, now);
 
-        LocalDateTime oneMonthAgo = now.minusMonths(1);
-
-        List<PaymentHistory> recentOneMonthPayments = paymentHistoryRepository.findByUserIdAndPaymentTimeBetween(userId, oneMonthAgo, now);
-        log.info("recentOneMonthPayments {}", recentOneMonthPayments);
         List<MainCode> mainCodes = mainCodeRepository.findByMainCodeStartingWith("PH_");
         Map<String, Long> statistics = new HashMap<>();
         long total = 0L;
@@ -47,13 +61,11 @@ public class ChartService {
         for (MainCode mainCode : mainCodes) {
             statistics.put(mainCode.getMainCodeName(), 0L);
         }
-        log.info("getMyCategoryChart {}", statistics);
 
-        for (PaymentHistory paymentHistory : recentOneMonthPayments) {
+        for (PaymentHistory paymentHistory : payments) {
             statistics.merge(paymentHistory.getCategory(), paymentHistory.getPaymentAmount(), Long::sum);
             total += paymentHistory.getPaymentAmount();
         }
-        log.info("recentOneMonthPayments {}", recentOneMonthPayments);
         List<Map.Entry<String, Long>> entries = new ArrayList<>(statistics.entrySet());
         entries.sort(Map.Entry.<String, Long>comparingByValue().reversed());
 
