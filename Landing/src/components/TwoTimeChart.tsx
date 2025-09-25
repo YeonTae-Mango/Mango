@@ -52,8 +52,8 @@ function TwoTimeChart() {
       {
         label: "나",
         data: myData,
-        backgroundColor: "rgba(255, 99, 132, 0.8)",
-        borderColor: "rgba(255, 99, 132, 1)",
+        backgroundColor: "rgba(54, 162, 235, 0.8)",
+        borderColor: "rgba(54, 162, 235, 1)",
         borderWidth: 2,
         borderRadius: {
           topLeft: 4,
@@ -66,8 +66,8 @@ function TwoTimeChart() {
       {
         label: "상대",
         data: yourData,
-        backgroundColor: "rgba(54, 162, 235, 0.8)",
-        borderColor: "rgba(54, 162, 235, 1)",
+        backgroundColor: "rgba(255, 99, 132, 0.8)",
+        borderColor: "rgba(255, 99, 132, 1)",
         borderWidth: 1,
         borderRadius: {
           topLeft: 4,

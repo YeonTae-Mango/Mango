@@ -68,6 +68,23 @@ function MyMonthlyChart() {
 
   const colors = getChartColors();
 
+  // Y축 범위 계산 (데이터 범위의 절반만큼 여백 추가)
+  const calculateYAxisRange = () => {
+    if (chartDataValues.length === 0) return { min: undefined, max: undefined };
+    
+    const minValue = Math.min(...chartDataValues);
+    const maxValue = Math.max(...chartDataValues);
+    const range = maxValue - minValue;
+    const padding = range / 2;
+    
+    return {
+      min: Math.max(0, minValue - padding), // 최소값은 0보다 작을 수 없음
+      max: maxValue + padding
+    };
+  };
+
+  const yAxisRange = calculateYAxisRange();
+
   // 차트 데이터
   const chartData = {
     labels: chartLabels,
@@ -100,7 +117,8 @@ function MyMonthlyChart() {
         }
       },
       y: {
-        // min: 100000, // y축 최소값을 10만으로 설정
+        min: yAxisRange.min,
+        max: yAxisRange.max,
         ticks: {
           callback: function(value: any) {
             return (value / 10000).toLocaleString() + '만원';
