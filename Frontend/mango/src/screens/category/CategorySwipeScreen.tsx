@@ -1,13 +1,14 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import ActionButtons from '../../components/home/ActionButtons';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { createOrGetChatRoom } from '../../api/chat';
 import NoMoreCategoryProfilesModal from '../../components/category/NoMoreCategoryProfilesModal';
-import ProfileCard, { ProfileCardRef } from '../../components/home/ProfileCard';
 import Layout from '../../components/common/Layout';
+import ActionButtons from '../../components/home/ActionButtons';
+import ProfileCard, { ProfileCardRef } from '../../components/home/ProfileCard';
 import { useSwipe } from '../../hooks/useSwipe';
 import { useAuthStore } from '../../store/authStore';
-import { getCategoryById } from '../../constants/category';
 
 interface CategorySwipeScreenProps {
   onLogout?: () => void;
@@ -16,10 +17,11 @@ interface CategorySwipeScreenProps {
 export default function CategorySwipeScreen({
   onLogout,
 }: CategorySwipeScreenProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute();
   const { categoryTitle } = route.params as { categoryTitle: string };
   const profileCardRef = useRef<ProfileCardRef>(null);
+  const queryClient = useQueryClient(); // React Query 클라이언트
 
   // 현재 로그인된 사용자 정보
   const { user } = useAuthStore();
@@ -51,8 +53,59 @@ export default function CategorySwipeScreen({
     userId,
   });
 
-  // 카테고리 정보 가져오기
-  const categoryInfo = getCategoryById(categoryId as any);
+  // 채팅방 생성 뮤테이션
+  const createChatRoomMutation = useMutation({
+    mutationFn: createOrGetChatRoom,
+    onSuccess: chatRoomData => {
+      console.log('🎉 채팅방 생성 성공:', chatRoomData);
+
+      // 🔄 채팅방 목록 캐시 즉시 무효화 (나중에 버튼을 눌러도 바로 업데이트)
+      console.log('🔄 채팅방 생성 후 목록 캐시 무효화 - 즉시 업데이트');
+      queryClient.invalidateQueries({
+        queryKey: ['chatRooms', user?.id],
+      });
+
+      // 매치 성공 알림 후 채팅방으로 이동
+      Alert.alert(
+        '🎉 매치 성공!',
+        `${(chatRoomData as any).otherUser?.nickname || '상대방'}님과 매치되었습니다! 채팅을 시작해보세요.`,
+        [
+          {
+            text: '나중에',
+            style: 'cancel',
+            onPress: () => {
+              // 나중에 버튼을 눌러도 채팅방 목록이 이미 업데이트되어 있음
+              console.log(
+                '📋 나중에 버튼 눌러 - 채팅방 목록은 이미 업데이트됨'
+              );
+            },
+          },
+          {
+            text: '채팅하기',
+            onPress: () => {
+              const roomData = chatRoomData as any;
+              console.log('🚀 CategorySwipeScreen에서 채팅방으로 이동:', {
+                chatRoomId: roomData.id.toString(),
+                userName: roomData.otherUserNickname,
+                userId: roomData.otherUserId,
+                profileImageUrl: roomData.otherUserProfileImage,
+              });
+              navigation.navigate('ChatRoom', {
+                chatRoomId: roomData.id.toString(),
+                userName: roomData.otherUserNickname || '상대방',
+                userId: roomData.otherUserId,
+                profileImageUrl: roomData.otherUserProfileImage,
+              });
+            },
+          },
+        ]
+      );
+    },
+    onError: error => {
+      console.error('❌ 채팅방 생성 실패:', error);
+      Alert.alert('오류', '채팅방 생성에 실패했습니다.');
+    },
+  });
 
   // useSwipe 훅 사용 - 카테고리 이름 전달
   const {
@@ -75,6 +128,14 @@ export default function CategorySwipeScreen({
     category: categoryName, // 이모지가 제거된 한국어 카테고리 이름 전달
     onSwipeSuccess: (direction: 'left' | 'right') => {
       profileCardRef.current?.triggerSwipe(direction);
+    },
+    onMatchSuccess: matchedProfile => {
+      // 매치 성공 시 채팅방 생성
+      console.log(
+        '🎉 CategorySwipeScreen - 매치 성공 콜백 호출:',
+        matchedProfile
+      );
+      createChatRoomMutation.mutate(matchedProfile.id);
     },
   });
 

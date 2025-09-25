@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { createOrGetChatRoom } from '../../api/chat';
@@ -17,6 +17,7 @@ interface HomeScreenProps {
 export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const profileCardRef = useRef<ProfileCardRef>(null); // ProfileCard 참조
   const navigation = useNavigation<any>();
+  const queryClient = useQueryClient(); // React Query 클라이언트
 
   // 현재 로그인된 사용자 정보 (새로운 인증 시스템 사용)
   const { user } = useAuthStore();
@@ -28,6 +29,12 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     onSuccess: chatRoomData => {
       console.log('🎉 채팅방 생성 성공:', chatRoomData);
 
+      // 🔄 채팅방 목록 캐시 즉시 무효화 (나중에 버튼을 눌러도 바로 업데이트)
+      console.log('🔄 HomeScreen - 채팅방 생성 후 목록 캐시 무효화');
+      queryClient.invalidateQueries({
+        queryKey: ['chatRooms', user?.id],
+      });
+
       // 매치 성공 알림 후 채팅방으로 이동
       Alert.alert(
         '🎉 매치 성공!',
@@ -36,6 +43,11 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           {
             text: '나중에',
             style: 'cancel',
+            onPress: () => {
+              console.log(
+                '📋 HomeScreen - 나중에 버튼 눌러, 채팅방 목록은 이미 업데이트됨'
+              );
+            },
           },
           {
             text: '채팅하기',

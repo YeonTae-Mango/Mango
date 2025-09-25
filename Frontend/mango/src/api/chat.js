@@ -71,3 +71,19 @@ export const getChatMessages = async (roomId, page = 0, size = 20) => {
     throw error;
   }
 };
+
+/**
+ * 채팅방을 삭제합니다.
+ * @param {number} roomId - 채팅방 ID
+ * @returns {Promise<Object>} API 응답 프로미스
+ */
+export const deleteChatRoom = async roomId => {
+  try {
+    const response = await apiClient.delete(`/chat/rooms/${roomId}`);
+    console.log('채팅방 삭제 API 응답:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('채팅방 삭제 API 오류:', error);
+    throw error;
+  }
+};

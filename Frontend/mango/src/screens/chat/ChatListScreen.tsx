@@ -55,10 +55,25 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
   // 채팅방 목록 실시간 업데이트를 위한 상태
   const [realTimeChatRooms, setRealTimeChatRooms] = useState<ChatRoom[]>([]);
 
+  // 실제 채팅방 목록 API 호출
+  const {
+    data: chatRoomsData,
+    isLoading,
+    error,
+    refetch: refetchChatRooms,
+  } = useQuery({
+    queryKey: ['chatRooms', user?.id],
+    queryFn: getChatRooms,
+    enabled: isAuthenticated && !!user?.id,
+    staleTime: 5 * 60 * 1000, // 5분간 캐시 유지 (불필요한 API 호출 방지)
+    refetchOnWindowFocus: true,
+    // refetchInterval 제거 - 실시간 업데이트로 대체
+  });
+
   // 개인 알림 콜백 함수 - 채팅방 목록 실시간 업데이트
   const handlePersonalNotification = useCallback(
     (notification: ChatNotificationDTO) => {
-      console.log('\n�🚨🚨 CHATLIST - 백엔드 unreadCount 확인 🚨🚨🚨');
+      console.log('\n🚨🚨 CHATLIST - 백엔드 unreadCount 확인 🚨🚨🚨');
       console.log('📊 unreadCount 값:', notification.unreadCount);
       console.log('🔍 전체 notification:', notification);
       console.log('🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n');
@@ -102,13 +117,14 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
         } else {
           // 새로운 채팅방 감지 - 목록을 다시 불러오기
           console.log('🆕 새로운 채팅방 감지:', chatRoomId);
-          // React Query로 목록 새로고침 트리거 (추후 구현)
+          console.log('🔄 채팅방 목록 새로고침 실행...');
+          refetchChatRooms(); // ✅ 새로운 채팅방 생성 시 즉시 목록 새로고침
         }
 
         return updatedRooms;
       });
     },
-    []
+    [refetchChatRooms]
   );
 
   // 화면 포커스시 개인 알림 콜백 등록
@@ -141,20 +157,6 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
       };
     }, [user?.id, handlePersonalNotification])
   );
-
-  // 실제 채팅방 목록 API 호출
-  const {
-    data: chatRoomsData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['chatRooms', user?.id],
-    queryFn: getChatRooms,
-    enabled: isAuthenticated && !!user?.id,
-    staleTime: 0, // 항상 fresh 데이터로 취급
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000, // 30초마다 자동 새로고침 (백그라운드 업데이트)
-  });
 
   // 실제 데이터를 변환해서 사용
   const baseChatRooms = chatRoomsData
