@@ -511,7 +511,7 @@ export default function ProfileEditScreen() {
   };
 
   // 기본 정보 표시용 데이터
-  const basicInfo = userProfile ? `${userProfile.nickname} / ${userProfile.age} / ${userProfile.gender === 'male' ? '남' : '여'}` : '';
+  const basicInfo = userProfile ? `${userProfile.nickname} / ${userProfile.age} / ${userProfile.gender === 'M' ? '남' : '여'}` : '';
   
   // 위치 정보 - 업데이트된 정보가 있으면 우선 사용, 없으면 프로필에서 가져오기
   const city = locationInfo.sido || userProfile?.sido || '';
