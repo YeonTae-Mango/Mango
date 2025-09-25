@@ -243,15 +243,17 @@ const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
             locations={[0, 0.5, 1]}
             className="absolute bottom-0 left-0 right-0 h-full z-10"
           />
-          {/* 프로그레스 바 오버레이 영역 */}
-          <View className="absolute top-4 left-0 right-0 flex-row justify-center z-20">
-            {Array.from({ length: maxImages }).map((_, idx) => (
-              <View
-                key={idx}
-                className={`h-1 rounded mx-1 ${currentIndex === idx ? 'w-10 bg-white' : 'w-8 bg-white/30'}`}
-              />
-            ))}
-          </View>
+          {/* 프로그레스 바 오버레이 영역 - 사진이 2장 이상일 때만 표시 */}
+          {maxImages > 1 && (
+            <View className="absolute top-4 left-0 right-0 flex-row justify-center z-20">
+              {Array.from({ length: maxImages }).map((_, idx) => (
+                <View
+                  key={idx}
+                  className={`h-1 rounded mx-1 ${currentIndex === idx ? 'w-10 bg-white' : 'w-8 bg-white/30'}`}
+                />
+              ))}
+            </View>
+          )}
 
           {/* 이미지 슬라이더 영역 */}
           <TouchableOpacity
