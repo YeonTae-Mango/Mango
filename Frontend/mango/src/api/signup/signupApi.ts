@@ -34,6 +34,38 @@ export interface SignupErrorResponse {
   message: string;
 }
 
+// 닉네임 중복 검사 응답 타입 정의
+export interface NicknameCheckResponse {
+  status: string;
+  message: string;
+  data?: {
+    isAvailable: boolean;
+  };
+}
+
+// 닉네임 중복 검사 에러 응답 타입 정의
+export interface NicknameCheckErrorResponse {
+  errorCode: string;
+  status: string;
+  message: string;
+}
+
+// 이메일 중복 검사 응답 타입 정의
+export interface EmailCheckResponse {
+  status: string;
+  message: string;
+  data?: {
+    isAvailable: boolean;
+  };
+}
+
+// 이메일 중복 검사 에러 응답 타입 정의
+export interface EmailCheckErrorResponse {
+  errorCode: string;
+  status: string;
+  message: string;
+}
+
 /**
  * 회원가입 API 호출 함수
  * @param signupData 회원가입에 필요한 데이터
@@ -130,6 +162,76 @@ export const signupUser = async (
       console.error('❌ 요청 설정 에러:', error.message);
       throw new Error('요청 처리 중 오류가 발생했습니다.');
     }
+  }
+};
+
+/**
+ * 닉네임 중복 검사 API 호출 함수
+ * @param nickname 검사할 닉네임
+ * @returns Promise<boolean> 사용 가능 여부
+ */
+export const checkNicknameDuplicate = async (nickname: string): Promise<boolean> => {
+  console.log('🔍 닉네임 중복 검사 시작:', nickname);
+
+  try {
+    const response = await apiClient.get<NicknameCheckResponse>(
+      `/auth/check-nickname?nickname=${encodeURIComponent(nickname)}`
+    );
+
+    console.log('✅ 닉네임 중복 검사 성공:', response.data);
+    
+    // 성공 응답인 경우 사용 가능
+    if (response.data.status === 'SUCCESS') {
+      return response.data.data?.isAvailable ?? true;
+    }
+    
+    return false;
+  } catch (error: any) {
+    console.log('🔍 닉네임 중복 검사 결과:', error.response?.data);
+    
+    if (error.response?.data?.errorCode === 'USER_NICKNAME_ALREADY_EXISTS') {
+      console.log('❌ 닉네임이 이미 사용 중:', nickname);
+      return false; // 중복됨
+    }
+    
+    // 기타 에러의 경우 네트워크 문제일 수 있으므로 true 반환 (사용자에게 재시도 유도)
+    console.warn('⚠️ 닉네임 중복 검사 실패, 기본값 true 반환:', error.message);
+    return true;
+  }
+};
+
+/**
+ * 이메일 중복 검사 API 호출 함수
+ * @param email 검사할 이메일
+ * @returns Promise<boolean> 사용 가능 여부
+ */
+export const checkEmailDuplicate = async (email: string): Promise<boolean> => {
+  console.log('🔍 이메일 중복 검사 시작:', email);
+
+  try {
+    const response = await apiClient.get<EmailCheckResponse>(
+      `/auth/check-email?email=${encodeURIComponent(email)}`
+    );
+
+    console.log('✅ 이메일 중복 검사 성공:', response.data);
+    
+    // 성공 응답인 경우 사용 가능
+    if (response.data.status === 'SUCCESS') {
+      return response.data.data?.isAvailable ?? true;
+    }
+    
+    return false;
+  } catch (error: any) {
+    console.log('🔍 이메일 중복 검사 결과:', error.response?.data);
+    
+    if (error.response?.data?.errorCode === 'USER_EMAIL_ALREADY_EXISTS') {
+      console.log('❌ 이메일이 이미 사용 중:', email);
+      return false; // 중복됨
+    }
+    
+    // 기타 에러의 경우 네트워크 문제일 수 있으므로 true 반환 (사용자에게 재시도 유도)
+    console.warn('⚠️ 이메일 중복 검사 실패, 기본값 true 반환:', error.message);
+    return true;
   }
 };
 
