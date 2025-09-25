@@ -31,9 +31,11 @@ public class ChartController extends BaseController {
     })
     public ResponseEntity<BaseResponse> getMyCategoryChart(
             @Parameter(description = "사용자 ID", required = true, example = "1")
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            @Parameter(description = "기간 (1: 이번달, 2: 저번달, 3: 최근 6개월)", required = false, example = "1")
+            @RequestParam(defaultValue = "1") int period
     ) {
-        return toResponseEntity(chartService.getMyCategoryChart(userId), "내 카테고리 차트 조회에 성공하였습니다.");
+        return toResponseEntity(chartService.getMyCategoryChart(userId,period), "내 카테고리 차트 조회에 성공하였습니다.");
     }
 
     @GetMapping("myMonthlyChart/{userId}")
