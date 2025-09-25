@@ -115,6 +115,9 @@ export default function ChatRoomScreen() {
     queryKey: ['chatRoom', chatRoomId],
     queryFn: () => getChatRoom(parseInt(chatRoomId)),
     enabled: !!chatRoomId,
+    staleTime: 0, // 항상 stale 상태로 취급하여 새로운 데이터 요청
+    refetchOnMount: 'always', // 컴포넌트 마운트 시 항상 새로고침
+    refetchOnWindowFocus: true, // 포커스 시 새로고침
   });
 
   // 채팅방 진입 지연 상태 (WebSocket 메시지 처리 시간 확보)
@@ -145,12 +148,20 @@ export default function ChatRoomScreen() {
     refetchOnWindowFocus: true,
   });
 
-  // chatRoomData 로드 로그
+  // chatRoomData 로드 시 채팅방 목록 캐시 무효화 (unreadCount 업데이트)
   useEffect(() => {
     if (chatRoomData) {
       console.log('🔍 chatRoomData 로드됨:', chatRoomData);
+
+      // 채팅방 진입 시 unreadCount 업데이트를 위해 채팅방 목록 캐시 무효화
+      console.log(
+        '🔄 채팅방 진입 - 채팅방 목록 캐시 무효화 (unreadCount 업데이트)'
+      );
+      queryClient.invalidateQueries({
+        queryKey: ['chatRooms', user?.id],
+      });
     }
-  }, [chatRoomData]);
+  }, [chatRoomData, queryClient, user?.id]);
 
   // 메뉴 모달 상태
   const [showMenuModal, setShowMenuModal] = useState(false);

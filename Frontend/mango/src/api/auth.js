@@ -52,3 +52,33 @@ export const getUserById = async userId => {
     throw error;
   }
 };
+
+/**
+ * 사용자의 매칭 거리를 업데이트합니다.
+ * @param {number} userId - 사용자 ID
+ * @param {number} distance - 새로운 거리 (km 단위)
+ * @returns {Promise<Object>} 업데이트 결과
+ */
+export const updateUserDistance = async (userId, distance) => {
+  try {
+    // apiClient import 추가 필요
+    const apiClient = (await import('./client')).default;
+    const token = await getAuthToken();
+
+    const response = await apiClient.patch(
+      `/users/${userId}/distance`,
+      { distance },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log('사용자 거리 업데이트 성공:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('사용자 거리 업데이트 실패:', error);
+    throw error;
+  }
+};

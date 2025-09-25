@@ -8,6 +8,7 @@ import Layout from '../../components/common/Layout';
 import chatService from '../../services/chatService';
 import { useAuthStore } from '../../store/authStore';
 import { ChatNotificationDTO } from '../../types/chat';
+import { formatTime } from '../../utils/timeFormat';
 
 interface ChatRoom {
   chatRoomId: string;
@@ -34,13 +35,7 @@ const transformChatRoomData = (apiData: any[]): ChatRoom[] => {
       profileImageUrl:
         room.otherUserProfileImage || room.otherUser?.profilePhotoUrl,
       lastMessage: room.lastMessage || '먼저 채팅을 보내보세요!',
-      time: room.lastMessageTime
-        ? new Date(room.lastMessageTime).toLocaleTimeString('ko-KR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-          })
-        : '',
+      time: room.lastMessageTime ? formatTime(room.lastMessageTime) : '',
       unreadCount: room.unreadCount || 0,
       isBlocked: room.isBlocked || false,
     };
@@ -50,43 +45,6 @@ const transformChatRoomData = (apiData: any[]): ChatRoom[] => {
 interface ChatListScreenProps {
   onLogout: () => void;
 }
-
-// 임시 데이터
-const generateMockData = (page: number): ChatRoom[] => {
-  const mockUsers = [
-    '홍사운드',
-    '김철수',
-    '이영희',
-    '박민수',
-    '최지영',
-    '정우진',
-    '강소영',
-    '임태현',
-    '윤서연',
-    '조민호',
-  ];
-
-  const mockMessages = [
-    '안녕하세요! 오늘 날씨가 좋네요. 안녕하세요! 오늘 날씨가 좋네',
-    '네, 맞아요! 산책하기 좋은 날씨인 것 같아요.',
-    '오늘 점심 뭐 드셨나요?',
-    '혹시 시간 되시면 커피 한 잔 어떠세요?',
-    '감사합니다! 좋은 하루 되세요.',
-    '네, 알겠습니다. 확인해보겠습니다.',
-    '정말 재미있는 영화였어요!',
-    '다음에 또 만나요~',
-    '좋은 정보 감사합니다.',
-    '네, 잘 부탁드립니다!',
-  ];
-
-  return Array.from({ length: 10 }, (_, index) => ({
-    chatRoomId: `${page * 10 + index + 1}`,
-    userName: mockUsers[index],
-    lastMessage: mockMessages[index],
-    time: `오후 ${2 + (index % 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-    unreadCount: Math.random() > 0.3 ? Math.floor(Math.random() * 10) + 1 : 0, // 70% 확률로 1-10개의 안 읽은 메시지
-  }));
-};
 
 export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
   const navigation = useNavigation<any>();
@@ -153,29 +111,6 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
     []
   );
 
-  // 시간 포맷 함수
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60)
-    );
-
-    if (diffInMinutes < 1) {
-      return '방금';
-    } else if (diffInMinutes < 60) {
-      return `${diffInMinutes}분 전`;
-    } else if (diffInMinutes < 1440) {
-      // 24시간
-      return `${Math.floor(diffInMinutes / 60)}시간 전`;
-    } else {
-      return date.toLocaleDateString('ko-KR', {
-        month: 'short',
-        day: 'numeric',
-      });
-    }
-  };
-
   // 화면 포커스시 개인 알림 콜백 등록
   useFocusEffect(
     useCallback(() => {
@@ -221,13 +156,10 @@ export default function ChatListScreen({ onLogout }: ChatListScreenProps) {
     refetchInterval: 30000, // 30초마다 자동 새로고침 (백그라운드 업데이트)
   });
 
-  // 임시로 목업 데이터도 유지 (API 없을 경우 대비)
-  const [fallbackChatRooms] = useState<ChatRoom[]>(generateMockData(0));
-
-  // 실제 데이터가 있으면 변환해서 사용, 없으면 목업 데이터 사용
+  // 실제 데이터를 변환해서 사용
   const baseChatRooms = chatRoomsData
     ? transformChatRoomData(chatRoomsData)
-    : fallbackChatRooms;
+    : [];
 
   // 실시간 업데이트된 채팅방 목록 사용 (없으면 기본 목록)
   const chatRooms =

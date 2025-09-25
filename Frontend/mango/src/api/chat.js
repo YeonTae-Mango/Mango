@@ -64,7 +64,7 @@ export const getChatMessages = async (roomId, page = 0, size = 20) => {
         size: size,
       },
     });
-    // console.log('채팅 메시지 API 응답:', response.data);
+    console.log('채팅 메시지 API 응답:', response.data);
     return response.data;
   } catch (error) {
     console.error('채팅 메시지 API 오류:', error);

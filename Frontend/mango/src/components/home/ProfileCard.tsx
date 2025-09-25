@@ -77,43 +77,114 @@ const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
 
     // PanResponder를 사용한 제스처 처리
     const panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: () => true, // 터치 시작 즉시 감지
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // dx 또는 dy가 1px 이상 움직이면 감지
-        return Math.abs(gestureState.dx) > 1 || Math.abs(gestureState.dy) > 1;
+        // 수평 움직임이 수직 움직임보다 클 때만 스와이프로 인식
+        const absDx = Math.abs(gestureState.dx);
+        const absDy = Math.abs(gestureState.dy);
+
+        // 매우 작은 움직임도 감지하되, 수평 움직임 우선
+        return absDx > 0.5 || (absDx > 0.1 && absDx > absDy * 0.3);
+      },
+      onPanResponderGrant: (evt, gestureState) => {
+        // 터치 시작 즉시 미세한 피드백 제공
+        scale.value = withSpring(1.01, {
+          damping: 25,
+          stiffness: 400,
+          mass: 0.5,
+        });
       },
       onPanResponderMove: (evt, gestureState) => {
-        translateX.value = gestureState.dx;
-        scale.value = 1 + Math.abs(gestureState.dx) * 0.0003;
-        // 스와이프 정보 계산
-        const swipeThreshold = 30;
-        let direction: 'left' | 'right' | null = null;
-        let intensity = 0;
-        if (Math.abs(gestureState.dx) > swipeThreshold) {
-          direction = gestureState.dx > 0 ? 'right' : 'left';
-          intensity = Math.min(Math.abs(gestureState.dx) / 150, 1);
+        // 수평 이동만 적용 (세로 스크롤과 구분)
+        const dx = gestureState.dx;
+        const dy = gestureState.dy;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
+
+        // 수평 움직임이 더 클 때만 스와이프 적용
+        if (absDx > absDy * 0.5) {
+          translateX.value = dx;
+          // 더 부드럽고 자연스러운 스케일 변화
+          scale.value = 1 + absDx * 0.0002;
+
+          // 낮은 임계값으로 즉시 반응
+          const swipeThreshold = 3; // 5 → 3으로 더 낮춤
+          let direction: 'left' | 'right' | null = null;
+          let intensity = 0;
+
+          if (absDx > swipeThreshold) {
+            direction = dx > 0 ? 'right' : 'left';
+            // 더 부드러운 강도 계산
+            intensity = Math.min(absDx / 70, 1); // 80 → 70으로 더 민감하게
+          }
+
+          onSwipeUpdate(direction, intensity);
         }
-        onSwipeUpdate(direction, intensity);
       },
       onPanResponderRelease: (evt, gestureState) => {
-        const threshold = 70;
-        if (Math.abs(gestureState.dx) > threshold) {
+        const dx = gestureState.dx;
+        const absDx = Math.abs(dx);
+        const velocity = Math.abs(gestureState.vx); // 속도도 고려
+
+        // 거리 또는 속도 기준으로 스와이프 완료 판단
+        const distanceThreshold = 35; // 40 → 35로 더 낮춤
+        const velocityThreshold = 0.3; // 빠른 플릭 동작도 인식
+
+        const shouldComplete =
+          absDx > distanceThreshold || velocity > velocityThreshold;
+
+        if (shouldComplete) {
           // 스와이프 완료
-          const direction = gestureState.dx > 0 ? 'right' : 'left';
-          const exitX = gestureState.dx > 0 ? 1000 : -1000;
-          translateX.value = withTiming(exitX, { duration: 300 });
+          const direction = dx > 0 ? 'right' : 'left';
+          const exitX = dx > 0 ? 1200 : -1200;
+
+          translateX.value = withTiming(exitX, {
+            duration: Math.max(200, 400 - velocity * 200), // 속도에 따른 동적 시간
+            easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
+          });
+
+          // 살짝 확대되면서 사라지는 효과
+          scale.value = withTiming(1.03, {
+            duration: 120,
+            easing: Easing.out(Easing.ease),
+          });
+
           setTimeout(() => {
             if (onNextProfile) {
               const action = direction === 'right' ? 'like' : 'dislike';
               onNextProfile(action);
             }
-          }, 100);
+          }, 80);
+
           onSwipeUpdate(null, 0);
         } else {
-          // 복원
-          translateX.value = withSpring(0);
-          scale.value = withSpring(1);
+          // 매우 부드러운 복원 애니메이션
+          translateX.value = withSpring(0, {
+            damping: 20,
+            stiffness: 250,
+            mass: 0.7,
+          });
+          scale.value = withSpring(1, {
+            damping: 20,
+            stiffness: 250,
+            mass: 0.7,
+          });
           onSwipeUpdate(null, 0);
         }
+      },
+      onPanResponderTerminate: () => {
+        // 제스처가 중단되었을 때 부드럽게 복원
+        translateX.value = withSpring(0, {
+          damping: 20,
+          stiffness: 250,
+          mass: 0.7,
+        });
+        scale.value = withSpring(1, {
+          damping: 20,
+          stiffness: 250,
+          mass: 0.7,
+        });
+        onSwipeUpdate(null, 0);
       },
     });
 
@@ -121,12 +192,18 @@ const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
     const triggerButtonSwipe = (direction: 'left' | 'right') => {
       console.log(`triggerButtonSwipe 호출 - direction: ${direction}`);
 
-      const exitX = direction === 'right' ? 1000 : -1000; // 화면 밖으로 이동할 거리
+      const exitX = direction === 'right' ? 1200 : -1200; // 이동 거리를 더 크게
 
-      // 카드를 화면 밖으로 부드럽게 이동
+      // 더 부드럽고 자연스러운 애니메이션
       translateX.value = withTiming(exitX, {
-        duration: 300, // 0.3초 동안
-        easing: Easing.out(Easing.quad), // 부드러운 감속 곡선
+        duration: 400, // 더 부드럽게 400ms
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1), // 베지어 곡선으로 더 자연스럽게
+      });
+
+      // 살짝 확대되면서 사라지는 효과
+      scale.value = withTiming(1.05, {
+        duration: 200,
+        easing: Easing.out(Easing.ease),
       });
 
       // 버튼 클릭의 경우 onNextProfile을 호출하지 않음 (중복 API 호출 방지)
@@ -146,7 +223,7 @@ const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
         transform: [
           { translateX: translateX.value }, // 수평 이동: 드래그 거리만큼 좌우로 이동
           { scale: scale.value }, // 크기 변화: 드래그 강도에 따라 살짝 커짐
-          { rotate: `${translateX.value * 0.08}deg` }, // 회전 효과: 더 부드럽게 기울어짐 (틴더 스타일)
+          { rotate: `${translateX.value * 0.05}deg` }, // 회전 효과: 더 부드럽게 (0.08 → 0.05)
         ],
       };
     });
