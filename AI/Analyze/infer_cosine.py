@@ -40,12 +40,12 @@ TYPE_KEYWORDS: Dict[str, List[str]] = {
 
 # ---------- 2) 매핑/임베딩 ----------
 def load_mappings():
-    # 현재 파일의 디렉토리를 기준으로 프로젝트 루트를 찾음
-    current_dir = Path(__file__).resolve().parent
-    project_root = current_dir.parent.parent  # AI/Analyze -> AI -> 프로젝트 루트
+    # Docker 환경을 고려한 경로 설정
+    current_dir = Path(__file__).resolve().parent  # /app/Analyze
     
-    small2id_path = project_root / "AI" / "mappings" / "small2id.json"
-    id2small_path = project_root / "AI" / "mappings" / "id2small.json"
+    # Docker에서는 /app이 루트이므로 상대 경로로 설정
+    small2id_path = current_dir.parent / "mappings" / "small2id.json"  # /app/mappings/small2id.json
+    id2small_path = current_dir.parent / "mappings" / "id2small.json"  # /app/mappings/id2small.json
     
     small2id = json.load(open(small2id_path, "r", encoding="utf-8"))
     id2small = json.load(open(id2small_path, "r", encoding="utf-8"))
@@ -54,10 +54,9 @@ def load_mappings():
 
 def load_small_embeddings(path=None):
     if path is None:
-        # 기본 경로를 동적으로 계산
-        current_dir = Path(__file__).resolve().parent
-        project_root = current_dir.parent.parent  # AI/Analyze -> AI -> 프로젝트 루트
-        path = project_root / "AI" / "artifacts" / "small_embeddings.npy"
+        # Docker 환경을 고려한 기본 경로
+        current_dir = Path(__file__).resolve().parent  # /app/Analyze
+        path = current_dir.parent / "artifacts" / "small_embeddings.npy"  # /app/artifacts/small_embeddings.npy
     return np.load(path)  # (vocab, dim), 0은 padding
 
 # ---------- 3) 유틸 ----------

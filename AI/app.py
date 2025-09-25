@@ -4,13 +4,22 @@ from fastapi.responses import JSONResponse
 from datetime import datetime
 from typing import Optional
 from typing import Dict, List
-from .New_User.payments_api import generate_payments_json
-from .Analyze.infer_cosine import infer_profile
-from .Matching.matching import match_one_to_many, load_candidates_from_json
+# from New_User.payments_api import generate_payments_json
+# from Analyze.infer_cosine import infer_profile
+# from Matching.matching import match_one_to_many, load_candidates_from_json
 from pathlib import Path
 import json
 import numpy as np
-
+try:
+    # Docker 환경에서 실행될 때 (AI 디렉토리가 루트)
+    from New_User.payments_api import generate_payments_json
+    from Analyze.infer_cosine import infer_profile
+    from Matching.matching import match_one_to_many, load_candidates_from_json
+except ImportError:
+    # 프로젝트 루트에서 실행될 때 (AI가 패키지)
+    from AI.New_User.payments_api import generate_payments_json
+    from AI.Analyze.infer_cosine import infer_profile
+    from AI.Matching.matching import match_one_to_many, load_candidates_from_json
 app = FastAPI(title="Payments API")
 
 def birthdate_from_age(age: int, ref: Optional[datetime] = None) -> str:
