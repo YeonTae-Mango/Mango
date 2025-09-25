@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { getTwoTypeChart } from '../../api/chart/twoTypeChartApi';
 import { useAuthStore } from '../../store/authStore';
+import { getUserById } from '../../api/auth';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
 
 interface TwoTypeTabContentProps {
@@ -18,6 +19,7 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [chartData, setChartData] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
 
   // 최대값을 가진 유형 찾기
   const getMaxType = (data: number[], labels: string[]) => {
@@ -25,9 +27,36 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
     return labels[maxIndex] || '알 수 없음';
   };
 
+  // 특정 사용자 정보 조회 함수
+  const fetchUserInfo = async (userId: number) => {
+    try {
+      console.log(`🔍 사용자 ${userId} 정보 조회 중...`);
+      const userData = await getUserById(userId);
+      console.log('✅ 사용자 정보 조회 성공:', userData);
+      setUserInfo(userData);
+      return userData;
+    } catch (error) {
+      console.error('❌ 사용자 정보 조회 실패:', error);
+      return null;
+    }
+  };
+
   // 내 유형과 상대방 유형 계산
   const myType = chartData ? getMaxType(chartData.myData, chartData.labels) : '핫플헌터';
   const otherType = chartData ? getMaxType(chartData.partnerData, chartData.labels) : '모험가';
+
+  // 디버깅용: 조회된 사용자 정보 출력
+  useEffect(() => {
+    if (userInfo) {
+      console.log('👤 조회된 사용자 정보:', {
+        id: userInfo.id,
+        nickname: userInfo.nickname,
+        email: userInfo.email,
+        profileImage: userInfo.profileImage,
+        // 기타 사용자 정보 필드들
+      });
+    }
+  }, [userInfo]);
 
   // API 데이터 조회
   useEffect(() => {
@@ -51,6 +80,9 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
         const data = await getTwoTypeChart(user.id, otherUserId);
         setChartData(data);
         console.log('📊 차트 데이터 설정 완료:', data);
+
+        // 특정 사용자 정보도 함께 조회
+        await fetchUserInfo(otherUserId);
       } catch (error) {
         console.error('❌ 차트 데이터 조회 실패:', error);
         setError('차트 데이터를 불러오는데 실패했습니다.');
@@ -159,7 +191,7 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
           {/* 상대방 유형 */}
           <View className="flex-row items-center justify-center mb-4">
             <Text className="text-body-large-semibold text-text-primary mr-3">
-              <Text className="font-bold">{userName}</Text>님은
+              <Text className="font-bold">{userInfo?.nickname || userName}</Text>님은
             </Text>
             <View className="bg-mango-red rounded-full px-4 py-2 flex-row items-center">
               <Text className="text-body-medium-semibold text-white">

@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
-import { Text, View, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Text, View, Alert, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Layout from '../../components/common/Layout';
 import SignupTitle from '../../components/signup/SignupTitle';
@@ -19,6 +19,16 @@ export default function SignupAccountCompleteScreen({
   const insets = useSafeAreaInsets();
   const { setSignupInProgress } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
+
+  // 컴포넌트 마운트 시 1초간 로더 표시
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleNext = async () => {
     try {
@@ -56,6 +66,24 @@ export default function SignupAccountCompleteScreen({
   // CustomHeader와 동일한 높이 계산
   const headerHeight = Math.max(insets.top, 16) + 16 + 48; // SafeArea + padding + content height
 
+  // 로더 화면
+  if (showLoader) {
+    return (
+      <Layout showHeader={false}>
+        <View
+          className="flex-1 bg-white px-12 items-center justify-center"
+          style={{ paddingTop: headerHeight }}
+        >
+          <ActivityIndicator size="large" color="#FF6D60" />
+          <Text className="text-lg font-semibold text-text-primary mt-4">
+            연동중입니다
+          </Text>
+        </View>
+      </Layout>
+    );
+  }
+
+  // 완료 화면
   return (
     <Layout showHeader={false}>
       <View

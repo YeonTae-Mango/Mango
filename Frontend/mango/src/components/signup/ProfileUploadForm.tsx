@@ -14,11 +14,13 @@ export default function ProfileUploadForm({
 }: ProfileUploadFormProps) {
   const renderPhotoCard = (photo: string, index: number) => {
     return (
-      <View key={index} className="relative w-full h-full rounded-lg border-2 border-mango-red">
-        {/* 회색 배경 (지도처럼) */}
-        <View className="w-full h-full bg-gray items-center justify-center rounded-lg overflow-hidden">
-          <Text className="text-black text-lg font-semibold">사진</Text>
-        </View>
+      <View key={index} className="relative w-full h-full rounded-lg border-2 border-mango-red overflow-hidden">
+        {/* 실제 이미지 표시 */}
+        <Image 
+          source={{ uri: photo }}
+          className="w-full h-full rounded-lg"
+          resizeMode="cover"
+        />
         
         {/* 대표사진 배지 (첫 번째 사진만) */}
         {index === 0 && (

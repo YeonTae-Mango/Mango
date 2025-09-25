@@ -11,6 +11,8 @@ import {
   Alert,
   Image,
 } from 'react-native';
+import * as Location from 'expo-location';
+import Constants from 'expo-constants';
 import {
   launchImageLibrary,
   launchCamera,
@@ -24,8 +26,8 @@ import ProfileCard from '../../components/profile/ProfileCard';
 import ProfileTab from '../../components/profile/ProfileTab';
 import ProfileImageDisplay from '../../components/profile/ProfileImageDisplay';
 import { useAuthStore } from '../../store/authStore';
-import { getUserProfile, UserProfile } from '../../api/profile';
-import { uploadUserPhotos, PhotoUploadRequest } from '../../api/photos/photoApi';
+import { getUserProfile, UserProfile, updateUserProfile, UpdateProfileRequest } from '../../api/profile';
+import { uploadUserPhotos, PhotoUploadRequest, deleteUserPhoto } from '../../api/photos/photoApi';
 
 export default function ProfileEditScreen() {
   const navigation = useNavigation<any>();
@@ -39,6 +41,15 @@ export default function ProfileEditScreen() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // 위치 정보 상태
+  const [locationInfo, setLocationInfo] = useState({
+    latitude: 0,
+    longitude: 0,
+    sido: '',
+    sigungu: ''
+  });
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
   
   // 거리 옵션들 (7개 스텝)
   const distanceOptions = [1, 3, 5, 10, 30, 50, 100];
@@ -96,11 +107,24 @@ export default function ProfileEditScreen() {
         setPhotoIds(profile.profileImageUrlsId || []);
         console.log('📸 photos 상태 설정 완료');
         
-        // 거리 설정 초기화
-        const distanceIdx = distanceOptions.findIndex(d => d === profile.distance / 1000);
-        if (distanceIdx !== -1) {
-          setDistanceIndex(distanceIdx);
+        // 거리 설정 초기화 (서버에서 받은 km 단위 값 사용)
+        const distanceInKm = profile.distance;
+        console.log('📏 서버에서 받은 거리 (km):', distanceInKm);
+        
+        // 가장 가까운 거리 옵션 찾기
+        let closestIndex = 3; // 기본값: 10km
+        let minDiff = Math.abs(distanceOptions[3] - distanceInKm);
+        
+        for (let i = 0; i < distanceOptions.length; i++) {
+          const diff = Math.abs(distanceOptions[i] - distanceInKm);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestIndex = i;
+          }
         }
+        
+        console.log('📏 가장 가까운 거리 옵션:', distanceOptions[closestIndex], 'km (인덱스:', closestIndex, ')');
+        setDistanceIndex(closestIndex);
         
         console.log('✅ 프로필 정보 로드 완료:', profile);
       } catch (error) {
@@ -146,21 +170,151 @@ export default function ProfileEditScreen() {
     ]);
   };
 
-  const handlePhotoRemove = (index: number) => {
+  const handlePhotoRemove = async (index: number) => {
+    // 대표사진이 하나만 남은 경우 삭제 방지
+    if (photoIds.length === 1) {
+      Alert.alert(
+        '삭제 불가',
+        '대표사진은 최소 1개 이상 유지해야 합니다.',
+        [{ text: '확인' }]
+      );
+      return;
+    }
+
     const imageId = photoIds[index];
     console.log('🗑️ 이미지 삭제 요청:', { index, imageId, imageUrl: photos[index] });
     
-    // TODO: 서버에 DELETE 요청 보내기 (imageId가 -1이 아닌 경우)
-    if (imageId !== -1) {
-      console.log('📡 서버에 이미지 삭제 요청 예정:', imageId);
-      // deleteImageFromServer(imageId);
-    } else {
-      console.log('ℹ️ 새로 업로드된 이미지 - 서버 삭제 요청 불필요');
+    try {
+      // 서버에 DELETE 요청 보내기 (imageId가 -1이 아닌 경우)
+      if (imageId !== -1 && user?.id) {
+        console.log('📡 서버에 이미지 삭제 요청 시작:', imageId);
+        const response = await deleteUserPhoto(user.id, imageId);
+        console.log('✅ 서버에서 이미지 삭제 완료:', response.data.deletedPhotoId);
+      } else {
+        console.log('ℹ️ 새로 업로드된 이미지 - 서버 삭제 요청 불필요');
+      }
+      
+      // 로컬 상태에서 제거
+      setPhotos(prev => prev.filter((_, i) => i !== index));
+      setPhotoIds(prev => prev.filter((_, i) => i !== index));
+      
+      Alert.alert('성공', '사진이 삭제되었습니다.');
+    } catch (error: any) {
+      console.error('❌ 이미지 삭제 실패:', error);
+      Alert.alert('삭제 실패', error.message || '사진 삭제 중 오류가 발생했습니다.');
     }
-    
-    // 로컬 상태에서 제거
-    setPhotos(prev => prev.filter((_, i) => i !== index));
-    setPhotoIds(prev => prev.filter((_, i) => i !== index));
+  };
+
+  /**
+   * 네이버맵 API를 사용한 역지오코딩
+   */
+  const reverseGeocodeWithNaver = async (lat: number, lng: number) => {
+    try {
+      const { NCP_MAPS_CLIENT_ID, NCP_MAPS_CLIENT_KEY } = Constants.expoConfig?.extra ?? {};
+      
+      if (!NCP_MAPS_CLIENT_ID || !NCP_MAPS_CLIENT_KEY) {
+        console.warn('Naver Cloud API 키가 설정되지 않았습니다.');
+        return null;
+      }
+
+      const query = new URLSearchParams({
+        coords: `${lng},${lat}`,
+        orders: 'admcode',
+        output: 'json'
+      }).toString();
+
+      const url = `https://maps.apigw.ntruss.com/map-reversegeocode/v2/gc?${query}`;
+
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'x-ncp-apigw-api-key-id': NCP_MAPS_CLIENT_ID,
+          'x-ncp-apigw-api-key': NCP_MAPS_CLIENT_KEY,
+          'Accept-Language': 'ko'
+        }
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error('네이버맵 역지오코딩 실패:', res.status, text);
+        return null;
+      }
+
+      const data = await res.json();
+      const first = data?.results?.[0];
+      const area1 = first?.region?.area1?.name ?? '';
+      const area2 = first?.region?.area2?.name ?? '';
+
+      return {
+        sido: area1,
+        sigungu: area2
+      };
+    } catch (e) {
+      console.error('네이버맵 역지오코딩 에러:', e);
+      return null;
+    }
+  };
+
+  /**
+   * 현재 위치 정보를 가져와서 업데이트
+   */
+  const handleLocationUpdate = async () => {
+    try {
+      setIsUpdatingLocation(true);
+      console.log('📍 위치 업데이트 시작');
+
+      // 위치 권한 요청
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('권한 필요', '위치 정보 접근 권한이 필요합니다.');
+        return;
+      }
+
+      // 현재 위치 가져오기
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      console.log('📍 현재 위치:', {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude
+      });
+
+      // 네이버맵 API를 사용한 역지오코딩
+      const { latitude, longitude } = location.coords;
+      const addressInfo = await reverseGeocodeWithNaver(latitude, longitude);
+      
+      if (addressInfo) {
+        const { sido, sigungu } = addressInfo;
+        
+        console.log('📍 네이버맵 주소 정보:', { sido, sigungu });
+
+        // 위치 정보 업데이트
+        const newLocationInfo = {
+          latitude,
+          longitude,
+          sido,
+          sigungu
+        };
+
+        setLocationInfo(newLocationInfo);
+        
+        // TODO: 서버에 위치 정보 저장
+        console.log('📍 위치 정보 저장 예정:', newLocationInfo);
+        
+        Alert.alert(
+          '위치 업데이트 완료',
+          `${sido} ${sigungu}로 위치가 업데이트되었습니다.`
+        );
+      } else {
+        throw new Error('주소 정보를 찾을 수 없습니다.');
+      }
+    } catch (error: any) {
+      console.error('❌ 위치 업데이트 실패:', error);
+      Alert.alert('위치 업데이트 실패', error.message || '위치 정보를 가져오는데 실패했습니다.');
+    } finally {
+      setIsUpdatingLocation(false);
+    }
   };
 
   /**
@@ -187,12 +341,20 @@ export default function ProfileEditScreen() {
       if (response.status === 'SUCCESS' && response.data.length > 0) {
         console.log('✅ 이미지 업로드 성공:', response.data[0]);
         
-        // 업로드된 이미지 URL을 photos 배열에 추가
-        setPhotos(prev => [...prev, response.data[0]]);
+        // 새로운 API 응답 구조에 맞게 처리
+        const uploadedPhoto = response.data[0];
+        if (!uploadedPhoto || !uploadedPhoto.photoUrl || !uploadedPhoto.photoId) {
+          throw new Error('업로드된 이미지 정보를 찾을 수 없습니다.');
+        }
         
-        // TODO: 업로드 API에서 이미지 ID를 반환하도록 수정 필요
-        // 현재는 임시로 -1 사용 (새로 업로드된 이미지임을 표시)
-        setPhotoIds(prev => [...prev, -1]);
+        console.log('🔧 업로드된 이미지 정보:', {
+          photoId: uploadedPhoto.photoId,
+          photoUrl: uploadedPhoto.photoUrl
+        });
+        
+        // 업로드된 이미지 URL과 ID를 각각 배열에 추가
+        setPhotos(prev => [...prev, uploadedPhoto.photoUrl]);
+        setPhotoIds(prev => [...prev, uploadedPhoto.photoId]);
         
         Alert.alert('성공', '이미지가 업로드되었습니다.');
       } else {
@@ -275,10 +437,66 @@ export default function ProfileEditScreen() {
     // TODO: 탭에 따라 다른 API 호출
   };
 
-  const handleComplete = () => {
-    // 프로필 수정 완료 로직
-    console.log('프로필 수정 완료');
-    navigation.goBack();
+  const handleComplete = async () => {
+    try {
+      if (!user?.id) {
+        Alert.alert('오류', '사용자 정보를 찾을 수 없습니다.');
+        return;
+      }
+
+      console.log('프로필 수정 완료 시작');
+      
+      // 거리 정보를 km에서 m 단위로 변환 (서버 전송용)
+      
+      // 위치 정보 준비 (업데이트된 정보가 있으면 사용, 없으면 기존 프로필 정보 사용)
+      const finalLocationInfo = {
+        latitude: locationInfo.latitude || parseFloat(userProfile?.latitude || '0'),
+        longitude: locationInfo.longitude || parseFloat(userProfile?.longitude || '0'),
+        sido: locationInfo.sido || userProfile?.sido || '',
+        sigungu: locationInfo.sigungu || userProfile?.sigungu || ''
+      };
+      
+      console.log('📍 프로필 수정 데이터:', {
+        nickname: userProfile?.nickname || '',
+        distance,
+        location: finalLocationInfo,
+        introduction: oneWord
+      });
+      
+      // API 요청 데이터 구성
+      const updateData: UpdateProfileRequest = {
+        nickname: userProfile?.nickname || '',
+        longitude: finalLocationInfo.longitude,
+        latitude: finalLocationInfo.latitude,
+        sido: finalLocationInfo.sido,
+        sigungu: finalLocationInfo.sigungu,
+        distance,
+        introduction: oneWord
+      };
+      
+      // 서버에 프로필 수정 요청
+      const response = await updateUserProfile(user.id, updateData);
+      
+      console.log('✅ 프로필 수정 성공:', response);
+      
+      Alert.alert(
+        '수정 완료',
+        '프로필이 성공적으로 수정되었습니다.',
+        [
+          {
+            text: '확인',
+            onPress: () => navigation.goBack()
+          }
+        ]
+      );
+      
+    } catch (error: any) {
+      console.error('❌ 프로필 수정 실패:', error);
+      Alert.alert(
+        '수정 실패',
+        error.message || '프로필 수정 중 오류가 발생했습니다.'
+      );
+    }
   };
 
   // 미리보기용 프로필 데이터 (API 데이터 기반)
@@ -302,8 +520,10 @@ export default function ProfileEditScreen() {
 
   // 기본 정보 표시용 데이터
   const basicInfo = userProfile ? `${userProfile.nickname} / ${userProfile.age} / ${userProfile.gender === 'male' ? '남' : '여'}` : '';
-  const city = userProfile?.sido || '';
-  const district = userProfile?.sigungu || '';
+  
+  // 위치 정보 - 업데이트된 정보가 있으면 우선 사용, 없으면 프로필에서 가져오기
+  const city = locationInfo.sido || userProfile?.sido || '';
+  const district = locationInfo.sigungu || userProfile?.sigungu || '';
 
   // 로딩 중일 때 표시
   if (isLoading) {
@@ -370,24 +590,24 @@ export default function ProfileEditScreen() {
                 onPhotoRemove={handlePhotoRemove}
               />
             </View>
-            <Text>Photos length: {photos.length}</Text>
+            {/* <Text>Photos length: {photos.length}</Text>
             <Text>PhotoIds length: {photoIds.length}</Text>
             <Text>User ID: {user?.id}</Text>
             <Text>UserProfile: {userProfile ? 'Loaded' : 'Not loaded'}</Text>
             <Text>Photos: {JSON.stringify(photos)}</Text>
-            <Text>PhotoIds: {JSON.stringify(photoIds)}</Text>
+            <Text>PhotoIds: {JSON.stringify(photoIds)}</Text> */}
 
             {/* API로 받아온 이미지 표시 */}
-            {photos.length > 0 && (
+            {/* {photos.length > 0 && (
               <View className="mb-8 px-4">
                 <Text className="text-subheading-bold text-text-primary mb-4">API 이미지</Text>
                 <Image 
-                  source={{ uri: photos[0] }}
+                  source={{ uri: typeof photos[0] === 'string' ? photos[0] : '' }}
                   className="w-full h-64 rounded-lg"
                   resizeMode="cover"
                 />
               </View>
-            )}
+            )} */}
 
             {/* 기본 정보 섹션 */}
             <View className="mb-12 px-4">
@@ -409,8 +629,15 @@ export default function ProfileEditScreen() {
             <View className="mb-12 px-4">
               <View className="flex-row justify-between items-center mb-4">
                 <Text className="text-subheading-bold text-text-primary">위치 정보</Text>
-                <TouchableOpacity>
-                  <Text className="text-body-large-semibold text-mango-red">위치 업데이트</Text>
+                <TouchableOpacity 
+                  onPress={handleLocationUpdate}
+                  disabled={isUpdatingLocation}
+                >
+                  {isUpdatingLocation ? (
+                    <ActivityIndicator size="small" color="#EF4444" />
+                  ) : (
+                    <Text className="text-body-large-semibold text-mango-red">위치 업데이트</Text>
+                  )}
                 </TouchableOpacity>
               </View>
               

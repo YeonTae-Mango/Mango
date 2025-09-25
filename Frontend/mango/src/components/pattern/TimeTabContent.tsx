@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
 import { TimeChartData } from '../../types/chart';
@@ -19,10 +19,13 @@ interface TimeTabContentProps {
 }
 
 export default function TimeTabContent({ timeData, timeApiData, additionalInfoData }: TimeTabContentProps) {
+  const tooltipOn = false; // 툴팁 기능 온오프 설정
+  
   const baseUrl = EXPO_PUBLIC_WEBVIEW_BASE_URL || 'http://70.12.246.220:5173';
   const webviewRef = useRef<WebView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const postMessage = (message: any) => {
     if (!webviewRef.current) return;
@@ -111,13 +114,28 @@ export default function TimeTabContent({ timeData, timeApiData, additionalInfoDa
 
   // 추가사항 렌더링 함수
   const renderAdditionalInfo = () => {
+    // API 데이터가 있으면 hotTime 사용, 없으면 additionalInfoData 사용
+    let peakTime = displayData.hotTime[0] || additionalInfoData.time.peakTime;
+    
+    // 중복된 시간대 문자열 제거 (예: "오전6시 ~ 정오오전6시 ~ 정오" -> "오전6시 ~ 정오")
+    if (peakTime && peakTime.length > 10) {
+      const halfLength = Math.floor(peakTime.length / 2);
+      const firstHalf = peakTime.substring(0, halfLength);
+      const secondHalf = peakTime.substring(halfLength);
+      
+      // 앞쪽과 뒤쪽이 같으면 앞쪽만 사용
+      if (firstHalf === secondHalf) {
+        peakTime = firstHalf;
+      }
+    }
+    
     return (
       <View className="px-4 pb-8">
         <View className="bg-gray rounded-2xl p-4">
           <View className="items-center">
             <Text className="text-body-large-regular text-text-primary text-center mb-2">
               <Text className='font-bold'>
-                {displayData.hotTime}
+                {peakTime}
               </Text>
               에 가장 많은 소비를 했어요!
             </Text>
@@ -149,6 +167,23 @@ export default function TimeTabContent({ timeData, timeApiData, additionalInfoDa
             showsVerticalScrollIndicator={false}
             onShouldStartLoadWithRequest={() => true}
           />
+          
+          {/* 물음표 도움말 버튼 */}
+          {tooltipOn && (
+            <TouchableOpacity
+              className="absolute top-2 right-2 w-8 h-8 bg-text-primary rounded-full items-center justify-center z-10"
+              onPress={() => setShowTooltip(!showTooltip)}
+            >
+              <Text className="text-white text-lg font-bold">?</Text>
+            </TouchableOpacity>
+          )}
+          
+          {/* 툴팁 */}
+          {tooltipOn && showTooltip && (
+            <View className="absolute top-10 right-2 bg-text-primary rounded-lg px-3 py-2 max-w-48 z-20">
+              <Text className="text-white text-sm">hello</Text>
+            </View>
+          )}
         
         {loading && (
           <View className="absolute inset-0 justify-center items-center bg-white rounded-lg">

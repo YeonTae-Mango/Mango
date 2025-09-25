@@ -93,12 +93,39 @@ export default function MyPatternScreen() {
     increaseRate: 10,
   };
 
-  // 추가사항 데이터
-  const additionalInfoData = {
-    month: {
+  // 월별 데이터에서 최고값과 peakMonth 계산
+  const getMonthlyInfo = () => {
+    if (monthlyData && monthlyData.data && monthlyData.data.length > 0) {
+      const maxValue = Math.max(...monthlyData.data);
+      const maxIndex = monthlyData.data.indexOf(maxValue);
+      const peakMonth = monthlyData.label[maxIndex] ? `${monthlyData.label[maxIndex]}월` : '8월';
+      
+      // 전월 대비 증가율 계산 (마지막 두 개월 비교)
+      let increaseRate = 100; // 기본값
+      if (monthlyData.data.length >= 2) {
+        const lastMonth = monthlyData.data[monthlyData.data.length - 1];
+        const prevMonth = monthlyData.data[monthlyData.data.length - 2];
+        if (prevMonth > 0) {
+          increaseRate = ((lastMonth - prevMonth) / prevMonth) * 100;
+        }
+      }
+      
+      return {
+        increaseRate: Math.round(increaseRate),
+        peakMonth: peakMonth,
+      };
+    }
+    
+    // API 데이터가 없으면 기본값 사용
+    return {
       increaseRate: 100,
       peakMonth: '8월',
-    },
+    };
+  };
+
+  // 추가사항 데이터
+  const additionalInfoData = {
+    month: getMonthlyInfo(),
     keyword: keywordFallbackData,
     time: {
       peakTime: '오후 6시 ~ 오후 12시',
