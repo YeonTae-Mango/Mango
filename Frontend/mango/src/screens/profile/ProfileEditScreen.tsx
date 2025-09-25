@@ -689,6 +689,7 @@ export default function ProfileEditScreen() {
             tags={profileData.tags}
             introduction={profileData.introduction}
             images={profileData.images}
+            showDistance={false}
           />
         )}
       </ScrollView>
