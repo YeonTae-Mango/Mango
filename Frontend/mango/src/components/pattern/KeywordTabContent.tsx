@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
@@ -67,6 +67,14 @@ export default function KeywordTabContent({ keywordApiData, additionalInfoData }
     }
   };
 
+  // API 데이터가 변경될 때마다 차트에 전송
+  useEffect(() => {
+    if (keywordApiData && !loading) {
+      console.log('📊 키워드 API 데이터 변경됨, 차트에 전송:', keywordApiData);
+      postMessage({ type: 'keyword', data: keywordApiData });
+    }
+  }, [keywordApiData, loading]);
+
   // API 데이터가 있으면 사용, 없으면 기본 데이터 사용
   const displayData = keywordApiData || {
     labels: ['앱프론트', '#메케닉', '#편의점러버', '#아티스트', '#탑건', '#트렌드세터'],
@@ -84,8 +92,8 @@ export default function KeywordTabContent({ keywordApiData, additionalInfoData }
     return (
       <View className="px-4 pb-8">
         <View className="bg-gray rounded-2xl p-4">
-          <View className="items-center">
-            <View className="items-center mb-2">
+          <View className="items-start">
+            <View className="items-start mb-2">
               <View className="flex-row items-center">
                 <View className="bg-text-secondary rounded-xl px-2 py-1 mr-2">
                   <Text className="text-body-large-regular text-white font-bold">
@@ -97,7 +105,7 @@ export default function KeywordTabContent({ keywordApiData, additionalInfoData }
                 </Text>
               </View>
             </View>
-            <View className="items-center mb-2">
+            <View className="items-start mb-2">
               <View className="flex-row items-center">
                 <View className="bg-text-secondary rounded-xl px-2 py-1 mr-2">
                   <Text className="text-body-large-regular text-white font-bold">
@@ -109,7 +117,7 @@ export default function KeywordTabContent({ keywordApiData, additionalInfoData }
                 </Text>
               </View>
             </View>
-            <View className="items-center">
+            <View className="items-start">
               <View className="flex-row items-center">
                 <View className="bg-text-secondary rounded-xl px-2 py-1 mr-2">
                   <Text className="text-body-large-regular text-white font-bold">

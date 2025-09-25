@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Text, View, Alert } from 'react-native';
+import { Text, View, Alert, TouchableOpacity, Modal } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
 import { CategoryChartData } from '../../types/chart';
@@ -15,13 +15,77 @@ interface CategoryTabContentProps {
       }>;
     };
   };
+  selectedPeriod: number; // 현재 선택된 기간
+  onPeriodChange?: (period: number) => void; // 기간 변경 콜백
 }
 
-export default function CategoryTabContent({ categoryData, formatAmount, additionalInfoData }: CategoryTabContentProps) {
+export default function CategoryTabContent({ categoryData, formatAmount, additionalInfoData, selectedPeriod, onPeriodChange }: CategoryTabContentProps) {
   const baseUrl = EXPO_PUBLIC_WEBVIEW_BASE_URL || 'https://j13a408.p.ssafy.io';
   const webviewRef = useRef<WebView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 드랍다운 표시 상태
+  const [showDropdown, setShowDropdown] = useState(false);
+  
+  // 기간 옵션 데이터
+  const periodOptions = [
+    { value: 1, label: '이번 달' },
+    { value: 2, label: '지난 달' },
+    { value: 3, label: '최근 6개월' }
+  ];
+
+  // 기간 선택 핸들러
+  const handlePeriodChange = (period: number) => {
+    setShowDropdown(false);
+    console.log(`📊 기간 변경: ${periodOptions.find(opt => opt.value === period)?.label} (${period})`);
+    
+    // 상위 컴포넌트에 기간 변경 알림
+    if (onPeriodChange) {
+      onPeriodChange(period);
+    }
+  };
+
+  // 드랍다운 컴포넌트 렌더링
+  const renderDropdown = () => {
+    const selectedOption = periodOptions.find(opt => opt.value === selectedPeriod);
+    
+    return (
+      <View className="relative">
+        {/* 드랍다운 버튼 */}
+        <TouchableOpacity
+          className="bg-white border border-stroke rounded-lg px-3 py-2 flex-row items-center justify-between w-full"
+          onPress={() => setShowDropdown(!showDropdown)}
+        >
+          <Text className="text-body-medium-regular text-text-primary">
+            {selectedOption?.label}
+          </Text>
+          <Text className="text-text-secondary ml-2">▼</Text>
+        </TouchableOpacity>
+
+        {/* 드랍다운 메뉴 */}
+        {showDropdown && (
+          <View className="absolute top-full left-0 w-full bg-white border border-stroke rounded-lg mt-1 z-10 shadow-lg">
+            {periodOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                className={`px-3 py-3 border-b border-gray-100 last:border-b-0 ${
+                  selectedPeriod === option.value ? 'bg-blue-50' : ''
+                }`}
+                onPress={() => handlePeriodChange(option.value)}
+              >
+                <Text className={`text-body-medium-regular ${
+                  selectedPeriod === option.value ? 'text-blue-600 font-semibold' : 'text-text-primary'
+                }`}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  };
 
   // 카테고리 탭 마운트 시 웹뷰 캐시 모두 지우기
   useEffect(() => {
@@ -71,6 +135,14 @@ export default function CategoryTabContent({ categoryData, formatAmount, additio
       console.error('Error parsing WebView message:', error);
     }
   };
+
+  // API 데이터가 변경될 때마다 차트에 전송
+  useEffect(() => {
+    if (categoryData && !loading) {
+      console.log('📊 카테고리 API 데이터 변경됨, 차트에 전송:', categoryData);
+      postMessage({ type: 'category', data: categoryData });
+    }
+  }, [categoryData, loading]);
   // 탭별 내용 렌더링 함수
   const renderTabContent = () => {
     // API 데이터가 없으면 기본 데이터 표시
@@ -189,9 +261,22 @@ export default function CategoryTabContent({ categoryData, formatAmount, additio
 
   return (
     <View>
+      {/* 드랍다운 외부 클릭 시 닫기 */}
+      {showDropdown && (
+        <TouchableOpacity 
+          className="absolute inset-0 z-10" 
+          onPress={() => setShowDropdown(false)}
+        />
+      )}
+      
       {/* 카테고리 전용 웹뷰 차트 영역 */}
       <View className="px-4 mt-6">
         <View className="relative">
+          {/* 기간 선택 드랍다운 */}
+          <View className="relative w-32 top-2 right-2 z-20 mb-2 ml-auto">
+            {renderDropdown()}
+          </View>
+          
           <WebView
             ref={webviewRef}
             source={{ uri: `${baseUrl}/myCategoryChart` }}

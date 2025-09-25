@@ -499,23 +499,15 @@ export default function ProfileEditScreen() {
     }
   };
 
-  // 미리보기용 프로필 데이터 (API 데이터 기반)
-  const profileData = userProfile ? {
-    name: userProfile.nickname,
-    age: userProfile.age,
-    distance: `${userProfile.distanceBetweenMe}km`,
-    category: userProfile.mainType,
-    tags: userProfile.keywords,
-    introduction: userProfile.introduction ? `"${userProfile.introduction}"` : '',
-    images: userProfile.profileImageUrls
-  } : {
-    name: '',
-    age: 0,
-    distance: '0km',
-    category: '',
-    tags: [],
-    introduction: '',
-    images: []
+  // 미리보기용 프로필 데이터 (수정 중인 데이터 반영)
+  const profileData = {
+    name: userProfile?.nickname || '',
+    age: userProfile?.age || 0,
+    distance: `${distance}km`, // 수정 중인 거리 값 사용
+    category: userProfile?.mainType || '',
+    tags: userProfile?.keywords || [],
+    introduction: oneWord ? `"${oneWord}"` : (userProfile?.introduction ? `"${userProfile.introduction}"` : ''),
+    images: photos.length > 0 ? photos : (userProfile?.profileImageUrls || [])
   };
 
   // 기본 정보 표시용 데이터

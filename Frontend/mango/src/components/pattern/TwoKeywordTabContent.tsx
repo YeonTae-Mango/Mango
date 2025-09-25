@@ -136,6 +136,20 @@ export default function TwoKeywordTabContent({ activeTab, userName, otherUserId 
         getKeywordFromCategory('공연관람')
       ];
 
+  // API 데이터가 변경될 때마다 차트에 전송
+  useEffect(() => {
+    if (myKeywordData && otherKeywordData && !loading) {
+      console.log('📊 API 데이터 변경됨, 차트에 전송:', { myKeywordData, otherKeywordData });
+      postMessage({ 
+        type: 'twoKeyword', 
+        data: {
+          myData: myKeywordData,
+          otherData: otherKeywordData
+        }
+      });
+    }
+  }, [myKeywordData, otherKeywordData, loading]);
+
   return (
     <View>
       <View className="px-4 mt-6">
@@ -181,11 +195,11 @@ export default function TwoKeywordTabContent({ activeTab, userName, otherUserId 
           </Text>
 
           {/* 키워드 3개와 설명 표시 */}
-          <View className="items-center">
+          <View className="items-start">
             {otherKeywordData?.data?.labels?.slice(0, 3).map((category: string, index: number) => {
               const keywordInfo = getKeywordFromCategory(category);
               return (
-                <View key={index} className="items-center mb-2">
+                <View key={index} className="items-start mb-2">
                   <View className="flex-row items-center">
                     <View className="bg-text-secondary rounded-xl px-2 py-1 mr-2">
                       <Text className="text-body-large-regular text-white font-bold">
