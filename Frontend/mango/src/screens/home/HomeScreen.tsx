@@ -175,11 +175,14 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         `다음 프로필 로드: ${action}, profileId: ${currentProfile.id}`
       );
 
-      // 스와이프 전용 함수 사용 (인덱스 증가 없이 API만 호출)
+      // 🔧 중요한 수정: 스와이프 시점의 프로필 정보를 저장해서 전달
+      const swipeTargetProfile = { ...currentProfile };
+
+      // 스와이프 전용 함수 사용 (저장된 프로필 정보 전달)
       if (action === 'like') {
-        likeProfileBySwipe(currentProfile.id);
+        likeProfileBySwipe(currentProfile.id, swipeTargetProfile);
       } else {
-        dislikeProfileBySwipe(currentProfile.id);
+        dislikeProfileBySwipe(currentProfile.id, swipeTargetProfile);
       }
 
       // 스와이프 완료 후 수동으로 인덱스 증가

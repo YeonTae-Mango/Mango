@@ -210,10 +210,13 @@ export default function CategorySwipeScreen({
 
   const handleNextProfile = (action: 'like' | 'dislike') => {
     if (currentProfile) {
+      // 🔧 중요한 수정: 스와이프 시점의 프로필 정보를 저장해서 전달
+      const swipeTargetProfile = { ...currentProfile };
+
       if (action === 'like') {
-        likeProfileBySwipe(currentProfile.id);
+        likeProfileBySwipe(currentProfile.id, swipeTargetProfile);
       } else {
-        dislikeProfileBySwipe(currentProfile.id);
+        dislikeProfileBySwipe(currentProfile.id, swipeTargetProfile);
       }
       completeSwipe();
     }

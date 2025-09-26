@@ -7,8 +7,16 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { ActivityIndicator, Alert, FlatList, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  View,
+} from 'react-native';
+
 import { getUserById } from '../../api/auth';
 import { blockUser } from '../../api/block';
 import { deleteChatRoom, getChatMessages, getChatRoom } from '../../api/chat';
@@ -52,9 +60,6 @@ export default function ChatRoomScreen() {
   console.log('🔍 ChatRoomScreen 파라미터:', { userName, chatRoomId, userId });
   console.log('🔍 현재 사용자:', user);
 
-  // 차단 상태 관리
-  const [isBlocked, setIsBlocked] = useState(false);
-
   // 사용자 정보 조회 (메인 타입을 위해)
   const { data: userInfo } = useQuery({
     queryKey: ['userInfo', userId],
@@ -81,8 +86,7 @@ export default function ChatRoomScreen() {
     }) => blockUser(requestId, targetUserId),
     onSuccess: (data, variables) => {
       console.log('사용자 차단/신고 성공');
-      setIsBlocked(true);
-      // 개별 함수에서 채팅방 삭제와 알림을 처리하므로 여기서는 제거
+      // 채팅방이 삭제되므로 UI 상태 변경 불필요
     },
     onError: error => {
       console.error('사용자 차단/신고 실패:', error);
@@ -624,7 +628,7 @@ export default function ChatRoomScreen() {
   // 로딩 상태
   if (roomLoading || messagesLoading) {
     return (
-      <View className="flex-1 bg-white">
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
         <ChatHeader
           userName={userName || '로딩중...'}
           showUserInfo={false}
@@ -633,7 +637,7 @@ export default function ChatRoomScreen() {
           onProfilePress={() => {}}
           onMenuPress={() => {}}
         />
-        <View className="flex-1 justify-center items-center">
+        <View className="flex-1 bg-white justify-center items-center">
           <ActivityIndicator size="large" color="#FF6B6B" />
           <Text className="mt-4 text-gray-600">채팅방을 불러오는 중...</Text>
         </View>
@@ -644,7 +648,7 @@ export default function ChatRoomScreen() {
   // 에러 상태
   if (roomError || messagesError) {
     return (
-      <View className="flex-1 bg-white">
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
         <ChatHeader
           userName={userName || '오류'}
           showUserInfo={false}
@@ -653,7 +657,7 @@ export default function ChatRoomScreen() {
           onProfilePress={() => {}}
           onMenuPress={() => {}}
         />
-        <View className="flex-1 justify-center items-center px-4">
+        <View className="flex-1 bg-white justify-center items-center px-4">
           <Text className="text-red-500 text-center mb-4">
             채팅방을 불러오는 중 오류가 발생했습니다.
           </Text>
@@ -668,45 +672,54 @@ export default function ChatRoomScreen() {
   }
 
   return (
-    <View className={`flex-1 ${isBlocked ? 'bg-gray-100' : 'bg-white'}`}>
-      <ChatHeader
-        userName={userName}
-        profileImageUrl={profileImageUrl}
-        mainType={mainType || (userInfo as any)?.data?.mainType}
-        showUserInfo={true}
-        showMenu={!isBlocked}
-        onBackPress={handleBackPress}
-        onProfilePress={handleProfilePress}
-        onMenuPress={handleMenuPress}
-      />
-
-      <View className="flex-1">
-        <FlatList
-          ref={flatListRef}
-          data={allMessages}
-          renderItem={renderMessage}
-          keyExtractor={item => item.id}
-          showsVerticalScrollIndicator={false}
-          inverted={false}
-          onContentSizeChange={() => {
-            // 콘텐츠 크기가 변경될 때마다 맨 아래로 스크롤
-            flatListRef.current?.scrollToEnd({ animated: true });
-          }}
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      {/* ✅ 헤더는 KeyboardAvoidingView 밖으로 분리 */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          backgroundColor: 'white', // 스크롤 시 겹치지 않게 배경 지정
+        }}
+      >
+        <ChatHeader
+          userName={userName}
+          profileImageUrl={profileImageUrl}
+          mainType={mainType || (userInfo as any)?.data?.mainType}
+          showUserInfo={true}
+          onBackPress={handleBackPress}
+          onProfilePress={handleProfilePress}
+          onMenuPress={handleMenuPress}
         />
-
-        {isBlocked ? (
-          <View className="bg-gray-200 py-4 px-6 border-t border-gray-300">
-            <Text className="text-center text-gray-600">
-              메시지를 보낼 수 없습니다.
-            </Text>
-          </View>
-        ) : (
-          <ChatInputPanel
-            onSendMessage={handleSendMessage}
-            placeholder="메시지 보내기..."
-          />
-        )}
       </View>
+
+      {/* ✅ 채팅 리스트 + 입력창만 KeyboardAvoidingView로 감싸기 */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0} // 헤더 높이
+      >
+        <View style={{ flex: 1, paddingTop: 60 /* 헤더 높이에 맞게 */ }}>
+          <FlatList
+            ref={flatListRef}
+            data={allMessages}
+            renderItem={renderMessage}
+            keyExtractor={item => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingVertical: 10 }}
+            onContentSizeChange={() => {
+              flatListRef.current?.scrollToEnd({ animated: true });
+            }}
+          />
+        </View>
+
+        <ChatInputPanel
+          onSendMessage={handleSendMessage}
+          placeholder="메시지 보내기..."
+        />
+      </KeyboardAvoidingView>
 
       <ChatMenuModal
         visible={showMenuModal}
@@ -715,9 +728,6 @@ export default function ChatRoomScreen() {
         onBlockUser={handleBlockUser}
         onReportUser={handleReportUser}
       />
-
-      {/* 하단 SafeArea - 갤럭시 네비게이션 바와 겹치지 않도록 */}
-      <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'white' }} />
     </View>
   );
 }

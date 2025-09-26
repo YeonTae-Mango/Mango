@@ -232,11 +232,25 @@ const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
       // PanResponder로 제스처 감지
       <Animated.View
         style={animatedStyle}
-        className="flex-1 bg-white mb-16"
+        className="flex-1 mb-16"
         {...panResponder.panHandlers}
       >
+        {/* 그라디언트 테두리 - theyLiked가 true일 때만 표시 */}
+        {theyLiked && (
+          <LinearGradient
+            colors={['#FF6B35', '#F7931E', '#FFD23F', '#FF6B35']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="absolute inset-0 p-2.5 z-0"
+            style={{ borderRadius: 20 }}
+          >
+            <View className="flex-1 bg-white rounded-2xl" />
+          </LinearGradient>
+        )}
         {/* 프로필 영역 */}
-        <View className="flex-1 flex-row items-center justify-center relative">
+        <View
+          className={`flex-1 flex-row items-center justify-center relative ${theyLiked ? 'rounded-2xl overflow-hidden m-2.5' : 'bg-white'}`}
+        >
           {/* 그라디언트 오버레이 영역 */}
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
