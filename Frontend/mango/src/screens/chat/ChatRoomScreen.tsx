@@ -280,32 +280,58 @@ export default function ChatRoomScreen() {
 
   const handleProfilePress = () => {
     const userData = (userInfo as any)?.data;
+    console.log('🔍 handleProfilePress - userData:', userData);
+
     if (userData) {
       // API로 받은 실제 사용자 정보 전달
+      const profileData = {
+        id: userData.userId || userData.id,
+        nickname: userData.nickname || userData.name || userName,
+        age: userData.age || 28,
+        introduction: userData.introduction || '',
+        mainType: userData.mainType || mainType || '핫플헌터',
+        food: userData.food || '',
+        keywords: userData.keywords || [],
+        profileImageUrls:
+          userData.profileImageUrls ||
+          (profileImageUrl ? [profileImageUrl] : []),
+        sigungu: userData.sigungu || '',
+        distance: userData.distanceBetweenMe || userData.distance || 0,
+      };
+
+      console.log('🚀 ProfileDetail로 이동 - 실제 데이터:', profileData);
+
       navigation.navigate('ProfileDetail', {
-        userName: userData.nickname,
-        userId: userData.userId,
+        userName: profileData.nickname,
+        userId: profileData.id,
         fromScreen: 'Chat',
-        // 사용자 전체 정보 전달
-        profileData: {
-          id: userData.userId,
-          nickname: userData.nickname,
-          age: userData.age,
-          introduction: userData.introduction,
-          mainType: userData.mainType,
-          food: userData.food,
-          keywords: userData.keywords,
-          profileImageUrls: userData.profileImageUrls,
-          sigungu: userData.sigungu,
-          distance: userData.distanceBetweenMe || userData.distance || 0,
-        },
+        profileData: profileData,
       });
     } else {
-      // userInfo가 없으면 기본 정보만 전달
+      // userInfo가 없으면 기본 정보로 fallback
+      const fallbackProfileData = {
+        id: userId || 0,
+        nickname: userName || '사용자',
+        age: 28,
+        introduction: '',
+        mainType: mainType || '핫플헌터',
+        food: '',
+        keywords: [],
+        profileImageUrls: profileImageUrl ? [profileImageUrl] : [],
+        sigungu: '',
+        distance: 0,
+      };
+
+      console.log(
+        '🚀 ProfileDetail로 이동 - 기본 데이터:',
+        fallbackProfileData
+      );
+
       navigation.navigate('ProfileDetail', {
-        userName,
-        userId,
+        userName: fallbackProfileData.nickname,
+        userId: fallbackProfileData.id,
         fromScreen: 'Chat',
+        profileData: fallbackProfileData,
       });
     }
   };
