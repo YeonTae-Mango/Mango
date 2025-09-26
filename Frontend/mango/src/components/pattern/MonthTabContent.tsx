@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
 import { MonthlyChartData } from '../../types/chart';
+import ChartTooltip from '../common/ChartTooltip';
 
 interface MonthTabContentProps {
   monthData: Array<{
@@ -25,6 +26,8 @@ export default function MonthTabContent({ monthData, monthlyApiData, formatAmoun
   const webviewRef = useRef<WebView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 툴팁 상태
 
   const postMessage = (message: any) => {
     if (!webviewRef.current) return;
@@ -190,8 +193,11 @@ export default function MonthTabContent({ monthData, monthlyApiData, formatAmoun
 
   return (
     <View>
+      {/* 탭과 웹뷰 사이의 툴팁 영역 */}
+      <ChartTooltip type="month" enabled={true} />
+
       {/* 월별 전용 웹뷰 차트 영역 */}
-      <View className="px-4 mt-6">
+      <View className="px-4 mt-2">
         <View className="relative">
           <WebView
             ref={webviewRef}

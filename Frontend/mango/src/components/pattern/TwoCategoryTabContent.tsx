@@ -4,6 +4,7 @@ import { WebView } from 'react-native-webview';
 import { getTwoCategoryChart } from '../../api/ChartWebview';
 import { useAuthStore } from '../../store/authStore';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
+import ChartTooltip from '../common/ChartTooltip';
 
 interface TwoCategoryTabContentProps {
   activeTab: 'type' | 'category' | 'keyword' | 'time';
@@ -112,7 +113,10 @@ export default function TwoCategoryTabContent({ activeTab, userName, otherUserId
 
   return (
     <View>
-      <View className="px-4 mt-6">
+      {/* 탭과 웹뷰 사이의 툴팁 영역 */}
+      <ChartTooltip type="twoCategory" enabled={true} />
+
+      <View className="px-4 mt-2">
         <View className="relative">
           <WebView
             ref={webviewRef}
