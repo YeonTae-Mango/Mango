@@ -585,7 +585,7 @@ export default function ProfileEditScreen() {
 
   // 기본 정보 표시용 데이터
   const basicInfo = userProfile
-    ? `${userProfile.nickname} / ${userProfile.age} / ${userProfile.gender === 'male' ? '남' : '여'}`
+    ? `${userProfile.nickname} / ${userProfile.age} / ${userProfile.gender === 'M' ? '남' : '여'}`
     : '';
 
   // 위치 정보 - 업데이트된 정보가 있으면 우선 사용, 없으면 프로필에서 가져오기
@@ -787,6 +787,7 @@ export default function ProfileEditScreen() {
             tags={profileData.tags}
             introduction={profileData.introduction}
             images={profileData.images}
+            showDistance={false}
           />
         )}
       </ScrollView>

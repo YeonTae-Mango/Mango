@@ -22,6 +22,7 @@ import {
   useSignup,
   transformFormDataToSignupRequest,
 } from '../../hooks/useSignup';
+import { checkNicknameDuplicate, checkEmailDuplicate } from '../../api/signup/signupApi';
 
 export default function SignupScreen() {
   const navigation = useNavigation<any>();
@@ -41,25 +42,43 @@ export default function SignupScreen() {
   const [district, setDistrict] = useState('');
   const [latitude, setLatitude] = useState(37.5013);
   const [longitude, setLongitude] = useState(127.0396);
-  const [radius, setRadius] = useState(1000);
+  const [radius, setRadius] = useState(1);
 
   // 에러 상태 관리
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [nicknameError, setNicknameError] = useState('');
   const [birthdateError, setBirthdateError] = useState('');
+  
 
-  // 이메일 유효성 검증
-  const validateEmail = useCallback((email: string) => {
+  // 이메일 유효성 검증 (비동기)
+  const validateEmail = useCallback(async (email: string) => {
+    // 기본 형식 검증
     if (!email.trim()) {
       setEmailError('이메일을 입력해주세요.');
       return false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setEmailError('올바른 이메일 형식이 아닙니다.');
       return false;
-    } else {
+    }
+
+    // 중복 검사
+    try {
+      console.log('🔍 이메일 중복 검사 시작:', email);
+      const isAvailable = await checkEmailDuplicate(email);
+      
+      if (!isAvailable) {
+        setEmailError('이미 사용 중인 이메일입니다.');
+        return false;
+      }
+      
+      console.log('✅ 이메일 사용 가능:', email);
       setEmailError('');
       return true;
+    } catch (error) {
+      console.error('❌ 이메일 중복 검사 실패:', error);
+      setEmailError('이메일 중복 검사 중 오류가 발생했습니다.');
+      return false;
     }
   }, []);
 
@@ -83,23 +102,40 @@ export default function SignupScreen() {
     []
   );
 
-  // 닉네임 유효성 검증
-  const validateNickname = useCallback((nickname: string) => {
+  // 닉네임 유효성 검증 (비동기)
+  const validateNickname = useCallback(async (nickname: string) => {
+    // 기본 형식 검증
     if (!nickname.trim()) {
       setNicknameError('닉네임을 입력해주세요.');
       return false;
     } else if (nickname.length < 2) {
       setNicknameError('닉네임은 2자 이상이어야 합니다.');
       return false;
-    } else if (nickname.length > 20) {
-      setNicknameError('닉네임은 20자 이하여야 합니다.');
+    } else if (nickname.length > 10) {
+      setNicknameError('닉네임은 10자 이하여야 합니다.');
       return false;
     } else if (!/^[가-힣a-zA-Z0-9]+$/.test(nickname)) {
       setNicknameError('닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.');
       return false;
-    } else {
+    }
+
+    // 중복 검사
+    try {
+      console.log('🔍 닉네임 중복 검사 시작:', nickname);
+      const isAvailable = await checkNicknameDuplicate(nickname);
+      
+      if (!isAvailable) {
+        setNicknameError('이미 사용 중인 닉네임입니다.');
+        return false;
+      }
+      
+      console.log('✅ 닉네임 사용 가능:', nickname);
       setNicknameError('');
       return true;
+    } catch (error) {
+      console.error('❌ 닉네임 중복 검사 실패:', error);
+      setNicknameError('닉네임 중복 검사 중 오류가 발생했습니다.');
+      return false;
     }
   }, []);
 
@@ -182,15 +218,39 @@ export default function SignupScreen() {
   // 실시간 유효성 검증
   useEffect(() => {
     if (currentStep === 'email' && email) {
-      validateEmail(email);
+      // 기본 형식 검증만 실시간으로 실행
+      if (!email.trim()) {
+        setEmailError('이메일을 입력해주세요.');
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setEmailError('올바른 이메일 형식이 아닙니다.');
+      } else {
+        setEmailError('');
+      }
     }
-  }, [email, currentStep, validateEmail]);
+  }, [email, currentStep]);
 
   useEffect(() => {
     if (currentStep === 'password' && (password || confirmPassword)) {
       validatePassword(password, confirmPassword);
     }
   }, [password, confirmPassword, currentStep, validatePassword]);
+
+  useEffect(() => {
+    if (currentStep === 'nickname' && nickname) {
+      // 기본 형식 검증만 실시간으로 실행
+      if (!nickname.trim()) {
+        setNicknameError('닉네임을 입력해주세요.');
+      } else if (nickname.length < 2) {
+        setNicknameError('닉네임은 2자 이상이어야 합니다.');
+      } else if (nickname.length > 10) {
+        setNicknameError('닉네임은 10자 이하여야 합니다.');
+      } else if (!/^[가-힣a-zA-Z0-9]+$/.test(nickname)) {
+        setNicknameError('닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.');
+      } else {
+        setNicknameError('');
+      }
+    }
+  }, [nickname, currentStep]);
 
   useEffect(() => {
     if (currentStep === 'birthdate' && birthdate) {
@@ -203,7 +263,8 @@ export default function SignupScreen() {
 
     // 각 단계별 유효성 검사
     if (currentStep === 'email') {
-      if (!validateEmail(email)) {
+      const isValid = await validateEmail(email);
+      if (!isValid) {
         console.log('❌ 이메일 유효성 검사 실패');
         return;
       }
@@ -215,7 +276,8 @@ export default function SignupScreen() {
       }
     }
     if (currentStep === 'nickname') {
-      if (!validateNickname(nickname)) {
+      const isValid = await validateNickname(nickname);
+      if (!isValid) {
         console.log('❌ 닉네임 유효성 검사 실패');
         return;
       }
@@ -236,7 +298,7 @@ export default function SignupScreen() {
       Alert.alert('입력 오류', '위치를 선택해주세요.');
       return;
     }
-    if (currentStep === 'radius' && radius < 100) {
+    if (currentStep === 'radius' && radius < 1) {
       console.log('❌ 반경 설정 필요');
       Alert.alert('입력 오류', '반경을 설정해주세요.');
       return;
@@ -333,6 +395,7 @@ export default function SignupScreen() {
             <EmailForm
               value={email}
               onChangeText={setEmail}
+              error={emailError}
             />
           </Animated.View>
 
@@ -453,7 +516,7 @@ export default function SignupScreen() {
                       : currentStep === 'location'
                         ? !!(city && district)
                         : currentStep === 'radius'
-                          ? radius >= 100
+                          ? radius >= 1
                         : false
           }
           onPress={handleNext}

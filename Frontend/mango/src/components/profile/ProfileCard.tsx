@@ -12,6 +12,7 @@ interface ProfileCardProps {
   tags?: string[];
   introduction?: string;
   images?: string[];
+  showDistance?: boolean;
 }
 
 export default function ProfileCard({
@@ -22,6 +23,7 @@ export default function ProfileCard({
   tags = [],
   introduction = '',
   images = [],
+  showDistance = true,
 }: ProfileCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -90,12 +92,14 @@ export default function ProfileCard({
         <View className="absolute bottom-10 left-0 right-0 px-5 z-20">
           <View className="flex-row items-center mb-3 ml-1">
             {/* 거리 */}
-            <View className="bg-mango-primary rounded-full px-4 py-1.5 flex-row items-center self-start mr-2">
-              <Ionicons name="location-outline" size={14} color="white" />
-              <Text className="text-body-small-semibold text-white ml-2">
-                {distance}
-              </Text>
-            </View>
+            {showDistance && (
+              <View className="bg-mango-primary rounded-full px-4 py-1.5 flex-row items-center self-start mr-2">
+                <Ionicons name="location-outline" size={14} color="white" />
+                <Text className="text-body-small-semibold text-white ml-2">
+                  {distance}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* 이름 나이 & 유형 */}
