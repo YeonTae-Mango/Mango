@@ -8,7 +8,7 @@ interface MatchingPatternTabProps {
 
 export default function MatchingPatternTab({ activeTab, onTabChange }: MatchingPatternTabProps) {
   return (
-    <View className="p-4 pt-0">
+    <View className="p-2 pt-0">
       <View className="flex-row bg-white">
         {/* 대표유형 탭 */}
         <TouchableOpacity 
