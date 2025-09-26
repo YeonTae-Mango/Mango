@@ -197,9 +197,9 @@ export default function ProfileDetailScreen() {
       Alert.alert('오류', '사용자 정보를 불러올 수 없습니다.');
       return;
     }
-    navigation.navigate('MatchingPattern', { 
-      userName, 
-      otherUserId 
+    navigation.navigate('MatchingPattern', {
+      userName,
+      otherUserId,
     });
   };
 

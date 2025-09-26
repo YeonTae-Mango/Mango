@@ -1,38 +1,48 @@
 import { Ionicons } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
-import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import Constants from 'expo-constants';
+import * as Location from 'expo-location';
+import React, { useEffect, useState } from 'react';
 import {
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-  TextInput,
   ActivityIndicator,
   Alert,
-  Image,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import * as Location from 'expo-location';
-import Constants from 'expo-constants';
 import {
-  launchImageLibrary,
-  launchCamera,
   ImagePickerResponse,
   MediaType,
+  launchCamera,
+  launchImageLibrary,
 } from 'react-native-image-picker';
-import Slider from '@react-native-community/slider';
+import {
+  PhotoUploadRequest,
+  deleteUserPhoto,
+  uploadUserPhotos,
+} from '../../api/photos/photoApi';
+import {
+  UpdateProfileRequest,
+  UserProfile,
+  getUserProfile,
+  updateUserProfile,
+} from '../../api/profile';
 import CustomHeader from '../../components/common/CustomHeader';
 import Layout from '../../components/common/Layout';
 import ProfileCard from '../../components/profile/ProfileCard';
-import ProfileTab from '../../components/profile/ProfileTab';
 import ProfileImageDisplay from '../../components/profile/ProfileImageDisplay';
+import ProfileTab from '../../components/profile/ProfileTab';
 import { useAuthStore } from '../../store/authStore';
-import { getUserProfile, UserProfile, updateUserProfile, UpdateProfileRequest } from '../../api/profile';
-import { uploadUserPhotos, PhotoUploadRequest, deleteUserPhoto } from '../../api/photos/photoApi';
 
 export default function ProfileEditScreen() {
   const navigation = useNavigation<any>();
+  const queryClient = useQueryClient(); // React Query 클라이언트
   const { user } = useAuthStore();
-  
+
   // 상태 관리
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [photos, setPhotos] = useState<string[]>([]);
@@ -41,29 +51,30 @@ export default function ProfileEditScreen() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  
+  const [originalDistance, setOriginalDistance] = useState<number>(10); // 원래 거리 저장
+
   // 위치 정보 상태
   const [locationInfo, setLocationInfo] = useState({
     latitude: 0,
     longitude: 0,
     sido: '',
-    sigungu: ''
+    sigungu: '',
   });
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
-  
+
   // 거리 옵션들 (7개 스텝)
   const distanceOptions = [1, 3, 5, 10, 30, 50, 100];
   // 각 거리별 소요 시간 (분)
   const timeRanges = [
-    { min: 2, max: 3 },   // 1km
-    { min: 4, max: 6 },   // 3km
-    { min: 10, max: 15 },   // 5km
+    { min: 2, max: 3 }, // 1km
+    { min: 4, max: 6 }, // 3km
+    { min: 10, max: 15 }, // 5km
     { min: 25, max: 35 }, // 10km
     { min: 45, max: 60 }, // 30km
     { min: 60, max: 75 }, // 50km
     { min: 70, max: 90 }, // 100km
   ];
-  
+
   // 현재 거리 설정 (API에서 받은 값으로 초기화)
   const [distanceIndex, setDistanceIndex] = useState(3); // 기본값: 10km (인덱스 3)
   const distance = distanceOptions[distanceIndex];
@@ -84,7 +95,7 @@ export default function ProfileEditScreen() {
       console.log('🔄 프로필 로드 시작');
       console.log('👤 사용자 정보:', user);
       console.log('👤 사용자 ID:', user?.id);
-      
+
       if (!user?.id) {
         console.warn('❌ 사용자 ID가 없습니다.');
         setIsLoading(false);
@@ -96,9 +107,9 @@ export default function ProfileEditScreen() {
         console.log('📡 API 호출 시작 - 사용자 ID:', user.id);
         const profile = await getUserProfile(user.id);
         console.log('📥 API 응답 받음:', profile);
-        
+
         setUserProfile(profile);
-        
+
         // 프로필 데이터로 상태 초기화
         setOneWord(profile.introduction || '');
         console.log('📸 profileImageUrls:', profile.profileImageUrls);
@@ -106,15 +117,15 @@ export default function ProfileEditScreen() {
         setPhotos(profile.profileImageUrls || []);
         setPhotoIds(profile.profileImageUrlsId || []);
         console.log('📸 photos 상태 설정 완료');
-        
+
         // 거리 설정 초기화 (서버에서 받은 km 단위 값 사용)
         const distanceInKm = profile.distance;
         console.log('📏 서버에서 받은 거리 (km):', distanceInKm);
-        
+
         // 가장 가까운 거리 옵션 찾기
         let closestIndex = 3; // 기본값: 10km
         let minDiff = Math.abs(distanceOptions[3] - distanceInKm);
-        
+
         for (let i = 0; i < distanceOptions.length; i++) {
           const diff = Math.abs(distanceOptions[i] - distanceInKm);
           if (diff < minDiff) {
@@ -122,10 +133,17 @@ export default function ProfileEditScreen() {
             closestIndex = i;
           }
         }
-        
-        console.log('📏 가장 가까운 거리 옵션:', distanceOptions[closestIndex], 'km (인덱스:', closestIndex, ')');
+
+        console.log(
+          '📏 가장 가까운 거리 옵션:',
+          distanceOptions[closestIndex],
+          'km (인덱스:',
+          closestIndex,
+          ')'
+        );
         setDistanceIndex(closestIndex);
-        
+        setOriginalDistance(distanceInKm); // 원래 거리 저장
+
         console.log('✅ 프로필 정보 로드 완료:', profile);
       } catch (error) {
         console.error('❌ 프로필 정보 로드 실패:', error);
@@ -173,35 +191,43 @@ export default function ProfileEditScreen() {
   const handlePhotoRemove = async (index: number) => {
     // 대표사진이 하나만 남은 경우 삭제 방지
     if (photoIds.length === 1) {
-      Alert.alert(
-        '삭제 불가',
-        '대표사진은 최소 1개 이상 유지해야 합니다.',
-        [{ text: '확인' }]
-      );
+      Alert.alert('삭제 불가', '대표사진은 최소 1개 이상 유지해야 합니다.', [
+        { text: '확인' },
+      ]);
       return;
     }
 
     const imageId = photoIds[index];
-    console.log('🗑️ 이미지 삭제 요청:', { index, imageId, imageUrl: photos[index] });
-    
+    console.log('🗑️ 이미지 삭제 요청:', {
+      index,
+      imageId,
+      imageUrl: photos[index],
+    });
+
     try {
       // 서버에 DELETE 요청 보내기 (imageId가 -1이 아닌 경우)
       if (imageId !== -1 && user?.id) {
         console.log('📡 서버에 이미지 삭제 요청 시작:', imageId);
         const response = await deleteUserPhoto(user.id, imageId);
-        console.log('✅ 서버에서 이미지 삭제 완료:', response.data.deletedPhotoId);
+        console.log(
+          '✅ 서버에서 이미지 삭제 완료:',
+          response.data.deletedPhotoId
+        );
       } else {
         console.log('ℹ️ 새로 업로드된 이미지 - 서버 삭제 요청 불필요');
       }
-      
+
       // 로컬 상태에서 제거
       setPhotos(prev => prev.filter((_, i) => i !== index));
       setPhotoIds(prev => prev.filter((_, i) => i !== index));
-      
+
       Alert.alert('성공', '사진이 삭제되었습니다.');
     } catch (error: any) {
       console.error('❌ 이미지 삭제 실패:', error);
-      Alert.alert('삭제 실패', error.message || '사진 삭제 중 오류가 발생했습니다.');
+      Alert.alert(
+        '삭제 실패',
+        error.message || '사진 삭제 중 오류가 발생했습니다.'
+      );
     }
   };
 
@@ -210,8 +236,9 @@ export default function ProfileEditScreen() {
    */
   const reverseGeocodeWithNaver = async (lat: number, lng: number) => {
     try {
-      const { NCP_MAPS_CLIENT_ID, NCP_MAPS_CLIENT_KEY } = Constants.expoConfig?.extra ?? {};
-      
+      const { NCP_MAPS_CLIENT_ID, NCP_MAPS_CLIENT_KEY } =
+        Constants.expoConfig?.extra ?? {};
+
       if (!NCP_MAPS_CLIENT_ID || !NCP_MAPS_CLIENT_KEY) {
         console.warn('Naver Cloud API 키가 설정되지 않았습니다.');
         return null;
@@ -220,7 +247,7 @@ export default function ProfileEditScreen() {
       const query = new URLSearchParams({
         coords: `${lng},${lat}`,
         orders: 'admcode',
-        output: 'json'
+        output: 'json',
       }).toString();
 
       const url = `https://maps.apigw.ntruss.com/map-reversegeocode/v2/gc?${query}`;
@@ -230,8 +257,8 @@ export default function ProfileEditScreen() {
         headers: {
           'x-ncp-apigw-api-key-id': NCP_MAPS_CLIENT_ID,
           'x-ncp-apigw-api-key': NCP_MAPS_CLIENT_KEY,
-          'Accept-Language': 'ko'
-        }
+          'Accept-Language': 'ko',
+        },
       });
 
       if (!res.ok) {
@@ -247,7 +274,7 @@ export default function ProfileEditScreen() {
 
       return {
         sido: area1,
-        sigungu: area2
+        sigungu: area2,
       };
     } catch (e) {
       console.error('네이버맵 역지오코딩 에러:', e);
@@ -277,16 +304,16 @@ export default function ProfileEditScreen() {
 
       console.log('📍 현재 위치:', {
         latitude: location.coords.latitude,
-        longitude: location.coords.longitude
+        longitude: location.coords.longitude,
       });
 
       // 네이버맵 API를 사용한 역지오코딩
       const { latitude, longitude } = location.coords;
       const addressInfo = await reverseGeocodeWithNaver(latitude, longitude);
-      
+
       if (addressInfo) {
         const { sido, sigungu } = addressInfo;
-        
+
         console.log('📍 네이버맵 주소 정보:', { sido, sigungu });
 
         // 위치 정보 업데이트
@@ -294,14 +321,22 @@ export default function ProfileEditScreen() {
           latitude,
           longitude,
           sido,
-          sigungu
+          sigungu,
         };
 
         setLocationInfo(newLocationInfo);
-        
+
         // TODO: 서버에 위치 정보 저장
         console.log('📍 위치 정보 저장 예정:', newLocationInfo);
-        
+
+        // 🔄 위치 업데이트 후 스와이프 유저 목록 캐시 무효화
+        console.log(
+          '🔄 ProfileEditScreen - 위치 업데이트 후 스와이프 캐시 무효화'
+        );
+        queryClient.invalidateQueries({
+          queryKey: ['swipeProfiles'],
+        });
+
         Alert.alert(
           '위치 업데이트 완료',
           `${sido} ${sigungu}로 위치가 업데이트되었습니다.`
@@ -311,7 +346,10 @@ export default function ProfileEditScreen() {
       }
     } catch (error: any) {
       console.error('❌ 위치 업데이트 실패:', error);
-      Alert.alert('위치 업데이트 실패', error.message || '위치 정보를 가져오는데 실패했습니다.');
+      Alert.alert(
+        '위치 업데이트 실패',
+        error.message || '위치 정보를 가져오는데 실패했습니다.'
+      );
     } finally {
       setIsUpdatingLocation(false);
     }
@@ -337,32 +375,39 @@ export default function ProfileEditScreen() {
       };
 
       const response = await uploadUserPhotos(user.id, photoData);
-      
+
       if (response.status === 'SUCCESS' && response.data.length > 0) {
         console.log('✅ 이미지 업로드 성공:', response.data[0]);
-        
+
         // 새로운 API 응답 구조에 맞게 처리
         const uploadedPhoto = response.data[0];
-        if (!uploadedPhoto || !uploadedPhoto.photoUrl || !uploadedPhoto.photoId) {
+        if (
+          !uploadedPhoto ||
+          !uploadedPhoto.photoUrl ||
+          !uploadedPhoto.photoId
+        ) {
           throw new Error('업로드된 이미지 정보를 찾을 수 없습니다.');
         }
-        
+
         console.log('🔧 업로드된 이미지 정보:', {
           photoId: uploadedPhoto.photoId,
-          photoUrl: uploadedPhoto.photoUrl
+          photoUrl: uploadedPhoto.photoUrl,
         });
-        
+
         // 업로드된 이미지 URL과 ID를 각각 배열에 추가
         setPhotos(prev => [...prev, uploadedPhoto.photoUrl]);
         setPhotoIds(prev => [...prev, uploadedPhoto.photoId]);
-        
+
         Alert.alert('성공', '이미지가 업로드되었습니다.');
       } else {
         throw new Error('이미지 업로드에 실패했습니다.');
       }
     } catch (error: any) {
       console.error('❌ 이미지 업로드 실패:', error);
-      Alert.alert('업로드 실패', error.message || '이미지 업로드 중 오류가 발생했습니다.');
+      Alert.alert(
+        '업로드 실패',
+        error.message || '이미지 업로드 중 오류가 발생했습니다.'
+      );
     } finally {
       setIsUploading(false);
     }
@@ -374,29 +419,32 @@ export default function ProfileEditScreen() {
   const selectFromLibrary = () => {
     console.log('📱 갤러리에서 사진 선택 시작');
 
-    launchImageLibrary(imagePickerOptions, async (response: ImagePickerResponse) => {
-      console.log('📱 갤러리 선택 응답:', response);
+    launchImageLibrary(
+      imagePickerOptions,
+      async (response: ImagePickerResponse) => {
+        console.log('📱 갤러리 선택 응답:', response);
 
-      if (response.didCancel) {
-        console.log('📱 사용자가 갤러리 선택을 취소했습니다.');
-        return;
-      }
+        if (response.didCancel) {
+          console.log('📱 사용자가 갤러리 선택을 취소했습니다.');
+          return;
+        }
 
-      if (response.errorMessage) {
-        console.error('📱 갤러리 선택 에러:', response.errorMessage);
-        Alert.alert('오류', '사진을 선택할 수 없습니다.');
-        return;
-      }
+        if (response.errorMessage) {
+          console.error('📱 갤러리 선택 에러:', response.errorMessage);
+          Alert.alert('오류', '사진을 선택할 수 없습니다.');
+          return;
+        }
 
-      if (response.assets && response.assets.length > 0) {
-        const asset = response.assets[0];
-        if (asset.uri) {
-          console.log('✅ 갤러리에서 사진 선택 완료:', asset.uri);
-          // 이미지 선택 후 서버에 업로드
-          await uploadSelectedImages(asset.uri);
+        if (response.assets && response.assets.length > 0) {
+          const asset = response.assets[0];
+          if (asset.uri) {
+            console.log('✅ 갤러리에서 사진 선택 완료:', asset.uri);
+            // 이미지 선택 후 서버에 업로드
+            await uploadSelectedImages(asset.uri);
+          }
         }
       }
-    });
+    );
   };
 
   /**
@@ -430,7 +478,6 @@ export default function ProfileEditScreen() {
     });
   };
 
-
   // 탭 상태에 따른 API 호출
   const handleTabChange = (tab: 'edit' | 'preview') => {
     setActiveTab(tab);
@@ -445,24 +492,26 @@ export default function ProfileEditScreen() {
       }
 
       console.log('프로필 수정 완료 시작');
-      
+
       // 거리 정보를 km에서 m 단위로 변환 (서버 전송용)
-      
+
       // 위치 정보 준비 (업데이트된 정보가 있으면 사용, 없으면 기존 프로필 정보 사용)
       const finalLocationInfo = {
-        latitude: locationInfo.latitude || parseFloat(userProfile?.latitude || '0'),
-        longitude: locationInfo.longitude || parseFloat(userProfile?.longitude || '0'),
+        latitude:
+          locationInfo.latitude || parseFloat(userProfile?.latitude || '0'),
+        longitude:
+          locationInfo.longitude || parseFloat(userProfile?.longitude || '0'),
         sido: locationInfo.sido || userProfile?.sido || '',
-        sigungu: locationInfo.sigungu || userProfile?.sigungu || ''
+        sigungu: locationInfo.sigungu || userProfile?.sigungu || '',
       };
-      
+
       console.log('📍 프로필 수정 데이터:', {
         nickname: userProfile?.nickname || '',
         distance,
         location: finalLocationInfo,
-        introduction: oneWord
+        introduction: oneWord,
       });
-      
+
       // API 요청 데이터 구성
       const updateData: UpdateProfileRequest = {
         nickname: userProfile?.nickname || '',
@@ -471,25 +520,45 @@ export default function ProfileEditScreen() {
         sido: finalLocationInfo.sido,
         sigungu: finalLocationInfo.sigungu,
         distance,
-        introduction: oneWord
+        introduction: oneWord,
       };
-      
+
       // 서버에 프로필 수정 요청
       const response = await updateUserProfile(user.id, updateData);
-      
+
       console.log('✅ 프로필 수정 성공:', response);
-      
-      Alert.alert(
-        '수정 완료',
-        '프로필이 성공적으로 수정되었습니다.',
-        [
+
+      // 🔄 프로필 수정 후 캐시 무효화 (거리나 위치가 변경된 경우)
+      const distanceChanged = distance !== originalDistance;
+      const locationChanged =
+        locationInfo.latitude !== 0 && locationInfo.longitude !== 0;
+
+      if (distanceChanged || locationChanged) {
+        console.log(
+          '🔄 ProfileEditScreen - 거리/위치 변경으로 스와이프 캐시 무효화',
           {
-            text: '확인',
-            onPress: () => navigation.goBack()
+            distanceChanged,
+            locationChanged,
+            originalDistance,
+            newDistance: distance,
           }
-        ]
-      );
-      
+        );
+
+        // 서버 동기화를 위해 약간의 지연 후 캐시 무효화
+        setTimeout(() => {
+          queryClient.invalidateQueries({
+            queryKey: ['swipeProfiles'],
+          });
+          console.log('🔄 지연 후 스와이프 캐시 무효화 완료');
+        }, 1000); // 1초 지연
+      }
+
+      Alert.alert('수정 완료', '프로필이 성공적으로 수정되었습니다.', [
+        {
+          text: '확인',
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (error: any) {
       console.error('❌ 프로필 수정 실패:', error);
       Alert.alert(
@@ -506,13 +575,19 @@ export default function ProfileEditScreen() {
     distance: `${distance}km`, // 수정 중인 거리 값 사용
     category: userProfile?.mainType || '',
     tags: userProfile?.keywords || [],
-    introduction: oneWord ? `"${oneWord}"` : (userProfile?.introduction ? `"${userProfile.introduction}"` : ''),
-    images: photos.length > 0 ? photos : (userProfile?.profileImageUrls || [])
+    introduction: oneWord
+      ? `"${oneWord}"`
+      : userProfile?.introduction
+        ? `"${userProfile.introduction}"`
+        : '',
+    images: photos.length > 0 ? photos : userProfile?.profileImageUrls || [],
   };
 
   // 기본 정보 표시용 데이터
-  const basicInfo = userProfile ? `${userProfile.nickname} / ${userProfile.age} / ${userProfile.gender === 'M' ? '남' : '여'}` : '';
-  
+  const basicInfo = userProfile
+    ? `${userProfile.nickname} / ${userProfile.age} / ${userProfile.gender === 'M' ? '남' : '여'}`
+    : '';
+
   // 위치 정보 - 업데이트된 정보가 있으면 우선 사용, 없으면 프로필에서 가져오기
   const city = locationInfo.sido || userProfile?.sido || '';
   const district = locationInfo.sigungu || userProfile?.sigungu || '';
@@ -565,17 +640,16 @@ export default function ProfileEditScreen() {
 
       <ScrollView className="flex-1 bg-white">
         {/* ProfileTab */}
-        <ProfileTab
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        />
+        <ProfileTab activeTab={activeTab} onTabChange={handleTabChange} />
 
         {/* 탭에 따른 내용 렌더링 */}
         {activeTab === 'edit' ? (
           <>
             {/* 프로필 사진 섹션 */}
             <View className="mb-8 mt-4 px-4">
-              <Text className="text-subheading-bold text-text-primary mb-4">프로필 사진</Text>
+              <Text className="text-subheading-bold text-text-primary mb-4">
+                프로필 사진
+              </Text>
               <ProfileImageDisplay
                 photos={photos}
                 onPhotoUpload={handlePhotoUpload}
@@ -603,53 +677,73 @@ export default function ProfileEditScreen() {
 
             {/* 기본 정보 섹션 */}
             <View className="mb-12 px-4">
-              <Text className="text-subheading-bold text-text-primary mb-4">기본 정보</Text>
-                <View className="h-14 bg-gray rounded-xl px-4 justify-center">
-                  <Text className="text-body-large-regular text-text-primary">{basicInfo}</Text>
-                </View>
+              <Text className="text-subheading-bold text-text-primary mb-4">
+                기본 정보
+              </Text>
+              <View className="h-14 bg-gray rounded-xl px-4 justify-center">
+                <Text className="text-body-large-regular text-text-primary">
+                  {basicInfo}
+                </Text>
+              </View>
             </View>
 
             {/* 한 마디 섹션 */}
             <View className="mb-12 px-4">
-              <Text className="text-subheading-bold text-text-primary mb-4">한 마디</Text>
-                <View className="h-14 border border-mango-red rounded-xl px-4 justify-center">
-                  <TextInput className="text-body-large-regular text-text-primary" value={oneWord} onChangeText={setOneWord} />
-                </View>
+              <Text className="text-subheading-bold text-text-primary mb-4">
+                한 마디
+              </Text>
+              <View className="h-14 border border-mango-red rounded-xl px-4 justify-center">
+                <TextInput
+                  className="text-body-large-regular text-text-primary"
+                  value={oneWord}
+                  onChangeText={setOneWord}
+                />
+              </View>
             </View>
 
             {/* 위치 정보 섹션 */}
             <View className="mb-12 px-4">
               <View className="flex-row justify-between items-center mb-4">
-                <Text className="text-subheading-bold text-text-primary">위치 정보</Text>
-                <TouchableOpacity 
+                <Text className="text-subheading-bold text-text-primary">
+                  위치 정보
+                </Text>
+                <TouchableOpacity
                   onPress={handleLocationUpdate}
                   disabled={isUpdatingLocation}
                 >
                   {isUpdatingLocation ? (
                     <ActivityIndicator size="small" color="#EF4444" />
                   ) : (
-                    <Text className="text-body-large-semibold text-mango-red">위치 업데이트</Text>
+                    <Text className="text-body-large-semibold text-mango-red">
+                      위치 업데이트
+                    </Text>
                   )}
                 </TouchableOpacity>
               </View>
-              
+
               <View className="flex-row gap-4">
                 {/* 시/도 */}
                 <View className="flex-1 h-14 bg-gray rounded-xl px-4 justify-center">
-                  <Text className="text-body-large-regular text-text-primary text-center">{city}</Text>
+                  <Text className="text-body-large-regular text-text-primary text-center">
+                    {city}
+                  </Text>
                 </View>
 
                 {/* 구/군 */}
                 <View className="flex-1 h-14 bg-gray rounded-xl px-4 justify-center">
-                  <Text className="text-body-large-regular text-text-primary text-center">{district}</Text>
+                  <Text className="text-body-large-regular text-text-primary text-center">
+                    {district}
+                  </Text>
                 </View>
               </View>
             </View>
 
             {/* 상대방과의 거리 섹션 */}
             <View className="mb-12 px-4">
-              <Text className="text-subheading-bold text-text-primary mb-8">희망하는 반경</Text>
-              
+              <Text className="text-subheading-bold text-text-primary mb-8">
+                희망하는 반경
+              </Text>
+
               {/* 슬라이더 영역 */}
               <View className="mb-4">
                 <Slider
@@ -657,7 +751,7 @@ export default function ProfileEditScreen() {
                   minimumValue={0}
                   maximumValue={6}
                   value={distanceIndex}
-                  onValueChange={(value) => setDistanceIndex(Math.round(value))}
+                  onValueChange={value => setDistanceIndex(Math.round(value))}
                   minimumTrackTintColor="#FF6B6B"
                   maximumTrackTintColor="#E5E5E5"
                   thumbTintColor="#FF6B6B"
@@ -674,7 +768,11 @@ export default function ProfileEditScreen() {
                   </Text>
                 </View>
                 <Text className="text-body-large-regular text-text-primary">
-                  자동차로 <Text className="font-bold">{timeRange.min}~{timeRange.max}분</Text> 정도 걸려요!
+                  자동차로{' '}
+                  <Text className="font-bold">
+                    {timeRange.min}~{timeRange.max}분
+                  </Text>{' '}
+                  정도 걸려요!
                 </Text>
               </View>
             </View>
@@ -696,4 +794,3 @@ export default function ProfileEditScreen() {
     </Layout>
   );
 }
-

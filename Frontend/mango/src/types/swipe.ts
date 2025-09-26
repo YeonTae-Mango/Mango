@@ -25,6 +25,10 @@ export interface SwipeAction {
   action: 'like' | 'dislike';
 }
 
+export interface SwipeActionWithProfile extends SwipeAction {
+  profileData?: SwipeProfile;
+}
+
 export interface MangoLikeResponse {
   message: string;
   status: string;

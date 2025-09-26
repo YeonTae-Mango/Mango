@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CategoryCard from '../../components/category/CategoryCard';
 import Layout from '../../components/common/Layout';
@@ -35,10 +35,20 @@ export default function CategoryScreen({ onLogout }: CategoryScreenProps) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flexGrow: 1,
-          paddingBottom: Math.max(insets.bottom, 80) + 60, // 탭바 높이를 더 크게 계산
+          // paddingBottom: Math.max(insets.bottom, 80), // 탭바 높이를 더 크게 계산
         }}
       >
         <View className="p-4">
+          {/* 헤더 텍스트 */}
+          <View className="mb-6 ml-2">
+            <Text className="text-subheading-bold text-dark mb-2">
+              카테고리
+            </Text>
+            <Text className="text-body-large-regular text-text-primary">
+              소비패턴 유형별 새로운 사람들을 만나보세요!
+            </Text>
+          </View>
+
           <View className="flex-row flex-wrap justify-between">
             {categories.map(category => (
               <CategoryCard

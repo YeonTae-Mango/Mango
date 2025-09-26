@@ -1,5 +1,5 @@
-import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -39,34 +39,37 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
     navigation.navigate('MyPattern');
   };
 
-  // 사용자 정보 불러오기
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // 사용자 프로필 데이터를 가져오는 함수
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        // 현재 로그인된 사용자 ID 가져오기
-        const userId = await getCurrentUserId();
-        if (!userId) {
-          throw new Error('사용자 ID를 찾을 수 없습니다.');
-        }
-
-        // 사용자 정보 조회
-        const userInfo = await getUserById(userId);
-        console.log('받은 사용자 정보:', userInfo);
-        // API 응답 구조에 맞게 데이터 추출
-        setProfileData((userInfo as any).data);
-      } catch (err) {
-        console.error('프로필 정보 로드 실패:', err);
-        setError('프로필 정보를 불러오는데 실패했습니다.');
-      } finally {
-        setLoading(false);
+      // 현재 로그인된 사용자 ID 가져오기
+      const userId = await getCurrentUserId();
+      if (!userId) {
+        throw new Error('사용자 ID를 찾을 수 없습니다.');
       }
-    };
 
-    fetchUserProfile();
+      // 사용자 정보 조회
+      const userInfo = await getUserById(userId);
+      console.log('받은 사용자 정보:', userInfo);
+      // API 응답 구조에 맞게 데이터 추출
+      setProfileData((userInfo as any).data);
+    } catch (err) {
+      console.error('프로필 정보 로드 실패:', err);
+      setError('프로필 정보를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  // 사용자 정보 불러오기 - 화면이 포커스될 때마다 실행
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserProfile();
+    }, [fetchUserProfile])
+  );
 
   // 로딩 상태 처리
   if (loading) {
@@ -92,29 +95,7 @@ export default function ProfileScreen({ onLogout }: ProfileScreenProps) {
           </Text>
           <TouchableOpacity
             className="bg-red-400 rounded-2xl px-6 py-3"
-            onPress={async () => {
-              const fetchUserProfile = async () => {
-                try {
-                  setLoading(true);
-                  setError(null);
-
-                  const userId = await getCurrentUserId();
-                  if (!userId) {
-                    throw new Error('사용자 ID를 찾을 수 없습니다.');
-                  }
-
-                  const userInfo = await getUserById(userId);
-                  setProfileData((userInfo as any).data);
-                } catch (err) {
-                  console.error('프로필 정보 로드 실패:', err);
-                  setError('프로필 정보를 불러오는데 실패했습니다.');
-                } finally {
-                  setLoading(false);
-                }
-              };
-
-              fetchUserProfile();
-            }}
+            onPress={fetchUserProfile}
           >
             <Text className="text-white text-body-medium-semibold">
               다시 시도
