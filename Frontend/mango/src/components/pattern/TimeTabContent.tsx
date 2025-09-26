@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity } from 'react-native';
+import { Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
 import { TimeChartData } from '../../types/chart';
+import ChartTooltip from '../common/ChartTooltip';
 
 interface TimeTabContentProps {
   timeData: Array<{
@@ -19,13 +20,12 @@ interface TimeTabContentProps {
 }
 
 export default function TimeTabContent({ timeData, timeApiData, additionalInfoData }: TimeTabContentProps) {
-  const tooltipOn = false; // 툴팁 기능 온오프 설정
+  const tooltipOn = true; // 툴팁 기능 온오프 설정
   
   const baseUrl = EXPO_PUBLIC_WEBVIEW_BASE_URL || 'http://70.12.246.220:5173';
   const webviewRef = useRef<WebView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showTooltip, setShowTooltip] = useState(false);
 
   const postMessage = (message: any) => {
     if (!webviewRef.current) return;
@@ -155,8 +155,11 @@ export default function TimeTabContent({ timeData, timeApiData, additionalInfoDa
 
   return (
     <View>
+      {/* 탭과 웹뷰 사이의 툴팁 영역 */}
+      <ChartTooltip type="time" enabled={tooltipOn} />
+
       {/* 시간대 전용 웹뷰 차트 영역 */}
-      <View className="px-4 mt-6">
+      <View className="px-4 mt-2">
         <View className="relative">
           <WebView
             ref={webviewRef}
@@ -175,23 +178,6 @@ export default function TimeTabContent({ timeData, timeApiData, additionalInfoDa
             showsVerticalScrollIndicator={false}
             onShouldStartLoadWithRequest={() => true}
           />
-          
-          {/* 물음표 도움말 버튼 */}
-          {tooltipOn && (
-            <TouchableOpacity
-              className="absolute top-2 right-2 w-8 h-8 bg-text-primary rounded-full items-center justify-center z-10"
-              onPress={() => setShowTooltip(!showTooltip)}
-            >
-              <Text className="text-white text-lg font-bold">?</Text>
-            </TouchableOpacity>
-          )}
-          
-          {/* 툴팁 */}
-          {tooltipOn && showTooltip && (
-            <View className="absolute top-10 right-2 bg-text-primary rounded-lg px-3 py-2 max-w-48 z-20">
-              <Text className="text-white text-sm">hello</Text>
-            </View>
-          )}
         
         {loading && (
           <View className="absolute inset-0 justify-center items-center bg-white rounded-lg">

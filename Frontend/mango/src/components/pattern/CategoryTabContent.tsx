@@ -3,6 +3,7 @@ import { Text, View, Alert, TouchableOpacity, Modal } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
 import { CategoryChartData } from '../../types/chart';
+import ChartTooltip from '../common/ChartTooltip';
 
 interface CategoryTabContentProps {
   categoryData: CategoryChartData | null;
@@ -27,6 +28,8 @@ export default function CategoryTabContent({ categoryData, formatAmount, additio
   
   // 드랍다운 표시 상태
   const [showDropdown, setShowDropdown] = useState(false);
+  
+  // 툴팁 상태
   
   // 기간 옵션 데이터
   const periodOptions = [
@@ -269,14 +272,24 @@ export default function CategoryTabContent({ categoryData, formatAmount, additio
         />
       )}
       
-      {/* 카테고리 전용 웹뷰 차트 영역 */}
-      <View className="px-4 mt-6">
-        <View className="relative">
-          {/* 기간 선택 드랍다운 */}
-          <View className="relative w-32 top-2 right-2 z-20 mb-2 ml-auto">
-            {renderDropdown()}
+      {/* 탭과 웹뷰 사이의 컨트롤 영역 */}
+      <View className="px-4 mt-4">
+        <View className="flex-row items-start justify-between">
+          {/* 툴팁 영역 (왼쪽) */}
+          <View className="relative">
+            <ChartTooltip type="category" enabled={true} />
           </View>
           
+          {/* 기간 선택 드랍다운 (오른쪽) */}
+          <View className="relative w-32">
+            {renderDropdown()}
+          </View>
+        </View>
+      </View>
+
+      {/* 카테고리 전용 웹뷰 차트 영역 */}
+      <View className="px-4 mt-2">
+        <View className="relative">
           <WebView
             ref={webviewRef}
             source={{ uri: `${baseUrl}/myCategoryChart` }}

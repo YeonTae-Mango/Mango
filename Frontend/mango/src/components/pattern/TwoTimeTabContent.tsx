@@ -4,6 +4,7 @@ import { WebView } from 'react-native-webview';
 import { getTwoTimeChart } from '../../api/ChartWebview';
 import { useAuthStore } from '../../store/authStore';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
+import ChartTooltip from '../common/ChartTooltip';
 
 interface TwoTimeTabContentProps {
   activeTab: 'type' | 'category' | 'keyword' | 'time';
@@ -124,7 +125,10 @@ export default function TwoTimeTabContent({ activeTab, userName, otherUserId }: 
 
   return (
     <View>
-      <View className="px-4 mt-6">
+      {/* 탭과 웹뷰 사이의 툴팁 영역 */}
+      <ChartTooltip type="twoTime" enabled={true} />
+
+      <View className="px-4 mt-2">
         <View className="relative">
           <WebView
             ref={webviewRef}

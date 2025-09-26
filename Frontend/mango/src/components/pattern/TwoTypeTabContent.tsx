@@ -6,6 +6,8 @@ import { useAuthStore } from '../../store/authStore';
 import { getUserById } from '../../api/auth';
 import { getUserProfile } from '../../api/profile';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
+import ChartTooltip from '../common/ChartTooltip';
+import { CATEGORIES, CategoryType } from '../../constants/category';
 
 interface TwoTypeTabContentProps {
   activeTab: 'type' | 'category' | 'keyword' | 'time';
@@ -27,6 +29,15 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
   const getMaxType = (data: number[], labels: string[]) => {
     const maxIndex = data.indexOf(Math.max(...data));
     return labels[maxIndex] || '알 수 없음';
+  };
+
+  // 타입 이름을 카테고리 ID로 변환하는 함수
+  const getCategoryIdFromTypeName = (typeName: string): CategoryType | null => {
+    const categoryEntries = Object.entries(CATEGORIES);
+    const foundCategory = categoryEntries.find(([_, category]) => 
+      category.name === typeName
+    );
+    return foundCategory ? foundCategory[0] as CategoryType : null;
   };
 
   // 특정 사용자 정보 조회 함수
@@ -178,8 +189,11 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
 
   return (
     <View>
+      {/* 탭과 웹뷰 사이의 툴팁 영역 */}
+      <ChartTooltip type="twoType" enabled={true} />
+
       {/* 대표유형 전용 웹뷰 차트 영역 */}
-      <View className="px-4 mt-6">
+      <View className="px-4 mt-2">
         <View className="relative">
           <WebView
             ref={webviewRef}
@@ -222,6 +236,12 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
               <Text className="font-bold">나</Text>는
             </Text>
             <View className="bg-blue-400 rounded-full px-4 py-2 flex-row items-center">
+              <Text className="text-body-large-regular text-white mr-2">
+                {(() => {
+                  const myCategoryId = getCategoryIdFromTypeName(myType);
+                  return myCategoryId ? CATEGORIES[myCategoryId].emoji : '❓';
+                })()}
+              </Text>
               <Text className="text-body-medium-semibold text-white">
                 {myType}
               </Text>
@@ -234,6 +254,12 @@ export default function TwoTypeTabContent({ activeTab, userName, otherUserId }: 
               <Text className="font-bold">{userInfo?.nickname || userName}</Text>님은
             </Text>
             <View className="bg-mango-red rounded-full px-4 py-2 flex-row items-center">
+              <Text className="text-body-large-regular text-white mr-2">
+                {(() => {
+                  const otherCategoryId = getCategoryIdFromTypeName(otherType);
+                  return otherCategoryId ? CATEGORIES[otherCategoryId].emoji : '❓';
+                })()}
+              </Text>
               <Text className="text-body-medium-semibold text-white">
                 {otherType}
               </Text>
