@@ -5,6 +5,7 @@ import { getMyKeywordChart } from '../../api/ChartWebview';
 import { useAuthStore } from '../../store/authStore';
 import { EXPO_PUBLIC_WEBVIEW_BASE_URL } from '@env';
 import { getKeywordFromCategory } from '../../utils/keywordMapping';
+import ChartTooltip from '../common/ChartTooltip';
 
 interface TwoKeywordTabContentProps {
   activeTab: 'type' | 'category' | 'keyword' | 'time';
@@ -152,7 +153,10 @@ export default function TwoKeywordTabContent({ activeTab, userName, otherUserId 
 
   return (
     <View>
-      <View className="px-4 mt-6">
+      {/* 탭과 웹뷰 사이의 툴팁 영역 */}
+      <ChartTooltip type="twoKeyword" enabled={true} />
+
+      <View className="px-4 mt-2">
         <View className="relative">
           <WebView
             ref={webviewRef}
