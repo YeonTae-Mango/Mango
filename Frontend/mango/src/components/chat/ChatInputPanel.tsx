@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { TextInput, TouchableOpacity, View } from 'react-native';
+import { Platform, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface ChatInputPanelProps {
   onSendMessage: (message: string) => void;
@@ -25,7 +25,13 @@ export default function ChatInputPanel({
   const canSend = message.trim().length > 0 && !disabled;
 
   return (
-    <View className="bg-white border-t border-stroke px-4 py-2">
+    <View
+      className="bg-white border-t border-stroke px-4"
+      style={{
+        paddingTop: 12,
+        paddingBottom: Platform.OS === 'android' ? 16 : 12,
+      }}
+    >
       <View className="flex-row items-center">
         {/* 텍스트 입력 영역 */}
         <View className="flex-1 bg-gray rounded-2xl px-4 py-1 mr-3 min-h-12 max-h-[100px]">
