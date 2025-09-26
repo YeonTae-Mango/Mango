@@ -14,13 +14,16 @@ export default function ProfileImageDisplay({
 }: ProfileImageDisplayProps) {
   const renderPhotoCard = (photo: string, index: number) => {
     return (
-      <View key={index} className="relative w-full h-full rounded-lg border-2 border-mango-red overflow-hidden">
-        {/* 실제 이미지 표시 */}
-        <Image 
-          source={{ uri: photo }}
-          className="w-full h-full"
-          resizeMode="cover"
-        />
+      <View key={index} className="relative w-full h-full rounded-lg bg-mango-red p-[2px]">
+        {/* 내부 컨텐츠 래퍼: 실제 모서리 라운드와 클리핑 */}
+        <View className="w-full h-full rounded-lg overflow-hidden">
+          {/* 실제 이미지 표시 */}
+          <Image 
+            source={{ uri: photo }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+        </View>
         
         {/* 대표사진 배지 (첫 번째 사진만) */}
         {index === 0 && (
