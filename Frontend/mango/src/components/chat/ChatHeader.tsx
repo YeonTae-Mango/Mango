@@ -36,7 +36,7 @@ export default function ChatHeader({
         style={{ paddingTop: Math.max(insets.top, 16) + 12 }}
       >
         <TouchableOpacity className="w-6 mr-4" onPress={onBackPress}>
-          <Ionicons name="arrow-back" size={24} color="#8899A8" />
+          <Ionicons name="chevron-back" size={24} color="#8899A8" />
         </TouchableOpacity>
 
         {showUserInfo && userName && (

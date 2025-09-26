@@ -36,8 +36,10 @@ export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
       return result;
     },
     enabled: !!userId && userId > 0, // userId가 유효할 때만 쿼리 실행
-    staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
-    gcTime: 1000 * 60 * 10, // 10분간 가비지 컬렉션 방지
+    staleTime: 0, // 캐시를 항상 stale로 취급 (즉시 refetch)
+    gcTime: 1000 * 60 * 5, // 5분간 가비지 컬렉션 방지
+    refetchOnWindowFocus: true, // 창 포커스 시 refetch
+    refetchOnReconnect: true, // 네트워크 재연결 시 refetch
   });
 
   const currentProfile = profiles[currentIndex] || null; // 현재 보여지는 프로필
@@ -163,14 +165,22 @@ export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
 
   // 스와이프 전용 mutation (제스처용)
   const swipeMutationForGesture = useMutation({
-    mutationFn: async ({ requestId, action }: SwipeAction) => {
+    mutationFn: async ({
+      requestId,
+      action,
+      profileData,
+    }: {
+      requestId: number;
+      action: 'like' | 'dislike';
+      profileData: any;
+    }) => {
       try {
         if (action === 'like') {
           const response = await sendMangoLike(userId, requestId);
-          return response;
+          return { ...response, profileData }; // 프로필 데이터를 응답에 포함
         } else if (action === 'dislike') {
           const response = await sendMangoDislike(userId, requestId);
-          return response;
+          return { ...response, profileData }; // 프로필 데이터를 응답에 포함
         }
       } catch (error) {
         console.error(`스와이프 API 호출 실패 (${action}):`, error);
@@ -187,8 +197,11 @@ export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
       // 매치 성공 확인 (좋아요인 경우에만)
       if (variables.action === 'like' && data && onMatchSuccess) {
         console.log('🎭 스와이프 좋아요 응답 확인:', data);
-        console.log('🎭 현재 프로필:', currentProfile);
-        console.log('🎭 현재 프로필의 theyLiked:', currentProfile?.theyLiked);
+        console.log('🎭 매칭된 프로필:', data.profileData);
+        console.log(
+          '🎭 매칭된 프로필의 theyLiked:',
+          data.profileData?.theyLiked
+        );
 
         // 매칭 조건 확인
         let isMatched = false;
@@ -205,17 +218,17 @@ export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
         console.log('🎭 매치 필드 검사:', possibleMatchFields);
         isMatched = possibleMatchFields.some(field => field === true);
 
-        // 2. 현재 프로필이 "나를 망고한 사람"(theyLiked: true)이면 무조건 매칭!
-        if (currentProfile?.theyLiked === true) {
+        // 2. 매칭된 프로필이 "나를 망고한 사람"(theyLiked: true)이면 무조건 매칭!
+        if (data.profileData?.theyLiked === true) {
           console.log(
             '🎭🎯 "나를 망고한 사람"에게 스와이프 망고 -> 자동 매칭!'
           );
           isMatched = true;
         }
 
-        if (isMatched && currentProfile) {
-          console.log('🎭🎉 스와이프 매치 성공!', currentProfile);
-          onMatchSuccess(currentProfile);
+        if (isMatched && data.profileData) {
+          console.log('🎭🎉 스와이프 매치 성공!', data.profileData);
+          onMatchSuccess(data.profileData); // 올바른 프로필 전달
         } else {
           console.log('🎭👍 스와이프 좋아요 성공, 매치는 아님');
         }
@@ -233,18 +246,30 @@ export const useSwipe = (userId: number, options: UseSwipeOptions = {}) => {
   });
 
   // 스와이프 전용 함수들
-  const likeProfileBySwipe = (requestId: number) => {
+  const likeProfileBySwipe = (requestId: number, profileData?: any) => {
     if (swipeMutationForGesture.isPending) {
       return;
     }
-    swipeMutationForGesture.mutate({ requestId, action: 'like' });
+    // 프로필 데이터가 전달되지 않으면 현재 프로필 사용
+    const targetProfile = profileData || currentProfile;
+    swipeMutationForGesture.mutate({
+      requestId,
+      action: 'like',
+      profileData: targetProfile,
+    });
   };
 
-  const dislikeProfileBySwipe = (requestId: number) => {
+  const dislikeProfileBySwipe = (requestId: number, profileData?: any) => {
     if (swipeMutationForGesture.isPending) {
       return;
     }
-    swipeMutationForGesture.mutate({ requestId, action: 'dislike' });
+    // 프로필 데이터가 전달되지 않으면 현재 프로필 사용
+    const targetProfile = profileData || currentProfile;
+    swipeMutationForGesture.mutate({
+      requestId,
+      action: 'dislike',
+      profileData: targetProfile,
+    });
   };
 
   // 스와이프 완료 후 인덱스 증가

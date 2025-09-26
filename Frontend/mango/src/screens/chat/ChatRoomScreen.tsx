@@ -12,13 +12,14 @@ import {
   Alert,
   FlatList,
   KeyboardAvoidingView,
+  Platform,
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { getUserById } from '../../api/auth';
 import { blockUser } from '../../api/block';
-import { getChatMessages, getChatRoom } from '../../api/chat';
+import { deleteChatRoom, getChatMessages, getChatRoom } from '../../api/chat';
 import ChatDateSeparator from '../../components/chat/ChatDateSeparator';
 import ChatHeader from '../../components/chat/ChatHeader';
 import ChatInputPanel from '../../components/chat/ChatInputPanel';
@@ -59,9 +60,6 @@ export default function ChatRoomScreen() {
   console.log('🔍 ChatRoomScreen 파라미터:', { userName, chatRoomId, userId });
   console.log('🔍 현재 사용자:', user);
 
-  // 차단 상태 관리
-  const [isBlocked, setIsBlocked] = useState(false);
-
   // 사용자 정보 조회 (메인 타입을 위해)
   const { data: userInfo } = useQuery({
     queryKey: ['userInfo', userId],
@@ -88,21 +86,25 @@ export default function ChatRoomScreen() {
     }) => blockUser(requestId, targetUserId),
     onSuccess: (data, variables) => {
       console.log('사용자 차단/신고 성공');
-      setIsBlocked(true);
-
-      // 성공 메시지와 함께 뒤로가기
-      setTimeout(() => {
-        Alert.alert('완료', '처리가 완료되었습니다.', [
-          {
-            text: '확인',
-            onPress: () => navigation.goBack(),
-          },
-        ]);
-      }, 100);
+      // 채팅방이 삭제되므로 UI 상태 변경 불필요
     },
     onError: error => {
       console.error('사용자 차단/신고 실패:', error);
       Alert.alert('오류', '차단/신고 처리에 실패했습니다.');
+    },
+  });
+
+  // 채팅방 삭제 뮤테이션
+  const deleteChatRoomMutation = useMutation({
+    mutationFn: (roomId: number) => deleteChatRoom(roomId),
+    onSuccess: () => {
+      console.log('채팅방 삭제 성공');
+      // 채팅방 목록 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['chatRooms'] });
+    },
+    onError: error => {
+      console.error('채팅방 삭제 실패:', error);
+      Alert.alert('오류', '채팅방 삭제에 실패했습니다.');
     },
   });
 
@@ -180,14 +182,6 @@ export default function ChatRoomScreen() {
       }
 
       const transformedMessages = apiMessages.map(msg => {
-        // console.log('📝 메시지 변환:', {
-        //   id: msg.id,
-        //   content: msg.content,
-        //   senderId: msg.senderId,
-        //   createdAt: msg.createdAt,
-        //   currentUserId: user.id,
-        // });
-
         const messageDate = new Date(msg.createdAt);
         return {
           id: msg.id.toString(),
@@ -313,6 +307,41 @@ export default function ChatRoomScreen() {
     }
   };
 
+  const handleBackPress = () => {
+    if (chatRoomId && user?.id) {
+      console.log('🔄 뒤로가기 - 즉시 unreadCount 0으로 캐시 업데이트');
+
+      // 1. 먼저 캐시에서 해당 채팅방의 unreadCount를 즉시 0으로 업데이트
+      queryClient.setQueryData(['chatRooms', user.id], (oldData: any) => {
+        if (oldData && oldData.content) {
+          return {
+            ...oldData,
+            content: oldData.content.map((room: any) =>
+              room.chatRoomId === parseInt(chatRoomId)
+                ? { ...room, unreadCount: 0 }
+                : room
+            ),
+          };
+        }
+        return oldData;
+      });
+
+      // 2. 백그라운드에서 getChatRoom API 호출하여 서버 상태 동기화
+      getChatRoom(parseInt(chatRoomId))
+        .then(() => {
+          console.log('✅ 뒤로가기 - 서버 동기화 완료');
+          queryClient.invalidateQueries({
+            queryKey: ['chatRooms', user.id],
+          });
+        })
+        .catch(error => {
+          console.error('❌ 뒤로가기 - 서버 동기화 실패:', error);
+        });
+    }
+
+    navigation.goBack();
+  };
+
   const handleMenuPress = () => {
     setShowMenuModal(true);
   };
@@ -323,9 +352,24 @@ export default function ChatRoomScreen() {
       {
         text: '확인',
         style: 'destructive',
-        onPress: () => {
-          // 매치 취소 로직
-          navigation.goBack();
+        onPress: async () => {
+          try {
+            // 채팅방 삭제 API 호출
+            console.log('🗑️ 매치 취소 - 채팅방 삭제 시도:', chatRoomId);
+            await deleteChatRoomMutation.mutateAsync(parseInt(chatRoomId));
+            console.log('✅ 매치 취소 - 채팅방 삭제 완료');
+
+            // 성공 메시지와 함께 뒤로가기
+            Alert.alert('완료', '매치가 취소되었습니다.', [
+              {
+                text: '확인',
+                onPress: () => navigation.goBack(),
+              },
+            ]);
+          } catch (error) {
+            console.error('❌ 매치 취소 실패:', error);
+            Alert.alert('오류', '매치 취소에 실패했습니다.');
+          }
         },
       },
     ]);
@@ -337,7 +381,7 @@ export default function ChatRoomScreen() {
       {
         text: '차단',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
           // 디버깅 로그 추가
           console.log('🔍 차단 시도 - userId:', userId);
           console.log('🔍 차단 시도 - user?.id:', user?.id);
@@ -360,14 +404,34 @@ export default function ChatRoomScreen() {
           console.log('🔍 최종 targetUserId:', targetUserId);
 
           if (user?.id && targetUserId) {
-            console.log('✅ 차단 API 호출:', {
-              requestId: user.id,
-              targetUserId,
-            });
-            blockUserMutation.mutate({
-              requestId: user.id,
-              targetUserId: targetUserId,
-            });
+            try {
+              console.log('✅ 차단 API 호출:', {
+                requestId: user.id,
+                targetUserId,
+              });
+
+              // 1. 사용자 차단 API 호출
+              await blockUserMutation.mutateAsync({
+                requestId: user.id,
+                targetUserId: targetUserId,
+              });
+              console.log('✅ 사용자 차단 완료');
+
+              // 2. 채팅방 삭제 API 호출
+              console.log('🗑️ 차단 후 채팅방 삭제 시도:', chatRoomId);
+              await deleteChatRoomMutation.mutateAsync(parseInt(chatRoomId));
+              console.log('✅ 채팅방 삭제 완료');
+
+              // 3. 성공 메시지와 함께 뒤로가기
+              Alert.alert('완료', '사용자가 차단되었습니다.', [
+                {
+                  text: '확인',
+                  onPress: () => navigation.goBack(),
+                },
+              ]);
+            } catch (error) {
+              console.error('❌ 차단 또는 채팅방 삭제 실패:', error);
+            }
           } else {
             console.log('❌ 차단 실패 - 필요한 정보가 없음');
             Alert.alert('오류', '사용자 정보를 불러올 수 없습니다.');
@@ -503,7 +567,7 @@ export default function ChatRoomScreen() {
       { text: '취소', style: 'cancel' },
       {
         text: '신고',
-        onPress: () => {
+        onPress: async () => {
           // 디버깅 로그 추가
           console.log('🔍 신고 시도 - userId:', userId);
           console.log('🔍 신고 시도 - user?.id:', user?.id);
@@ -524,14 +588,34 @@ export default function ChatRoomScreen() {
           console.log('🔍 최종 targetUserId:', targetUserId);
 
           if (user?.id && targetUserId) {
-            console.log('✅ 신고 API 호출:', {
-              requestId: user.id,
-              targetUserId,
-            });
-            blockUserMutation.mutate({
-              requestId: user.id,
-              targetUserId: targetUserId,
-            });
+            try {
+              console.log('✅ 신고 API 호출:', {
+                requestId: user.id,
+                targetUserId,
+              });
+
+              // 1. 사용자 신고 API 호출
+              await blockUserMutation.mutateAsync({
+                requestId: user.id,
+                targetUserId: targetUserId,
+              });
+              console.log('✅ 사용자 신고 완료');
+
+              // 2. 채팅방 삭제 API 호출
+              console.log('🗑️ 신고 후 채팅방 삭제 시도:', chatRoomId);
+              await deleteChatRoomMutation.mutateAsync(parseInt(chatRoomId));
+              console.log('✅ 채팅방 삭제 완료');
+
+              // 3. 성공 메시지와 함께 뒤로가기
+              Alert.alert('완료', '사용자가 신고되었습니다.', [
+                {
+                  text: '확인',
+                  onPress: () => navigation.goBack(),
+                },
+              ]);
+            } catch (error) {
+              console.error('❌ 신고 또는 채팅방 삭제 실패:', error);
+            }
           } else {
             console.log('❌ 신고 실패 - 필요한 정보가 없음');
             Alert.alert('오류', '사용자 정보를 불러올 수 없습니다.');
@@ -544,16 +628,16 @@ export default function ChatRoomScreen() {
   // 로딩 상태
   if (roomLoading || messagesLoading) {
     return (
-      <View className="flex-1 bg-white">
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
         <ChatHeader
           userName={userName || '로딩중...'}
           showUserInfo={false}
           showMenu={false}
-          onBackPress={() => navigation.goBack()}
+          onBackPress={handleBackPress}
           onProfilePress={() => {}}
           onMenuPress={() => {}}
         />
-        <View className="flex-1 justify-center items-center">
+        <View className="flex-1 bg-white justify-center items-center">
           <ActivityIndicator size="large" color="#FF6B6B" />
           <Text className="mt-4 text-gray-600">채팅방을 불러오는 중...</Text>
         </View>
@@ -564,16 +648,16 @@ export default function ChatRoomScreen() {
   // 에러 상태
   if (roomError || messagesError) {
     return (
-      <View className="flex-1 bg-white">
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
         <ChatHeader
           userName={userName || '오류'}
           showUserInfo={false}
           showMenu={false}
-          onBackPress={() => navigation.goBack()}
+          onBackPress={handleBackPress}
           onProfilePress={() => {}}
           onMenuPress={() => {}}
         />
-        <View className="flex-1 justify-center items-center px-4">
+        <View className="flex-1 bg-white justify-center items-center px-4">
           <Text className="text-red-500 text-center mb-4">
             채팅방을 불러오는 중 오류가 발생했습니다.
           </Text>
@@ -588,50 +672,53 @@ export default function ChatRoomScreen() {
   }
 
   return (
-    <View className={`flex-1 ${isBlocked ? 'bg-gray-100' : 'bg-white'}`}>
-      <ChatHeader
-        userName={userName}
-        profileImageUrl={profileImageUrl}
-        mainType={mainType || (userInfo as any)?.data?.mainType}
-        showUserInfo={true}
-        showMenu={!isBlocked}
-        onBackPress={() => navigation.goBack()}
-        onProfilePress={handleProfilePress}
-        onMenuPress={handleMenuPress}
-      />
-
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior="padding"
-        keyboardVerticalOffset={0}
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      {/* ✅ 헤더는 KeyboardAvoidingView 밖으로 분리 */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          backgroundColor: 'white', // 스크롤 시 겹치지 않게 배경 지정
+        }}
       >
-        <View className={`flex-1 ${isBlocked ? 'opacity-50' : ''}`}>
+        <ChatHeader
+          userName={userName}
+          profileImageUrl={profileImageUrl}
+          mainType={mainType || (userInfo as any)?.data?.mainType}
+          showUserInfo={true}
+          onBackPress={handleBackPress}
+          onProfilePress={handleProfilePress}
+          onMenuPress={handleMenuPress}
+        />
+      </View>
+
+      {/* ✅ 채팅 리스트 + 입력창만 KeyboardAvoidingView로 감싸기 */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0} // 헤더 높이
+      >
+        <View style={{ flex: 1, paddingTop: 60 /* 헤더 높이에 맞게 */ }}>
           <FlatList
             ref={flatListRef}
             data={allMessages}
             renderItem={renderMessage}
             keyExtractor={item => item.id}
             showsVerticalScrollIndicator={false}
-            inverted={false}
+            contentContainerStyle={{ paddingVertical: 10 }}
             onContentSizeChange={() => {
-              // 콘텐츠 크기가 변경될 때마다 맨 아래로 스크롤
               flatListRef.current?.scrollToEnd({ animated: true });
             }}
           />
         </View>
 
-        {isBlocked ? (
-          <View className="bg-gray-200 py-4 px-6 border-t border-gray-300">
-            <Text className="text-center text-gray-600">
-              메시지를 보낼 수 없습니다.
-            </Text>
-          </View>
-        ) : (
-          <ChatInputPanel
-            onSendMessage={handleSendMessage}
-            placeholder="메시지 보내기..."
-          />
-        )}
+        <ChatInputPanel
+          onSendMessage={handleSendMessage}
+          placeholder="메시지 보내기..."
+        />
       </KeyboardAvoidingView>
 
       <ChatMenuModal
@@ -641,9 +728,6 @@ export default function ChatRoomScreen() {
         onBlockUser={handleBlockUser}
         onReportUser={handleReportUser}
       />
-
-      {/* 하단 SafeArea - 갤럭시 네비게이션 바와 겹치지 않도록 */}
-      <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'white' }} />
     </View>
   );
 }

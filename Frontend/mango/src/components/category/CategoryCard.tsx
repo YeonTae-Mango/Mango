@@ -18,7 +18,8 @@ interface CategoryCardProps {
 const CategoryCard: React.FC<CategoryCardProps> = ({ category, onPress }) => {
   return (
     <TouchableOpacity
-      className="w-[48%] aspect-[3/4] rounded-2xl mb-4 overflow-hidden"
+      className="w-[48%] rounded-2xl mb-4 overflow-hidden"
+      style={{ aspectRatio: 0.65 }}
       onPress={() => onPress(category.title)}
     >
       {category.backgroundImage ? (
