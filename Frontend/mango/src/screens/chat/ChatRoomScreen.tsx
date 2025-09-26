@@ -13,9 +13,11 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getUserById } from '../../api/auth';
 import { blockUser } from '../../api/block';
@@ -46,6 +48,7 @@ export default function ChatRoomScreen() {
   const route = useRoute();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
 
   const { userName, chatRoomId, userId, profileImageUrl, mainType } =
     route.params as {
@@ -277,32 +280,58 @@ export default function ChatRoomScreen() {
 
   const handleProfilePress = () => {
     const userData = (userInfo as any)?.data;
+    console.log('🔍 handleProfilePress - userData:', userData);
+
     if (userData) {
       // API로 받은 실제 사용자 정보 전달
+      const profileData = {
+        id: userData.userId || userData.id,
+        nickname: userData.nickname || userData.name || userName,
+        age: userData.age || 28,
+        introduction: userData.introduction || '',
+        mainType: userData.mainType || mainType || '핫플헌터',
+        food: userData.food || '',
+        keywords: userData.keywords || [],
+        profileImageUrls:
+          userData.profileImageUrls ||
+          (profileImageUrl ? [profileImageUrl] : []),
+        sigungu: userData.sigungu || '',
+        distance: userData.distanceBetweenMe || userData.distance || 0,
+      };
+
+      console.log('🚀 ProfileDetail로 이동 - 실제 데이터:', profileData);
+
       navigation.navigate('ProfileDetail', {
-        userName: userData.nickname,
-        userId: userData.userId,
+        userName: profileData.nickname,
+        userId: profileData.id,
         fromScreen: 'Chat',
-        // 사용자 전체 정보 전달
-        profileData: {
-          id: userData.userId,
-          nickname: userData.nickname,
-          age: userData.age,
-          introduction: userData.introduction,
-          mainType: userData.mainType,
-          food: userData.food,
-          keywords: userData.keywords,
-          profileImageUrls: userData.profileImageUrls,
-          sigungu: userData.sigungu,
-          distance: userData.distanceBetweenMe || userData.distance || 0,
-        },
+        profileData: profileData,
       });
     } else {
-      // userInfo가 없으면 기본 정보만 전달
+      // userInfo가 없으면 기본 정보로 fallback
+      const fallbackProfileData = {
+        id: userId || 0,
+        nickname: userName || '사용자',
+        age: 28,
+        introduction: '',
+        mainType: mainType || '핫플헌터',
+        food: '',
+        keywords: [],
+        profileImageUrls: profileImageUrl ? [profileImageUrl] : [],
+        sigungu: '',
+        distance: 0,
+      };
+
+      console.log(
+        '🚀 ProfileDetail로 이동 - 기본 데이터:',
+        fallbackProfileData
+      );
+
       navigation.navigate('ProfileDetail', {
-        userName,
-        userId,
+        userName: fallbackProfileData.nickname,
+        userId: fallbackProfileData.id,
         fromScreen: 'Chat',
+        profileData: fallbackProfileData,
       });
     }
   };
@@ -628,34 +657,34 @@ export default function ChatRoomScreen() {
   // 로딩 상태
   if (roomLoading || messagesLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
         <ChatHeader
           userName={userName || '로딩중...'}
           showUserInfo={false}
-          showMenu={false}
+          showMenu={true}
           onBackPress={handleBackPress}
           onProfilePress={() => {}}
-          onMenuPress={() => {}}
+          onMenuPress={handleMenuPress}
         />
         <View className="flex-1 bg-white justify-center items-center">
           <ActivityIndicator size="large" color="#FF6B6B" />
           <Text className="mt-4 text-gray-600">채팅방을 불러오는 중...</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // 에러 상태
   if (roomError || messagesError) {
     return (
-      <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
         <ChatHeader
           userName={userName || '오류'}
           showUserInfo={false}
-          showMenu={false}
+          showMenu={true}
           onBackPress={handleBackPress}
           onProfilePress={() => {}}
-          onMenuPress={() => {}}
+          onMenuPress={handleMenuPress}
         />
         <View className="flex-1 bg-white justify-center items-center px-4">
           <Text className="text-red-500 text-center mb-4">
@@ -667,67 +696,79 @@ export default function ChatRoomScreen() {
               '알 수 없는 오류가 발생했습니다.'}
           </Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
-      {/* ✅ 헤더는 KeyboardAvoidingView 밖으로 분리 */}
-      <View
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          backgroundColor: 'white', // 스크롤 시 겹치지 않게 배경 지정
-        }}
-      >
-        <ChatHeader
-          userName={userName}
-          profileImageUrl={profileImageUrl}
-          mainType={mainType || (userInfo as any)?.data?.mainType}
-          showUserInfo={true}
-          onBackPress={handleBackPress}
-          onProfilePress={handleProfilePress}
-          onMenuPress={handleMenuPress}
-        />
-      </View>
-
-      {/* ✅ 채팅 리스트 + 입력창만 KeyboardAvoidingView로 감싸기 */}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0} // 헤더 높이
-      >
-        <View style={{ flex: 1, paddingTop: 60 /* 헤더 높이에 맞게 */ }}>
-          <FlatList
-            ref={flatListRef}
-            data={allMessages}
-            renderItem={renderMessage}
-            keyExtractor={item => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingVertical: 10 }}
-            onContentSizeChange={() => {
-              flatListRef.current?.scrollToEnd({ animated: true });
-            }}
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ flex: 1 }}>
+        {/* ✅ 헤더 - 완전히 고정 */}
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            backgroundColor: 'white',
+          }}
+        >
+          <ChatHeader
+            userName={userName}
+            profileImageUrl={profileImageUrl}
+            mainType={mainType || (userInfo as any)?.data?.mainType}
+            showUserInfo={true}
+            showMenu={true}
+            onBackPress={handleBackPress}
+            onProfilePress={handleProfilePress}
+            onMenuPress={handleMenuPress}
           />
         </View>
 
-        <ChatInputPanel
-          onSendMessage={handleSendMessage}
-          placeholder="메시지 보내기..."
-        />
-      </KeyboardAvoidingView>
+        {/* ✅ 채팅 영역 + 입력창 - KeyboardAvoidingView로 감싸기 */}
+        <KeyboardAvoidingView
+          style={{
+            flex: 1,
+            paddingTop: Math.max(insets.top, 16) + 12 + 48 + 16, // StatusBar + padding + ChatHeader + padding
+          }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+          <View style={{ flex: 1 }}>
+            <FlatList
+              ref={flatListRef}
+              data={allMessages}
+              renderItem={renderMessage}
+              keyExtractor={item => item.id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingVertical: 10,
+                flexGrow: 1,
+              }}
+              onContentSizeChange={() => {
+                flatListRef.current?.scrollToEnd({ animated: true });
+              }}
+            />
+          </View>
 
-      <ChatMenuModal
-        visible={showMenuModal}
-        onClose={() => setShowMenuModal(false)}
-        onReportChat={handleReportChat}
-        onBlockUser={handleBlockUser}
-        onReportUser={handleReportUser}
-      />
-    </View>
+          {/* ✅ 입력창 - SafeAreaView 내부에서 하단 여백 확보 */}
+          <View style={{ paddingBottom: Platform.OS === 'android' ? 20 : 10 }}>
+            <ChatInputPanel
+              onSendMessage={handleSendMessage}
+              placeholder="메시지 보내기..."
+            />
+          </View>
+        </KeyboardAvoidingView>
+
+        <ChatMenuModal
+          visible={showMenuModal}
+          onClose={() => setShowMenuModal(false)}
+          onReportChat={handleReportChat}
+          onBlockUser={handleBlockUser}
+          onReportUser={handleReportUser}
+        />
+      </View>
+    </SafeAreaView>
   );
 }

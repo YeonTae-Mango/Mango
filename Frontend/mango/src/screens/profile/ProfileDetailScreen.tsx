@@ -220,21 +220,26 @@ export default function ProfileDetailScreen() {
   // 프로필 데이터 구성 (전달받은 데이터가 있으면 사용, 없으면 기본값)
   const profileData = receivedProfileData
     ? {
-        name: receivedProfileData.nickname,
-        age: receivedProfileData.age,
-        distance: `${receivedProfileData.distance}km`,
-        category: receivedProfileData.mainType,
-        tags: receivedProfileData.keywords,
-        introduction: receivedProfileData.introduction,
-        images: receivedProfileData.profileImageUrls,
+        name: receivedProfileData.nickname || userName || '사용자',
+        age: receivedProfileData.age || 28,
+        distance: `${receivedProfileData.distance || 0}km`,
+        category: receivedProfileData.mainType || '핫플헌터',
+        tags: receivedProfileData.keywords || [],
+        introduction: receivedProfileData.introduction || '소개가 없습니다.',
+        images:
+          receivedProfileData.profileImageUrls?.length > 0
+            ? receivedProfileData.profileImageUrls
+            : [
+                'https://postfiles.pstatic.net/MjAyNDA4MDVfMTcx/MDAxNzIyODMzNDI0MzY5.wuG29NRvdZ6kQc0I6xhLTi-AeKIehY4AMD_rvRo6bBog.Aw-JsI21ibU34Wj-YJj-wXoirkPwbTBIT_KyNyzc4hgg.JPEG/IMG_2048.JPG?type=w966',
+              ],
       }
     : {
-        name: userName,
+        name: userName || '사용자',
         age: 28,
-        distance: '21km',
+        distance: '0km',
         category: '핫플헌터',
-        tags: ['카페인중독', '빵순이', '단발병'],
-        introduction: '아 씨탈하고 싶다',
+        tags: ['정보 없음'],
+        introduction: '프로필 정보를 불러올 수 없습니다.',
         images: [
           'https://postfiles.pstatic.net/MjAyNDA4MDVfMTcx/MDAxNzIyODMzNDI0MzY5.wuG29NRvdZ6kQc0I6xhLTi-AeKIehY4AMD_rvRo6bBog.Aw-JsI21ibU34Wj-YJj-wXoirkPwbTBIT_KyNyzc4hgg.JPEG/IMG_2048.JPG?type=w966',
         ],
