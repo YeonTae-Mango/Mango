@@ -1,165 +1,178 @@
-import { Download, Heart, MapPin, Users } from "lucide-react";
+import { Download } from "lucide-react";
 import Navigation from "./Navigation";
 
 function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-red-50">
-      <Navigation />
+    <div className="min-h-screen bg-white">
+      <div style={{ display: 'none' }}>
+        <Navigation />
+      </div>
+      <nav className="flex justify-between items-center px-8 py-6 bg-white">
+        <div className="text-3xl font-bold text-coral-500" style={{ color: '#FF6B6B' }}>
+          mango
+        </div>
+        <div className="flex gap-8 text-gray-700">
+          <a href="#" className="hover:text-coral-500 transition-colors">About</a>
+          <a href="#" className="hover:text-coral-500 transition-colors">Service</a>
+          <a href="#" className="hover:text-coral-500 transition-colors">Download</a>
+        </div>
+      </nav>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
-          {/* Left Section - Hero Content */}
-          <div className="space-y-8">
-            <div>
-              <h1 className="text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                새로운 만남을
+      {/* Hero Section */}
+      <section className="relative min-h-[700px] bg-gradient-to-br from-white to-gray-50">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/src/assets/backgroud.png)' }}
+        ></div>
+        
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-white/30"></div>
+        
+        <div className="relative z-10 container mx-auto px-10 pt-50">
+          <div className="max-w-2xl">
+            <h1 className="text-8xl font-bold mb-12" style={{ color: '#FF6D60' }}>
+              mango
+            </h1>
+            <p className="text-3xl font-bold text-white mb-2">
+              나도 몰랐던 내 <span className="text-[#FF6D60]">진심</span>을 통한 인연찾기
+            </p>
+            <p className="text-lg text-white mb-6">
+              소비패턴을 분석해 당신의 라이프 스타일과 가치관이 맞는 상대를 찾아드립니다.
+              <br />
+              더 이상 겉모습만 보고 판단하지 마세요.
+            </p>
+            
+            <button 
+              className="text-white px-10 py-3 rounded-full text-lg font-bold flex items-center gap-4 transition-all hover:shadow-lg mb-2"
+              style={{ backgroundColor: '#FF6D60' }}
+            >
+              <Download size={24} />
+              Download
+            </button>
+            <p className="text-sm text-white/50 mb-6">
+              * 안드로이드에서만 다운로드 가능합니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 나의 소비패턴 분석 Section */}
+      <section className="py-20" style={{ backgroundColor: '#FF6D60' }}>
+        <div className="container mx-auto px-8">
+          <div className="flex items-center justify-center gap-12">
+            {/* Left Side - Phone Mockup */}
+            <div className="flex-1 flex justify-center">
+              <div className="relative">
+                <img 
+                  src="/src/assets/mypattern.png" 
+                  alt="나의 소비패턴 분석"
+                  className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
+                />
+              </div>
+            </div>
+
+            {/* Right Side - Another Phone */}
+            <div className="flex-1 flex justify-center">
+              <div className="relative">
+                <img 
+                  src="/src/assets/mypattern2.png" 
+                  alt="월별 소비 내역"
+                  className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
+                />
+              </div>
+            </div>
+
+            {/* Center Text */}
+            <div className="text-white text-left max-w-md">
+              <div className="bg-yellow-400 text-black px-3 py-2 rounded-full text-sm inline-block font-bold mb-4">
+                🤖 AI 소비 분석
+              </div>
+              <h2 className="text-3xl font-bold mb-4">나의 소비패턴 분석</h2>
+              <p className="text-lg opacity-90">
+                마이데이터를 AI가 분석하여 핫플형, 뷰티형, 스포츠형 등
                 <br />
-                <span className="text-orange-500">mango</span>에서
-              </h1>
-              <p className="text-xl text-gray-600 leading-relaxed mb-8">
-                특별한 사람과의 소중한 인연을 만들어보세요.
+                당신만의 라이프 스타일 유형을 정확하게 파악합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 카테고리별 스와이프 Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-8">
+          <div className="flex items-center gap-8">
+            {/* Left Side - Text */}
+            <div className="flex-1">
+              <div className="bg-yellow-400 text-black px-3 py-2 rounded-full text-sm font-bold inline-block mb-4">
+                🩷 스마트 매칭
+              </div>
+              <h2 className="text-4xl font-bold mb-6 text-gray-800">
+                카테고리별 스와이프
+              </h2>
+              <p className="text-lg text-gray-600 mb-8">
+                핫플형, 쇼핑형, 예술가형, 뷰티형 등 관심 유형별로 상대방을 만나보세요.
                 <br />
-                mango와 함께 새로운 관계의 시작을 경험하세요.
+                같은 취향을 가진 사람들과 더 쉽게 연결될 수 있습니다.
               </p>
             </div>
 
-            {/* Features */}
-            <div className="grid grid-cols-2 gap-6 mb-8">
-              <div className="flex items-center gap-3">
-                <div className="bg-pink-100 p-2 rounded-lg">
-                  <Heart className="text-pink-500" size={20} />
-                </div>
-                <span className="text-gray-700 font-medium">진심 어린 매칭</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-100 p-2 rounded-lg">
-                  <MapPin className="text-blue-500" size={20} />
-                </div>
-                <span className="text-gray-700 font-medium">위치 기반 만남</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-green-100 p-2 rounded-lg">
-                  <Users className="text-green-500" size={20} />
-                </div>
-                <span className="text-gray-700 font-medium">검증된 프로필</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-100 p-2 rounded-lg">
-                  <Download className="text-purple-500" size={20} />
-                </div>
-                <span className="text-gray-700 font-medium">간편한 사용</span>
-              </div>
-            </div>
-
-            {/* Download Button */}
-            <div>
-              <a
-                href="/app.apk"
-                download="mango.apk"
-                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-10 py-4 rounded-full text-lg font-bold transition-all transform hover:scale-105 shadow-lg inline-flex items-center gap-3 no-underline"
-              >
-                <Download size={24} />
-                mango 설치하기
-              </a>
-            </div>
-          </div>
-
-          {/* Right Section - Phone Mockup */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="relative">
-              {/* Phone Frame */}
-              <div className="bg-gray-800 rounded-[3rem] p-2 shadow-2xl">
-                <div className="bg-white rounded-[2.5rem] overflow-hidden w-80 h-[640px]">
-                  {/* Status Bar */}
-                  <div className="bg-white px-6 py-2 flex justify-between items-center text-sm">
-                    <span className="font-medium">9:30</span>
-                    <div className="w-4 h-4 bg-black rounded-full"></div>
-                    <div className="flex gap-1">
-                      <div className="w-4 h-3 bg-gray-400 rounded-sm"></div>
-                      <div className="w-4 h-3 bg-gray-400 rounded-sm"></div>
-                      <div className="w-4 h-3 bg-gray-900 rounded-sm"></div>
-                    </div>
-                  </div>
-
-                  {/* App Header */}
-                  <div className="bg-white px-6 py-4 flex justify-between items-center border-b">
-                    <div className="text-2xl font-bold text-orange-500">mango</div>
-                    <div className="flex gap-4">
-                      <div className="w-6 h-6 bg-gray-300 rounded"></div>
-                      <div className="w-6 h-6 bg-gray-300 rounded"></div>
-                    </div>
-                  </div>
-
-                  {/* Profile Card */}
-                  <div className="relative bg-gradient-to-br from-orange-500 to-pink-500 h-[400px] mx-4 my-4 rounded-2xl overflow-hidden shadow-lg">
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
-                      <div className="text-white">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="bg-yellow-600 text-white px-2 py-1 rounded text-xs">21km</span>
-                        </div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-2xl font-bold">싸피 23</span>
-                          <div className="bg-red-500 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
-                            <MapPin size={10} />
-                            핫플헌터
-                          </div>
-                        </div>
-                        <div className="flex gap-2 text-xs">
-                          <span className="bg-white/20 px-2 py-1 rounded"># 카페인중독</span>
-                          <span className="bg-white/20 px-2 py-1 rounded"># 직관러</span>
-                          <span className="bg-white/20 px-2 py-1 rounded"># 단짠병</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-center gap-8 px-8 py-6">
-                    <button className="bg-gray-200 hover:bg-gray-300 w-16 h-16 rounded-full flex items-center justify-center transition-colors">
-                      <div className="text-gray-600 text-2xl">✕</div>
-                    </button>
-                    <button className="bg-red-400 hover:bg-red-500 w-16 h-16 rounded-full flex items-center justify-center transition-colors shadow-lg">
-                      <Heart className="text-white" size={24} fill="currentColor" />
-                    </button>
-                  </div>
-
-                  {/* Bottom Navigation */}
-                  <div className="bg-white border-t flex justify-around py-2">
-                    <div className="flex flex-col items-center gap-1 text-orange-500">
-                      <div className="w-6 h-6 bg-orange-500 rounded"></div>
-                      <span className="text-xs font-medium">홈</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-1 text-gray-400">
-                      <div className="w-6 h-6 bg-gray-300 rounded"></div>
-                      <span className="text-xs">카테고리</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-1 text-gray-400">
-                      <div className="w-6 h-6 bg-gray-300 rounded"></div>
-                      <span className="text-xs">좋아요</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-1 text-gray-400">
-                      <div className="w-6 h-6 bg-gray-300 rounded"></div>
-                      <span className="text-xs">채팅</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-1 text-gray-400">
-                      <div className="w-6 h-6 bg-gray-300 rounded"></div>
-                      <span className="text-xs">프로필</span>
-                    </div>
-                  </div>
-                </div>
+            {/* Right Side - Phone Mockup */}
+            <div className="flex-1 flex justify-center">
+              <div className="relative">
+                <img 
+                  src="/src/assets/category.png" 
+                  alt="카테고리별 스와이프"
+                  className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
+                />
               </div>
             </div>
           </div>
         </div>
-      </main>
+      </section>
 
-      {/* Footer */}
-      <footer className="py-8 bg-gray-50 mt-16">
-        <div className="container mx-auto px-6 text-center text-gray-600">
-          <p>&copy; 2025 mango. SSAFY 13기 A408팀의 특화 프로젝트입니다!!.</p>
+      {/* 채팅 & 소비패턴 궁합 Section */}
+      <section className="py-20" style={{ backgroundColor: '#FF6D60' }}>
+        <div className="container mx-auto px-8">
+          <div className="flex items-center gap-12">
+            {/* Left Side - Phone Mockup */}
+            <div className="flex-1 flex justify-center">
+              <div className="relative">
+                <img 
+                  src="/src/assets/pattern.png" 
+                  alt="소비패턴 분석"
+                  className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
+                />
+              </div>
+            </div>
+
+            {/* Center Text */}
+            <div className="text-white max-w-md">
+              <div className="bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-bold inline-block mb-4">
+                💭 실시간 소통
+              </div>
+              <h2 className="text-3xl font-bold mb-4">채팅 & 소비패턴 궁합</h2>
+              <p className="text-lg opacity-90">
+                매칭이 성사되면 채팅으로 대화를 시작하고,
+                <br />
+                상대방과의 소비패턴 궁합도 확인할 수 있습니다.
+              </p>
+            </div>
+
+            {/* Right Side - Another Phone */}
+            <div className="flex-1 flex justify-center">
+              <div className="relative">
+                <img 
+                  src="/src/assets/chat.png" 
+                  alt="채팅"
+                  className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </footer>
+      </section>
     </div>
   );
 }
