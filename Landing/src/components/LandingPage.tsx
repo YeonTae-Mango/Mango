@@ -23,7 +23,7 @@ function LandingPage() {
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/src/assets/backgroud.png)' }}
+          style={{ backgroundImage: 'url(/assets/backgroud.png)' }}
         ></div>
         
         {/* Gradient Overlay */}
@@ -65,7 +65,7 @@ function LandingPage() {
             <div className="flex-1 flex justify-center">
               <div className="relative">
                 <img 
-                  src="/src/assets/mypattern.png" 
+                  src="/assets/mypattern.png" 
                   alt="나의 소비패턴 분석"
                   className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
                 />
@@ -76,7 +76,7 @@ function LandingPage() {
             <div className="flex-1 flex justify-center">
               <div className="relative">
                 <img 
-                  src="/src/assets/mypattern2.png" 
+                  src="/assets/mypattern2.png" 
                   alt="월별 소비 내역"
                   className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
                 />
@@ -122,7 +122,7 @@ function LandingPage() {
             <div className="flex-1 flex justify-center">
               <div className="relative">
                 <img 
-                  src="/src/assets/category.png" 
+                  src="/assets/category.png" 
                   alt="카테고리별 스와이프"
                   className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
                 />
@@ -140,7 +140,7 @@ function LandingPage() {
             <div className="flex-1 flex justify-center">
               <div className="relative">
                 <img 
-                  src="/src/assets/pattern.png" 
+                  src="/assets/pattern.png" 
                   alt="소비패턴 분석"
                   className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
                 />
@@ -164,7 +164,7 @@ function LandingPage() {
             <div className="flex-1 flex justify-center">
               <div className="relative">
                 <img 
-                  src="/src/assets/chat.png" 
+                  src="/assets/chat.png" 
                   alt="채팅"
                   className="w-80 object-cover rounded-[2.5rem] shadow-2xl"
                 />
